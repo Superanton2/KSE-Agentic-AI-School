@@ -45,3 +45,67 @@ def make_client(s: Settings) -> TelegramClient:
         flood_sleep_threshold=FLOOD_SLEEP_THRESHOLD,
         receive_updates=True,
     )
+
+
+# Human-readable "where did the code go" for auth.SentCode.type (no phone number is ever printed).
+_CODE_DESTINATION = {
+    "SentCodeTypeApp": "у застосунок Telegram — службовий чат «Telegram» (синя галочка) на іншому вашому пристрої",
+    "SentCodeTypeSms": "SMS",
+    "SentCodeTypeSmsWord": "SMS (слово)",
+    "SentCodeTypeSmsPhrase": "SMS (фраза)",
+    "SentCodeTypeFirebaseSms": "SMS",
+    "SentCodeTypeCall": "дзвінком (код продиктують)",
+    "SentCodeTypeFlashCall": "flash-дзвінком (код — останні цифри номера, що дзвонив)",
+    "SentCodeTypeMissedCall": "пропущеним дзвінком (код — останні цифри номера, що дзвонив)",
+    "SentCodeTypeEmailCode": "на email, прив'язаний до акаунта",
+    "SentCodeTypeFragmentSms": "у Fragment (fragment.com), бо номер анонімний",
+    "SentCodeTypeSetUpEmailRequired": "нікуди: Telegram вимагає спершу прив'язати email у застосунку",
+}
+
+
+def describe_sent_code(sent) -> str:
+    kind = type(sent.type).__name__
+    where = _CODE_DESTINATION.get(kind, kind)
+    nxt = type(sent.next_type).__name__ if getattr(sent, "next_type", None) else None
+    extra = f"; повторний запит піде як {_CODE_DESTINATION.get(nxt, nxt)}" if nxt else ""
+    timeout = f" (не раніше ніж через {sent.timeout} с)" if getattr(sent, "timeout", None) else ""
+    return f"Код надіслано {where}{extra}{timeout}."
+
+
+async def _password(client: TelegramClient, ask_password) -> None:
+    await client.sign_in(password=ask_password())
+
+
+async def login_qr(client: TelegramClient, show, ask_password, attempts: int = 5) -> None:
+    """Scan with Telegram on the phone: Settings → Devices → Link Desktop Device."""
+    from telethon.errors import SessionPasswordNeededError
+
+    qr = await client.qr_login()
+    for _ in range(attempts):
+        show(qr.url)
+        try:
+            await qr.wait(timeout=60)
+            return
+        except TimeoutError:
+            await qr.recreate()
+        except SessionPasswordNeededError:
+            await _password(client, ask_password)
+            return
+    raise RuntimeError("QR не відскановано — спробуйте ще раз")
+
+
+async def login_code(client: TelegramClient, ask, ask_password, echo) -> None:
+    from telethon.errors import SessionPasswordNeededError
+
+    phone = ask("Телефон у форматі +380…")
+    sent = await client.send_code_request(phone)
+    echo(describe_sent_code(sent))
+    code = ask("Код (Enter без коду — запросити повторно іншим способом)")
+    if not code:
+        sent = await client.send_code_request(phone)
+        echo(describe_sent_code(sent))
+        code = ask("Код")
+    try:
+        await client.sign_in(phone, code, phone_code_hash=sent.phone_code_hash)
+    except SessionPasswordNeededError:
+        await _password(client, ask_password)

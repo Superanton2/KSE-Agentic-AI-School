@@ -70,18 +70,41 @@ def _utc(day: str) -> datetime:
 
 
 @app.command("tg-login")
-def tg_login() -> None:
+def tg_login(
+    method: str = typer.Option("qr", help="qr (scan in the Telegram app) or code (phone + login code)"),
+) -> None:
     """INTERACTIVE: log in to Telegram and create the session file (run by a human)."""
-    from airalert.tg.client import make_client, secure_session, session_file
+    from getpass import getpass
+
+    from airalert.tg.client import login_code, login_qr, make_client, secure_session, session_file
 
     s = get_settings()
 
+    def show_qr(url: str) -> None:
+        import qrcode
+
+        typer.echo("\nTelegram на телефоні → Налаштування → Пристрої → Підключити пристрій, і скануйте:")
+        qr = qrcode.QRCode(border=1)
+        qr.add_data(url)
+        qr.print_ascii(invert=True)
+        typer.echo("(код оновлюється кожні ~60 с)")
+
+    def ask_password() -> str:
+        return getpass("Пароль двофакторної автентифікації (2FA): ")
+
     async def run() -> int:
         client = make_client(s)
-        await client.start()  # prompts for phone, code and 2FA password on the terminal
-        me = await client.get_me()
-        await client.disconnect()
-        return me.id
+        await client.connect()
+        try:
+            if not await client.is_user_authorized():
+                if method == "qr":
+                    await login_qr(client, show_qr, ask_password)
+                else:
+                    ask = lambda text: typer.prompt(text, default="", show_default=False)  # noqa: E731
+                    await login_code(client, ask, ask_password, typer.echo)
+            return (await client.get_me()).id
+        finally:
+            await client.disconnect()
 
     user_id = asyncio.run(run())
     secure_session(s.session_path)
