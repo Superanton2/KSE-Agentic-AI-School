@@ -1,7 +1,8 @@
 # Live collector. The session file must already exist (run `uv run airalert tg-login` on the host).
 #   AIRALERT_UID=$(id -u) AIRALERT_GID=$(id -g) docker compose up -d --build
 # One-off commands that touch the SQLite journal while the collector runs (same VM => safe locking):
-#   AIRALERT_UID=$(id -u) AIRALERT_GID=$(id -g) docker compose run --rm tools build
+#   AIRALERT_UID=$(id -u) AIRALERT_GID=$(id -g) AIRALERT_CODE_SHA=$(git rev-parse HEAD) \
+#     docker compose run --rm tools build
 services:
   collector:
     build:
@@ -33,6 +34,7 @@ services:
     env_file: .env
     environment:
       DATA_DIR: /app/data
+      AIRALERT_CODE_SHA: ${AIRALERT_CODE_SHA:-unknown}
       TG_SESSION_PATH: /session/airalert.session
     user: "${AIRALERT_UID:-10001}:${AIRALERT_GID:-10001}"
     read_only: true

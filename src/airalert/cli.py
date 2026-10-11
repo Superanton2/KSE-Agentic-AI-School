@@ -191,7 +191,10 @@ def tg_live(channel: list[str] = typer.Option(LIVE_CHANNELS, help="channels to c
 
     s = get_settings()
     with store.open_db(s.sqlite_path) as conn:
-        asyncio.run(live.run(make_client(s), conn, channel))
+        try:
+            asyncio.run(live.run(make_client(s), conn, channel))
+        except KeyboardInterrupt:
+            typer.echo("collector stopped")
 
 
 @app.command("healthcheck")

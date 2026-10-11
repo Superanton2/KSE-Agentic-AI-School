@@ -14,6 +14,7 @@ Threat intervals (drones, KAB, …) exist only in ``tg_official``; the red alert
 
 import itertools
 import json
+import os
 import subprocess
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -112,6 +113,8 @@ def to_output(raw: pd.DataFrame, oblast_union: pd.DataFrame) -> pd.DataFrame:
 
 def git_sha(path: Path) -> str:
     """Commit of a git checkout; works without the git binary (e.g. in the container)."""
+    if not (path / ".git").exists():
+        return os.environ.get("AIRALERT_CODE_SHA", "unknown")
     try:
         return subprocess.run(
             ["git", "-C", str(path), "rev-parse", "HEAD"], capture_output=True, text=True, check=True
@@ -174,6 +177,6 @@ def build(
 def write(result: BuildResult, processed_dir: Path) -> tuple[Path, Path]:
     processed_dir.mkdir(parents=True, exist_ok=True)
     pq, mf = processed_dir / "alerts.parquet", processed_dir / "manifest.json"
-    result.output.to_parquet(pq, index=False)
+    result.output.to_parquet(pq, index=False, compression="zstd")
     mf.write_text(json.dumps(result.manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     return pq, mf
