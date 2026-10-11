@@ -1,0 +1,1171 @@
+{
+  "meta": {
+    "generated_at": "2026-10-11T17:40:57+00:00",
+    "vadimkin_commit": "bf0c323c78e3e4508721458797dcd38c95df13f3",
+    "vadimkin_committed_at": "2026-10-11T04:50:14+00:00"
+  },
+  "status": "WARN",
+  "checks": [
+    {
+      "id": 1,
+      "scope": "dataset_official",
+      "name": "Схема й типи",
+      "status": "PASS",
+      "value": 0,
+      "summary": "Колонки, типи (tz-aware UTC) і допустимі level — коректні.",
+      "details": {}
+    },
+    {
+      "id": 1,
+      "scope": "dataset_volunteer",
+      "name": "Схема й типи",
+      "status": "PASS",
+      "value": 0,
+      "summary": "Колонки, типи (tz-aware UTC) і допустимі level — коректні.",
+      "details": {}
+    },
+    {
+      "id": 2,
+      "scope": "dataset_official",
+      "name": "started_at < finished_at",
+      "status": "WARN",
+      "value": 2,
+      "summary": "2 закритих тривог з нульовою/від'ємною тривалістю (0.001% з 185430).",
+      "details": {
+        "share_pct": 0.001,
+        "examples": [
+          {
+            "location": "Odeska oblast",
+            "level": "raion",
+            "raion": "Podilskyi raion",
+            "started_at": "2025-11-14 20:17:15+00:00",
+            "finished_at": "2025-11-14 20:17:15+00:00"
+          },
+          {
+            "location": "Kharkivska oblast",
+            "level": "raion",
+            "raion": "Bohodukhivskyi raion",
+            "started_at": "2025-11-17 01:13:53+00:00",
+            "finished_at": "2025-11-17 01:13:53+00:00"
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "scope": "dataset_volunteer",
+      "name": "started_at < finished_at",
+      "status": "WARN",
+      "value": 6,
+      "summary": "6 закритих тривог з нульовою/від'ємною тривалістю (0.005% з 115989).",
+      "details": {
+        "share_pct": 0.005,
+        "examples": [
+          {
+            "location": "Dnipropetrovska oblast",
+            "level": "oblast",
+            "raion": "",
+            "started_at": "2025-11-03 22:27:41+00:00",
+            "finished_at": "2025-11-03 22:27:41+00:00"
+          },
+          {
+            "location": "Dnipropetrovska oblast",
+            "level": "oblast",
+            "raion": "",
+            "started_at": "2026-01-15 22:14:22+00:00",
+            "finished_at": "2026-01-15 22:14:22+00:00"
+          },
+          {
+            "location": "Dnipropetrovska oblast",
+            "level": "oblast",
+            "raion": "",
+            "started_at": "2026-03-11 22:43:16+00:00",
+            "finished_at": "2026-03-11 22:43:16+00:00"
+          },
+          {
+            "location": "Dnipropetrovska oblast",
+            "level": "oblast",
+            "raion": "",
+            "started_at": "2026-03-12 12:08:51+00:00",
+            "finished_at": "2026-03-12 12:08:51+00:00"
+          },
+          {
+            "location": "Kirovohradska oblast",
+            "level": "oblast",
+            "raion": "",
+            "started_at": "2026-03-28 19:28:39+00:00",
+            "finished_at": "2026-03-28 19:28:39+00:00"
+          },
+          {
+            "location": "Kyivska oblast",
+            "level": "oblast",
+            "raion": "",
+            "started_at": "2026-09-16 01:12:16+00:00",
+            "finished_at": "2026-09-16 01:12:16+00:00"
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "scope": "dataset_official",
+      "name": "Точні дублікати",
+      "status": "WARN",
+      "value": 113845,
+      "summary": "299275 → 185430 рядків (38.04% дублів); Київ 4141 → 2267 (45.255%). Дублі прибираємо в clean.dedup. Дублі — суцільний блок: рядки 113911…227831 повторюють перші 113911 рядків файлу (історія до 2026-01-25 13:11:52+00:00), частка збігу 0.99899.",
+      "details": {
+        "rows": 299275,
+        "rows_after_dedup": 185430,
+        "kyiv_rows": 4141,
+        "kyiv_rows_after_dedup": 2267,
+        "kyiv_duplicate_share_pct": 45.255,
+        "layout": {
+          "first_duplicate_row": 113911,
+          "last_duplicate_row": 227831,
+          "prefix_rows": 113911,
+          "prefix_last_started_at": "2026-01-25 13:11:52+00:00",
+          "rows_after_prefix_equal_to_prefix_share": 0.99899,
+          "duplicate_rows_by_year": {
+            "2022": 17493,
+            "2023": 17362,
+            "2024": 26135,
+            "2025": 45901,
+            "2026": 6954
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "scope": "dataset_volunteer",
+      "name": "Точні дублікати",
+      "status": "PASS",
+      "value": 0,
+      "summary": "115989 → 115989 рядків (0.0% дублів); Київ 2669 → 2669 (0.0%). Дублі прибираємо в clean.dedup.",
+      "details": {
+        "rows": 115989,
+        "rows_after_dedup": 115989,
+        "kyiv_rows": 2669,
+        "kyiv_rows_after_dedup": 2669,
+        "kyiv_duplicate_share_pct": 0.0,
+        "layout": {}
+      }
+    },
+    {
+      "id": 4,
+      "scope": "dataset_official",
+      "name": "Перекриття інтервалів однієї локації",
+      "status": "WARN",
+      "value": 2,
+      "summary": "Після дедупу злито 2 рядків у перекриті інтервали (Київ: 0); результат позначено прапорцем merged_overlap.",
+      "details": {
+        "rows_before_merge": 185430,
+        "rows_after_merge": 185428,
+        "kyiv_rows_merged_away": 0,
+        "merged_intervals": 2
+      }
+    },
+    {
+      "id": 4,
+      "scope": "dataset_volunteer",
+      "name": "Перекриття інтервалів однієї локації",
+      "status": "PASS",
+      "value": 0,
+      "summary": "Після дедупу злито 0 рядків у перекриті інтервали (Київ: 0); результат позначено прапорцем merged_overlap.",
+      "details": {
+        "rows_before_merge": 115989,
+        "rows_after_merge": 115989,
+        "kyiv_rows_merged_away": 0,
+        "merged_intervals": 0
+      }
+    },
+    {
+      "id": 5,
+      "scope": "dataset_official",
+      "name": "Тривалості",
+      "status": "WARN",
+      "value": 2.617,
+      "summary": "Рівно 3600 с (імпутація автора): 255, з них Київ 1; < 60 с: 453; > 12 год: 4144; рівно 1800 с: 38.",
+      "details": {
+        "lt_60s": 453,
+        "gt_12h": 4144,
+        "eq_3600s": 255,
+        "eq_1800s": 38,
+        "kyiv_lt_60s": 6,
+        "kyiv_gt_12h": 0,
+        "kyiv_eq_3600s": 1,
+        "kyiv_eq_1800s": 0,
+        "rows": 185430,
+        "median_minutes": 48.9,
+        "p99_hours": 18.83,
+        "suspicious_share_pct": 2.617
+      }
+    },
+    {
+      "id": 5,
+      "scope": "dataset_volunteer",
+      "name": "Тривалості",
+      "status": "WARN",
+      "value": 6.214,
+      "summary": "naive=True (кінець домальовано як старт+30 хв): 5812 (5.011%), з них Київ 214; < 60 с: 1367; > 12 год: 28; рівно 1800 с: 5855.",
+      "details": {
+        "lt_60s": 1367,
+        "gt_12h": 28,
+        "eq_3600s": 10,
+        "eq_1800s": 5855,
+        "kyiv_lt_60s": 9,
+        "kyiv_gt_12h": 1,
+        "kyiv_eq_3600s": 0,
+        "kyiv_eq_1800s": 215,
+        "rows": 115989,
+        "median_minutes": 30.0,
+        "p99_hours": 4.44,
+        "naive_true": 5812,
+        "kyiv_naive_true": 214,
+        "suspicious_share_pct": 6.214
+      }
+    },
+    {
+      "id": 6,
+      "scope": "dataset_official",
+      "name": "Свіжість",
+      "status": "WARN",
+      "value": 34.51,
+      "summary": "Останній старт 2026-09-07T05:28:22+00:00, відставання 34.51 дн. Джерело застаріло: діру після цієї дати добираємо з Telegram air_alert_ua (шов C = 2026-09-01).",
+      "details": {
+        "max_started_at": "2026-09-07T05:28:22+00:00",
+        "now": "2026-10-11T17:40:57.253906+00:00",
+        "lag_days": 34.51
+      }
+    },
+    {
+      "id": 6,
+      "scope": "dataset_volunteer",
+      "name": "Свіжість",
+      "status": "PASS",
+      "value": 0.54,
+      "summary": "Останній старт 2026-10-11T04:36:59+00:00, відставання 0.54 дн.",
+      "details": {
+        "max_started_at": "2026-10-11T04:36:59+00:00",
+        "now": "2026-10-11T17:40:57.253906+00:00",
+        "lag_days": 0.54
+      }
+    },
+    {
+      "id": 7,
+      "scope": "dataset_official",
+      "name": "Дні без жодної тривоги по Україні",
+      "status": "WARN",
+      "value": 3,
+      "summary": "3 днів (UTC) з 1638 без жодного запису. Перші: 2026-08-30, 2026-08-31, 2026-09-01",
+      "details": {
+        "missing_days": [
+          "2026-08-30",
+          "2026-08-31",
+          "2026-09-01"
+        ],
+        "range": [
+          "2022-03-15",
+          "2026-09-07"
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "scope": "dataset_volunteer",
+      "name": "Дні без жодної тривоги по Україні",
+      "status": "PASS",
+      "value": 0,
+      "summary": "0 днів (UTC) з 1690 без жодного запису.",
+      "details": {
+        "missing_days": [],
+        "range": [
+          "2022-02-25",
+          "2026-10-11"
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "scope": "kyiv: official vs volunteer",
+      "name": "Перехресна згода по Києву",
+      "status": "WARN",
+      "value": 75.6,
+      "summary": "Вікно 2022-03-15…2026-09-05: збіг стартів ±2 хв 75.6%; сумарні години official 2625.2 vs volunteer 2036.9 (розрив 22.41%). Якщо зіставити за КІНЦЕМ (±2 хв, 94.0% тривог), волонтерський старт пізніший за офіційний більш ніж на 2 хв у 23.7% пар — розрив годин пояснюється запізнілими стартами eTryvoga, а не офіційним джерелом.",
+      "details": {
+        "window": [
+          "2022-03-15T16:19:20+00:00",
+          "2026-09-05T23:22:48+00:00"
+        ],
+        "tolerance": "2min",
+        "overall_start_match_pct": 75.6,
+        "total_hours_official": 2625.2,
+        "total_hours_volunteer": 2036.9,
+        "end_pairing": {
+          "end_match_pct": 94.0,
+          "volunteer_start_later_than_2min_pct": 23.7,
+          "volunteer_start_lag_min_median": 0.33,
+          "by_year": [
+            {
+              "year": 2022,
+              "pairs": 473,
+              "vol_start_later_gt2min_pct": 2.7,
+              "lag_min_p75": 0.5,
+              "lag_min_p90": 0.9
+            },
+            {
+              "year": 2023,
+              "pairs": 278,
+              "vol_start_later_gt2min_pct": 6.1,
+              "lag_min_p75": 0.6,
+              "lag_min_p90": 1.4
+            },
+            {
+              "year": 2024,
+              "pairs": 478,
+              "vol_start_later_gt2min_pct": 27.4,
+              "lag_min_p75": 2.9,
+              "lag_min_p90": 69.7
+            },
+            {
+              "year": 2025,
+              "pairs": 504,
+              "vol_start_later_gt2min_pct": 37.1,
+              "lag_min_p75": 12.7,
+              "lag_min_p90": 142.0
+            },
+            {
+              "year": 2026,
+              "pairs": 399,
+              "vol_start_later_gt2min_pct": 39.3,
+              "lag_min_p75": 13.5,
+              "lag_min_p90": 70.8
+            }
+          ]
+        },
+        "yearly": [
+          {
+            "period": "2022",
+            "n_official": 505,
+            "n_volunteer": 507,
+            "hours_official": 540.8,
+            "hours_volunteer": 543.7,
+            "median_min_official": 48.9,
+            "median_min_volunteer": 48.5,
+            "start_match_pct": 97.2,
+            "hours_diff": -2.9
+          },
+          {
+            "period": "2023",
+            "n_official": 301,
+            "n_volunteer": 304,
+            "hours_official": 397.1,
+            "hours_volunteer": 398.6,
+            "median_min_official": 55.0,
+            "median_min_volunteer": 55.0,
+            "start_match_pct": 93.4,
+            "hours_diff": -1.5
+          },
+          {
+            "period": "2024",
+            "n_official": 502,
+            "n_volunteer": 524,
+            "hours_official": 542.1,
+            "hours_volunteer": 387.6,
+            "median_min_official": 34.0,
+            "median_min_volunteer": 31.6,
+            "start_match_pct": 73.3,
+            "hours_diff": 154.5
+          },
+          {
+            "period": "2025",
+            "n_official": 511,
+            "n_volunteer": 539,
+            "hours_official": 740.4,
+            "hours_volunteer": 419.5,
+            "median_min_official": 35.1,
+            "median_min_volunteer": 30.0,
+            "start_match_pct": 63.2,
+            "hours_diff": 320.9
+          },
+          {
+            "period": "2026",
+            "n_official": 448,
+            "n_volunteer": 533,
+            "hours_official": 404.9,
+            "hours_volunteer": 287.5,
+            "median_min_official": 29.9,
+            "median_min_volunteer": 28.0,
+            "start_match_pct": 55.8,
+            "hours_diff": 117.4
+          }
+        ],
+        "monthly": [
+          {
+            "period": "2022-03",
+            "n_official": 103,
+            "n_volunteer": 105,
+            "hours_official": 126.1,
+            "hours_volunteer": 122.5,
+            "median_min_official": 61.3,
+            "median_min_volunteer": 56.8,
+            "start_match_pct": 93.2,
+            "hours_diff": 3.6
+          },
+          {
+            "period": "2022-04",
+            "n_official": 72,
+            "n_volunteer": 71,
+            "hours_official": 68.4,
+            "hours_volunteer": 68.6,
+            "median_min_official": 42.5,
+            "median_min_volunteer": 42.4,
+            "start_match_pct": 98.6,
+            "hours_diff": -0.2
+          },
+          {
+            "period": "2022-05",
+            "n_official": 76,
+            "n_volunteer": 76,
+            "hours_official": 70.3,
+            "hours_volunteer": 74.3,
+            "median_min_official": 39.3,
+            "median_min_volunteer": 38.9,
+            "start_match_pct": 97.4,
+            "hours_diff": -4.0
+          },
+          {
+            "period": "2022-06",
+            "n_official": 55,
+            "n_volunteer": 55,
+            "hours_official": 47.7,
+            "hours_volunteer": 47.8,
+            "median_min_official": 37.4,
+            "median_min_volunteer": 37.4,
+            "start_match_pct": 98.2,
+            "hours_diff": -0.1
+          },
+          {
+            "period": "2022-07",
+            "n_official": 33,
+            "n_volunteer": 33,
+            "hours_official": 35.9,
+            "hours_volunteer": 35.8,
+            "median_min_official": 67.4,
+            "median_min_volunteer": 66.3,
+            "start_match_pct": 100.0,
+            "hours_diff": 0.1
+          },
+          {
+            "period": "2022-08",
+            "n_official": 43,
+            "n_volunteer": 43,
+            "hours_official": 30.6,
+            "hours_volunteer": 32.1,
+            "median_min_official": 37.0,
+            "median_min_volunteer": 41.5,
+            "start_match_pct": 95.3,
+            "hours_diff": -1.5
+          },
+          {
+            "period": "2022-09",
+            "n_official": 25,
+            "n_volunteer": 25,
+            "hours_official": 14.7,
+            "hours_volunteer": 14.7,
+            "median_min_official": 27.6,
+            "median_min_volunteer": 28.1,
+            "start_match_pct": 96.0,
+            "hours_diff": 0.0
+          },
+          {
+            "period": "2022-10",
+            "n_official": 55,
+            "n_volunteer": 55,
+            "hours_official": 77.7,
+            "hours_volunteer": 78.0,
+            "median_min_official": 72.1,
+            "median_min_volunteer": 72.0,
+            "start_match_pct": 100.0,
+            "hours_diff": -0.3
+          },
+          {
+            "period": "2022-11",
+            "n_official": 16,
+            "n_volunteer": 17,
+            "hours_official": 23.5,
+            "hours_volunteer": 23.9,
+            "median_min_official": 87.8,
+            "median_min_volunteer": 86.8,
+            "start_match_pct": 100.0,
+            "hours_diff": -0.4
+          },
+          {
+            "period": "2022-12",
+            "n_official": 27,
+            "n_volunteer": 27,
+            "hours_official": 45.9,
+            "hours_volunteer": 45.9,
+            "median_min_official": 101.1,
+            "median_min_volunteer": 101.2,
+            "start_match_pct": 100.0,
+            "hours_diff": 0.0
+          },
+          {
+            "period": "2023-01",
+            "n_official": 17,
+            "n_volunteer": 18,
+            "hours_official": 29.6,
+            "hours_volunteer": 29.9,
+            "median_min_official": 100.8,
+            "median_min_volunteer": 95.8,
+            "start_match_pct": 88.2,
+            "hours_diff": -0.3
+          },
+          {
+            "period": "2023-02",
+            "n_official": 27,
+            "n_volunteer": 28,
+            "hours_official": 36.3,
+            "hours_volunteer": 36.7,
+            "median_min_official": 58.3,
+            "median_min_volunteer": 55.0,
+            "start_match_pct": 96.3,
+            "hours_diff": -0.4
+          },
+          {
+            "period": "2023-03",
+            "n_official": 36,
+            "n_volunteer": 37,
+            "hours_official": 50.2,
+            "hours_volunteer": 50.7,
+            "median_min_official": 62.8,
+            "median_min_volunteer": 58.8,
+            "start_match_pct": 94.4,
+            "hours_diff": -0.5
+          },
+          {
+            "period": "2023-04",
+            "n_official": 9,
+            "n_volunteer": 9,
+            "hours_official": 10.8,
+            "hours_volunteer": 10.9,
+            "median_min_official": 47.0,
+            "median_min_volunteer": 47.5,
+            "start_match_pct": 100.0,
+            "hours_diff": -0.1
+          },
+          {
+            "period": "2023-05",
+            "n_official": 34,
+            "n_volunteer": 34,
+            "hours_official": 68.5,
+            "hours_volunteer": 68.7,
+            "median_min_official": 117.9,
+            "median_min_volunteer": 118.3,
+            "start_match_pct": 100.0,
+            "hours_diff": -0.2
+          },
+          {
+            "period": "2023-06",
+            "n_official": 27,
+            "n_volunteer": 27,
+            "hours_official": 34.6,
+            "hours_volunteer": 34.6,
+            "median_min_official": 60.1,
+            "median_min_volunteer": 60.8,
+            "start_match_pct": 92.6,
+            "hours_diff": 0.0
+          },
+          {
+            "period": "2023-07",
+            "n_official": 23,
+            "n_volunteer": 23,
+            "hours_official": 23.8,
+            "hours_volunteer": 24.0,
+            "median_min_official": 47.5,
+            "median_min_volunteer": 45.8,
+            "start_match_pct": 95.7,
+            "hours_diff": -0.2
+          },
+          {
+            "period": "2023-08",
+            "n_official": 45,
+            "n_volunteer": 45,
+            "hours_official": 36.9,
+            "hours_volunteer": 37.6,
+            "median_min_official": 33.0,
+            "median_min_volunteer": 34.0,
+            "start_match_pct": 93.3,
+            "hours_diff": -0.7
+          },
+          {
+            "period": "2023-09",
+            "n_official": 17,
+            "n_volunteer": 17,
+            "hours_official": 19.7,
+            "hours_volunteer": 19.8,
+            "median_min_official": 54.9,
+            "median_min_volunteer": 55.0,
+            "start_match_pct": 88.2,
+            "hours_diff": -0.1
+          },
+          {
+            "period": "2023-10",
+            "n_official": 6,
+            "n_volunteer": 6,
+            "hours_official": 5.5,
+            "hours_volunteer": 5.5,
+            "median_min_official": 44.9,
+            "median_min_volunteer": 45.0,
+            "start_match_pct": 100.0,
+            "hours_diff": 0.0
+          },
+          {
+            "period": "2023-11",
+            "n_official": 23,
+            "n_volunteer": 23,
+            "hours_official": 37.6,
+            "hours_volunteer": 37.8,
+            "median_min_official": 70.1,
+            "median_min_volunteer": 70.0,
+            "start_match_pct": 100.0,
+            "hours_diff": -0.2
+          },
+          {
+            "period": "2023-12",
+            "n_official": 37,
+            "n_volunteer": 37,
+            "hours_official": 43.5,
+            "hours_volunteer": 42.5,
+            "median_min_official": 66.3,
+            "median_min_volunteer": 66.4,
+            "start_match_pct": 81.1,
+            "hours_diff": 1.0
+          },
+          {
+            "period": "2024-01",
+            "n_official": 35,
+            "n_volunteer": 36,
+            "hours_official": 44.5,
+            "hours_volunteer": 38.0,
+            "median_min_official": 70.2,
+            "median_min_volunteer": 47.2,
+            "start_match_pct": 82.9,
+            "hours_diff": 6.5
+          },
+          {
+            "period": "2024-02",
+            "n_official": 16,
+            "n_volunteer": 16,
+            "hours_official": 18.4,
+            "hours_volunteer": 14.9,
+            "median_min_official": 58.0,
+            "median_min_volunteer": 44.8,
+            "start_match_pct": 87.5,
+            "hours_diff": 3.5
+          },
+          {
+            "period": "2024-03",
+            "n_official": 39,
+            "n_volunteer": 38,
+            "hours_official": 28.0,
+            "hours_volunteer": 23.9,
+            "median_min_official": 29.8,
+            "median_min_volunteer": 31.0,
+            "start_match_pct": 87.2,
+            "hours_diff": 4.1
+          },
+          {
+            "period": "2024-04",
+            "n_official": 25,
+            "n_volunteer": 26,
+            "hours_official": 20.4,
+            "hours_volunteer": 17.1,
+            "median_min_official": 30.8,
+            "median_min_volunteer": 30.3,
+            "start_match_pct": 84.0,
+            "hours_diff": 3.3
+          },
+          {
+            "period": "2024-05",
+            "n_official": 38,
+            "n_volunteer": 38,
+            "hours_official": 26.9,
+            "hours_volunteer": 19.5,
+            "median_min_official": 28.6,
+            "median_min_volunteer": 28.1,
+            "start_match_pct": 81.6,
+            "hours_diff": 7.4
+          },
+          {
+            "period": "2024-06",
+            "n_official": 35,
+            "n_volunteer": 36,
+            "hours_official": 26.3,
+            "hours_volunteer": 24.2,
+            "median_min_official": 32.5,
+            "median_min_volunteer": 32.4,
+            "start_match_pct": 77.1,
+            "hours_diff": 2.1
+          },
+          {
+            "period": "2024-07",
+            "n_official": 47,
+            "n_volunteer": 47,
+            "hours_official": 34.9,
+            "hours_volunteer": 26.7,
+            "median_min_official": 26.8,
+            "median_min_volunteer": 26.8,
+            "start_match_pct": 83.0,
+            "hours_diff": 8.2
+          },
+          {
+            "period": "2024-08",
+            "n_official": 62,
+            "n_volunteer": 62,
+            "hours_official": 47.2,
+            "hours_volunteer": 35.0,
+            "median_min_official": 26.2,
+            "median_min_volunteer": 24.0,
+            "start_match_pct": 79.0,
+            "hours_diff": 12.2
+          },
+          {
+            "period": "2024-09",
+            "n_official": 39,
+            "n_volunteer": 40,
+            "hours_official": 50.2,
+            "hours_volunteer": 36.4,
+            "median_min_official": 33.6,
+            "median_min_volunteer": 33.6,
+            "start_match_pct": 71.8,
+            "hours_diff": 13.8
+          },
+          {
+            "period": "2024-10",
+            "n_official": 54,
+            "n_volunteer": 58,
+            "hours_official": 79.7,
+            "hours_volunteer": 52.0,
+            "median_min_official": 60.4,
+            "median_min_volunteer": 39.3,
+            "start_match_pct": 61.1,
+            "hours_diff": 27.7
+          },
+          {
+            "period": "2024-11",
+            "n_official": 63,
+            "n_volunteer": 72,
+            "hours_official": 116.4,
+            "hours_volunteer": 62.1,
+            "median_min_official": 50.6,
+            "median_min_volunteer": 34.4,
+            "start_match_pct": 57.1,
+            "hours_diff": 54.3
+          },
+          {
+            "period": "2024-12",
+            "n_official": 49,
+            "n_volunteer": 55,
+            "hours_official": 49.2,
+            "hours_volunteer": 37.8,
+            "median_min_official": 36.4,
+            "median_min_volunteer": 30.4,
+            "start_match_pct": 55.1,
+            "hours_diff": 11.4
+          },
+          {
+            "period": "2025-01",
+            "n_official": 61,
+            "n_volunteer": 62,
+            "hours_official": 54.3,
+            "hours_volunteer": 42.5,
+            "median_min_official": 34.5,
+            "median_min_volunteer": 31.2,
+            "start_match_pct": 68.9,
+            "hours_diff": 11.8
+          },
+          {
+            "period": "2025-02",
+            "n_official": 43,
+            "n_volunteer": 44,
+            "hours_official": 124.2,
+            "hours_volunteer": 63.5,
+            "median_min_official": 188.0,
+            "median_min_volunteer": 55.8,
+            "start_match_pct": 41.9,
+            "hours_diff": 60.7
+          },
+          {
+            "period": "2025-03",
+            "n_official": 35,
+            "n_volunteer": 38,
+            "hours_official": 65.5,
+            "hours_volunteer": 43.9,
+            "median_min_official": 87.7,
+            "median_min_volunteer": 62.9,
+            "start_match_pct": 51.4,
+            "hours_diff": 21.6
+          },
+          {
+            "period": "2025-04",
+            "n_official": 47,
+            "n_volunteer": 47,
+            "hours_official": 44.8,
+            "hours_volunteer": 34.7,
+            "median_min_official": 39.2,
+            "median_min_volunteer": 37.4,
+            "start_match_pct": 80.9,
+            "hours_diff": 10.1
+          },
+          {
+            "period": "2025-05",
+            "n_official": 38,
+            "n_volunteer": 39,
+            "hours_official": 62.1,
+            "hours_volunteer": 30.3,
+            "median_min_official": 31.7,
+            "median_min_volunteer": 30.4,
+            "start_match_pct": 65.8,
+            "hours_diff": 31.8
+          },
+          {
+            "period": "2025-06",
+            "n_official": 34,
+            "n_volunteer": 36,
+            "hours_official": 62.0,
+            "hours_volunteer": 27.6,
+            "median_min_official": 33.5,
+            "median_min_volunteer": 30.9,
+            "start_match_pct": 61.8,
+            "hours_diff": 34.4
+          },
+          {
+            "period": "2025-07",
+            "n_official": 49,
+            "n_volunteer": 50,
+            "hours_official": 77.4,
+            "hours_volunteer": 35.7,
+            "median_min_official": 27.7,
+            "median_min_volunteer": 24.7,
+            "start_match_pct": 63.3,
+            "hours_diff": 41.7
+          },
+          {
+            "period": "2025-08",
+            "n_official": 47,
+            "n_volunteer": 51,
+            "hours_official": 45.6,
+            "hours_volunteer": 25.8,
+            "median_min_official": 23.5,
+            "median_min_volunteer": 25.4,
+            "start_match_pct": 76.6,
+            "hours_diff": 19.8
+          },
+          {
+            "period": "2025-09",
+            "n_official": 46,
+            "n_volunteer": 50,
+            "hours_official": 63.6,
+            "hours_volunteer": 28.0,
+            "median_min_official": 37.9,
+            "median_min_volunteer": 30.0,
+            "start_match_pct": 58.7,
+            "hours_diff": 35.6
+          },
+          {
+            "period": "2025-10",
+            "n_official": 46,
+            "n_volunteer": 48,
+            "hours_official": 53.1,
+            "hours_volunteer": 39.9,
+            "median_min_official": 33.8,
+            "median_min_volunteer": 29.9,
+            "start_match_pct": 58.7,
+            "hours_diff": 13.2
+          },
+          {
+            "period": "2025-11",
+            "n_official": 41,
+            "n_volunteer": 45,
+            "hours_official": 48.1,
+            "hours_volunteer": 27.2,
+            "median_min_official": 29.9,
+            "median_min_volunteer": 25.8,
+            "start_match_pct": 73.2,
+            "hours_diff": 20.9
+          },
+          {
+            "period": "2025-12",
+            "n_official": 24,
+            "n_volunteer": 29,
+            "hours_official": 39.7,
+            "hours_volunteer": 20.5,
+            "median_min_official": 45.9,
+            "median_min_volunteer": 30.0,
+            "start_match_pct": 41.7,
+            "hours_diff": 19.2
+          },
+          {
+            "period": "2026-01",
+            "n_official": 58,
+            "n_volunteer": 68,
+            "hours_official": 58.4,
+            "hours_volunteer": 36.4,
+            "median_min_official": 33.1,
+            "median_min_volunteer": 25.3,
+            "start_match_pct": 56.9,
+            "hours_diff": 22.0
+          },
+          {
+            "period": "2026-02",
+            "n_official": 41,
+            "n_volunteer": 46,
+            "hours_official": 44.3,
+            "hours_volunteer": 29.3,
+            "median_min_official": 31.2,
+            "median_min_volunteer": 30.0,
+            "start_match_pct": 80.5,
+            "hours_diff": 15.0
+          },
+          {
+            "period": "2026-03",
+            "n_official": 39,
+            "n_volunteer": 51,
+            "hours_official": 34.2,
+            "hours_volunteer": 28.9,
+            "median_min_official": 29.2,
+            "median_min_volunteer": 30.0,
+            "start_match_pct": 74.4,
+            "hours_diff": 5.3
+          },
+          {
+            "period": "2026-04",
+            "n_official": 35,
+            "n_volunteer": 45,
+            "hours_official": 24.4,
+            "hours_volunteer": 23.3,
+            "median_min_official": 30.0,
+            "median_min_volunteer": 30.0,
+            "start_match_pct": 51.4,
+            "hours_diff": 1.1
+          },
+          {
+            "period": "2026-05",
+            "n_official": 58,
+            "n_volunteer": 69,
+            "hours_official": 51.0,
+            "hours_volunteer": 36.5,
+            "median_min_official": 24.8,
+            "median_min_volunteer": 25.2,
+            "start_match_pct": 62.1,
+            "hours_diff": 14.5
+          },
+          {
+            "period": "2026-06",
+            "n_official": 46,
+            "n_volunteer": 52,
+            "hours_official": 32.4,
+            "hours_volunteer": 22.7,
+            "median_min_official": 24.9,
+            "median_min_volunteer": 22.8,
+            "start_match_pct": 65.2,
+            "hours_diff": 9.7
+          },
+          {
+            "period": "2026-07",
+            "n_official": 59,
+            "n_volunteer": 74,
+            "hours_official": 50.9,
+            "hours_volunteer": 48.8,
+            "median_min_official": 23.0,
+            "median_min_volunteer": 30.0,
+            "start_match_pct": 50.8,
+            "hours_diff": 2.1
+          },
+          {
+            "period": "2026-08",
+            "n_official": 90,
+            "n_volunteer": 97,
+            "hours_official": 78.2,
+            "hours_volunteer": 43.5,
+            "median_min_official": 31.2,
+            "median_min_volunteer": 19.0,
+            "start_match_pct": 42.2,
+            "hours_diff": 34.7
+          },
+          {
+            "period": "2026-09",
+            "n_official": 22,
+            "n_volunteer": 31,
+            "hours_official": 31.0,
+            "hours_volunteer": 18.1,
+            "median_min_official": 68.9,
+            "median_min_volunteer": 14.5,
+            "start_match_pct": 13.6,
+            "hours_diff": 12.9
+          }
+        ],
+        "top10_months_by_hours_diff": [
+          {
+            "period": "2025-02",
+            "n_official": 43,
+            "n_volunteer": 44,
+            "hours_official": 124.2,
+            "hours_volunteer": 63.5,
+            "median_min_official": 188.0,
+            "median_min_volunteer": 55.8,
+            "start_match_pct": 41.9,
+            "hours_diff": 60.7
+          },
+          {
+            "period": "2024-11",
+            "n_official": 63,
+            "n_volunteer": 72,
+            "hours_official": 116.4,
+            "hours_volunteer": 62.1,
+            "median_min_official": 50.6,
+            "median_min_volunteer": 34.4,
+            "start_match_pct": 57.1,
+            "hours_diff": 54.3
+          },
+          {
+            "period": "2025-07",
+            "n_official": 49,
+            "n_volunteer": 50,
+            "hours_official": 77.4,
+            "hours_volunteer": 35.7,
+            "median_min_official": 27.7,
+            "median_min_volunteer": 24.7,
+            "start_match_pct": 63.3,
+            "hours_diff": 41.7
+          },
+          {
+            "period": "2025-09",
+            "n_official": 46,
+            "n_volunteer": 50,
+            "hours_official": 63.6,
+            "hours_volunteer": 28.0,
+            "median_min_official": 37.9,
+            "median_min_volunteer": 30.0,
+            "start_match_pct": 58.7,
+            "hours_diff": 35.6
+          },
+          {
+            "period": "2026-08",
+            "n_official": 90,
+            "n_volunteer": 97,
+            "hours_official": 78.2,
+            "hours_volunteer": 43.5,
+            "median_min_official": 31.2,
+            "median_min_volunteer": 19.0,
+            "start_match_pct": 42.2,
+            "hours_diff": 34.7
+          },
+          {
+            "period": "2025-06",
+            "n_official": 34,
+            "n_volunteer": 36,
+            "hours_official": 62.0,
+            "hours_volunteer": 27.6,
+            "median_min_official": 33.5,
+            "median_min_volunteer": 30.9,
+            "start_match_pct": 61.8,
+            "hours_diff": 34.4
+          },
+          {
+            "period": "2025-05",
+            "n_official": 38,
+            "n_volunteer": 39,
+            "hours_official": 62.1,
+            "hours_volunteer": 30.3,
+            "median_min_official": 31.7,
+            "median_min_volunteer": 30.4,
+            "start_match_pct": 65.8,
+            "hours_diff": 31.8
+          },
+          {
+            "period": "2024-10",
+            "n_official": 54,
+            "n_volunteer": 58,
+            "hours_official": 79.7,
+            "hours_volunteer": 52.0,
+            "median_min_official": 60.4,
+            "median_min_volunteer": 39.3,
+            "start_match_pct": 61.1,
+            "hours_diff": 27.7
+          },
+          {
+            "period": "2026-01",
+            "n_official": 58,
+            "n_volunteer": 68,
+            "hours_official": 58.4,
+            "hours_volunteer": 36.4,
+            "median_min_official": 33.1,
+            "median_min_volunteer": 25.3,
+            "start_match_pct": 56.9,
+            "hours_diff": 22.0
+          },
+          {
+            "period": "2025-03",
+            "n_official": 35,
+            "n_volunteer": 38,
+            "hours_official": 65.5,
+            "hours_volunteer": 43.9,
+            "median_min_official": 87.7,
+            "median_min_volunteer": 62.9,
+            "start_match_pct": 51.4,
+            "hours_diff": 21.6
+          }
+        ],
+        "hours_gap_pct": 22.41
+      }
+    },
+    {
+      "id": 9,
+      "scope": "telegram",
+      "name": "Парсер vs датасет на перекритті 2026-08-25…2026-09-07 (ціль ≥ 95%)",
+      "status": "SKIP",
+      "value": null,
+      "summary": "Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill).",
+      "details": {}
+    },
+    {
+      "id": 10,
+      "scope": "telegram",
+      "name": "parse_errors: кількість і топ причин (< 1%)",
+      "status": "SKIP",
+      "value": null,
+      "summary": "Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill).",
+      "details": {}
+    },
+    {
+      "id": 11,
+      "scope": "telegram",
+      "name": "Ідемпотентність backfill",
+      "status": "SKIP",
+      "value": null,
+      "summary": "Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill).",
+      "details": {}
+    },
+    {
+      "id": 12,
+      "scope": "telegram",
+      "name": "Live-затримка received_at − posted_at",
+      "status": "SKIP",
+      "value": null,
+      "summary": "Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill).",
+      "details": {}
+    },
+    {
+      "id": 13,
+      "scope": "telegram",
+      "name": "Шов C = 2026-09-01: немає дублів/пропусків",
+      "status": "SKIP",
+      "value": null,
+      "summary": "Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill).",
+      "details": {}
+    }
+  ]
+}
