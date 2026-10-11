@@ -3,12 +3,13 @@
 import asyncio
 import logging
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pandas as pd
 import typer
 
 from airalert import dataset, report, validate
-from airalert.config import OFFICIAL_CHANNEL, get_settings
+from airalert.config import HEARTBEAT_MAX_AGE_SECONDS, LIVE_CHANNELS, OFFICIAL_CHANNEL, get_settings
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 log = logging.getLogger("airalert")
@@ -137,6 +138,73 @@ def tg_backfill(
     with store.open_db(s.sqlite_path) as conn:
         total = store.count(conn, "raw_messages", channel)
     typer.echo(f"{channel}: inserted {inserted} new messages, {total} stored")
+
+
+@app.command("build")
+def build_cmd() -> None:
+    """Rebuild alerts from raw_messages, assemble alerts.parquet + manifest, run checks 1–13."""
+    from airalert import build as build_mod
+    from airalert.config import LIVE_CHANNELS as CHANNELS
+    from airalert.tg import rebuild, store
+
+    s = get_settings()
+    frames, _ = _dataset_frames()
+    dataset_commit = build_mod.git_sha(s.dataset_dir)
+    with store.open_db(s.sqlite_path) as conn:
+        for ch in CHANNELS:
+            st = rebuild.rebuild(conn, ch)
+            typer.echo(f"{ch}: {st.alerts} alerts, by type {st.by_type}, errors {dict(st.errors)}")
+        result = build_mod.build(conn, frames.official_clean, dataset_commit, Path.cwd())
+        checks = validate.run_dataset_checks(frames)
+        checks += [
+            validate.check_parser_vs_dataset(
+                frames.official_clean, result.tg_official, result.official_outages, result.tg_volunteer
+            ),
+            validate.check_parse_errors(conn, CHANNELS),
+            validate.check_idempotency(conn, CHANNELS, rebuild.rebuild),
+            validate.check_live_latency(conn),
+            validate.check_seams(result.raw, build_mod.SEAM),
+        ]
+    pq, mf = build_mod.write(result, s.processed_dir)
+    meta = {
+        "generated_at": pd.Timestamp.now(tz="UTC").isoformat(timespec="seconds"),
+        "vadimkin_commit": dataset_commit,
+        "code_git_sha": result.manifest["code_git_sha"],
+        "seam": build_mod.SEAM.isoformat(),
+        "official_outages": "; ".join(
+            f"{w.start:%Y-%m-%d %H:%M}…{w.end:%Y-%m-%d %H:%M}" for w in result.official_outages
+        ),
+    }
+    md, _ = report.write(checks, meta, s.reports_dir)
+    for c in checks:
+        typer.echo(f"[{c.status:4}] #{c.id:<2} {c.scope:34} {c.name}: {c.value}")
+    typer.echo(f"{pq} ({len(result.output)} rows), {mf}, {md}")
+    if any(c.status == "FAIL" for c in checks):
+        raise typer.Exit(1)
+
+
+@app.command("tg-live")
+def tg_live(channel: list[str] = typer.Option(LIVE_CHANNELS, help="channels to collect")) -> None:
+    """Catch up on missed messages, then collect new/edited ones forever (Ctrl+C to stop)."""
+    from airalert.tg import live, store
+    from airalert.tg.client import make_client
+
+    s = get_settings()
+    with store.open_db(s.sqlite_path) as conn:
+        asyncio.run(live.run(make_client(s), conn, channel))
+
+
+@app.command("healthcheck")
+def healthcheck(max_age: int = HEARTBEAT_MAX_AGE_SECONDS) -> None:
+    """Exit 0 if the collector heartbeat is fresher than ``max_age`` seconds."""
+    from airalert.tg import store
+
+    with store.open_db(get_settings().sqlite_path) as conn:
+        row = conn.execute("SELECT last_seen_at FROM collector_heartbeat WHERE id=1").fetchone()
+    age = (datetime.now(UTC) - datetime.fromisoformat(row[0])).total_seconds() if row else None
+    typer.echo(f"heartbeat age: {age if age is None else round(age)} s")
+    if age is None or age > max_age:
+        raise typer.Exit(1)
 
 
 @app.command("tg-sample")

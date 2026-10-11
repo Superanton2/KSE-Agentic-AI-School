@@ -1,0 +1,47 @@
+# Live collector. The session file must already exist (run `uv run airalert tg-login` on the host).
+#   AIRALERT_UID=$(id -u) AIRALERT_GID=$(id -g) docker compose up -d --build
+# One-off commands that touch the SQLite journal while the collector runs (same VM => safe locking):
+#   AIRALERT_UID=$(id -u) AIRALERT_GID=$(id -g) docker compose run --rm tools build
+services:
+  collector:
+    build:
+      context: .
+      dockerfile: docker/collector.Dockerfile
+    image: airalert-collector
+    command: ["tg-live"]
+    env_file: .env
+    environment:
+      DATA_DIR: /app/data
+      TG_SESSION_PATH: /session/airalert.session
+    user: "${AIRALERT_UID:-10001}:${AIRALERT_GID:-10001}"
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - ./data/live:/app/data/live
+      - ${AIRALERT_SESSION_DIR:-~/.config/airalert}:/session
+    restart: unless-stopped
+    # No ports: the collector only makes outgoing connections to Telegram.
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  tools:
+    image: airalert-collector
+    profiles: ["tools"]
+    env_file: .env
+    environment:
+      DATA_DIR: /app/data
+      TG_SESSION_PATH: /session/airalert.session
+    user: "${AIRALERT_UID:-10001}:${AIRALERT_GID:-10001}"
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - ./data:/app/data
+      - ./reports:/app/reports
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL

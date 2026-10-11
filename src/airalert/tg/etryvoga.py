@@ -1,6 +1,6 @@
 """Pure parser for the volunteer channel ``UkraineAlarmSignal`` (єТривога).
 
-Checked on real messages 2026-08-25 … 2026-10-11. Two shapes:
+Checked on real messages 2026-08-25 … 2026-10-11. Two shapes (batch places carry "• " since 09-25):
 
     single:  "🚨 Київ\\nПовітряна тривога. Прямуйте в укриття!"
     batch:   "🟢 Відбій тривоги\\nКиїв\\nБучанський район (Київська обл.)\\n…"
@@ -41,7 +41,7 @@ def _raions() -> dict[tuple[str, str], Location]:
 
 
 def parse_place(line: str) -> Location | None:
-    line = line.strip()
+    line = re.sub(r"^[•\-–]\s*", "", line.strip())  # list bullets used since 2026-09-25
     if line == "Київ":
         return Location("Kyiv City", "oblast")
     if m := _IN_KYIV.match(line):  # a Kyiv district/neighbourhood (threat notices only)

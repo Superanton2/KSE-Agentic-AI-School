@@ -435,3 +435,244 @@ def pending_telegram_checks(reason: str) -> list[Check]:
         13: "Шов C = 2026-09-01: немає дублів/пропусків",
     }
     return [Check(i, "telegram", n, "SKIP", None, reason) for i, n in names.items()]
+
+
+# 9–13. Telegram ------------------------------------------------------------------------------------
+
+PARSER_CHECK_LOCATIONS = [
+    KYIV,
+    "Kyivska oblast",
+    "Zhytomyrska oblast",
+    "Chernihivska oblast",
+    "Cherkaska oblast",
+    "Poltavska oblast",
+]
+OVERLAP = (pd.Timestamp("2026-08-25T06:00Z"), pd.Timestamp("2026-09-07T06:00Z"))
+
+
+def _match_rate(
+    ref: pd.DataFrame, test: pd.DataFrame, tol_s: float, keys: list[str]
+) -> tuple[pd.Series, pd.DataFrame]:
+    """For each ``ref`` interval: is there a ``test`` interval with the same keys and start/end within tol?"""
+    m = ref.reset_index().merge(test, on=keys, suffixes=("", "_t"))
+    ok = ((m["started_at_t"] - m["started_at"]).dt.total_seconds().abs() <= tol_s) & (
+        (m["finished_at_t"] - m["finished_at"]).dt.total_seconds().abs() <= tol_s
+    )
+    matched = pd.Series(False, index=ref.index)
+    matched.loc[m.loc[ok, "index"].unique()] = True
+    return matched, m
+
+
+def check_parser_vs_dataset(
+    dataset_clean: pd.DataFrame, tg_official: pd.DataFrame, outages: list, tg_volunteer: pd.DataFrame
+) -> Check:
+    lo, hi = OVERLAP
+    ref = dataset_clean[
+        dataset_clean["location"].isin(PARSER_CHECK_LOCATIONS)
+        & (dataset_clean["started_at"] >= lo)
+        & (dataset_clean["finished_at"] <= hi)
+    ]
+    touches_outage = pd.Series(False, index=ref.index)
+    for w in outages:
+        touches_outage |= (ref["started_at"] < w.end) & (ref["finished_at"] > w.start)
+    test = tg_official[
+        (tg_official["alert_type"] == "air_raid") & ~tg_official["flags"].str.contains("source_gap")
+    ]
+    matched, _ = _match_rate(ref, test, 60, clean.LOCATION_KEYS)
+    main = ref[~touches_outage]
+    rate = _pct(matched[~touches_outage].sum(), len(main))
+    rate_all = _pct(matched.sum(), len(ref))
+    misses = ref[~matched][["location", "level", "raion", "started_at", "finished_at", "flags"]]
+    misses = misses.assign(touches_outage=touches_outage[~matched]).astype(str)
+
+    # Bonus: our єТривога parser vs our air_alert_ua parser for Kyiv (same window, ±1 min).
+    k_off = test[(test["location"] == KYIV) & (test["started_at"] >= lo) & (test["finished_at"] <= hi)]
+    k_vol = tg_volunteer[(tg_volunteer["alert_type"] == "air_raid") & (tg_volunteer["location"] == KYIV)]
+    k_matched, km = _match_rate(k_off, k_vol, 60, clean.LOCATION_KEYS)
+    km = km[(km["started_at_t"] - km["started_at"]).abs() <= pd.Timedelta("2min")]
+    lag = (km["started_at_t"] - km["started_at"]).dt.total_seconds()
+
+    status = "PASS" if rate >= 95 else "FAIL"
+    return Check(
+        9,
+        "telegram: air_alert_ua vs dataset",
+        "Парсер vs датасет на перекритті (±1 хв, ціль ≥ 95%)",
+        status,
+        rate,
+        f"{rate}% з {len(main)} інтервалів датасету ({', '.join(PARSER_CHECK_LOCATIONS)}) знайдено в Telegram зі "
+        f"стартом і кінцем ±1 хв; з урахуванням {int(touches_outage.sum())} інтервалів, що зачіпають збій "
+        f"каналу, — {rate_all}%. Київ, єТривога vs air_alert_ua: {_pct(k_matched.sum(), len(k_off))}% "
+        f"збігів ±1 хв, медіанне запізнення старту єТривоги {lag.median():.0f} с.",
+        {
+            "window": [lo.isoformat(), hi.isoformat()],
+            "rate_excluding_outage_pct": rate,
+            "rate_all_pct": rate_all,
+            "dataset_intervals": len(ref),
+            "touching_outage": int(touches_outage.sum()),
+            "by_location": {
+                loc: f"{int(matched[(ref['location'] == loc) & ~touches_outage].sum())}/"
+                f"{int(((ref['location'] == loc) & ~touches_outage).sum())}"
+                for loc in PARSER_CHECK_LOCATIONS
+            },
+            "misses": misses.to_dict("records"),
+            "kyiv_volunteer_vs_official": {
+                "official_intervals": len(k_off),
+                "matched_pct": _pct(k_matched.sum(), len(k_off)),
+                "volunteer_start_lag_s_median": round(float(lag.median()), 1) if len(lag) else None,
+                "volunteer_start_lag_s_p95": round(float(lag.quantile(0.95)), 1) if len(lag) else None,
+            },
+        },
+    )
+
+
+def check_parse_errors(conn, channels: list[str]) -> Check:
+    details, statuses, parts = {}, [], []
+    for ch in channels:
+        n_msg = conn.execute("SELECT COUNT(*) FROM raw_messages WHERE channel=?", (ch,)).fetchone()[0]
+        rows = conn.execute("SELECT reason, msg_id FROM parse_errors WHERE channel=?", (ch,)).fetchall()
+        parse_level = {m for r, m in rows if r not in ("end_without_start",)}
+        reasons: dict[str, int] = {}
+        for r, _ in rows:
+            reasons[r.split(":")[0]] = reasons.get(r.split(":")[0], 0) + 1
+        share = _pct(len(parse_level), n_msg)
+        statuses.append("PASS" if share < 1 else "FAIL")
+        top = conn.execute(
+            "SELECT reason, COUNT(*) c FROM parse_errors WHERE channel=? GROUP BY reason ORDER BY c DESC LIMIT 10",
+            (ch,),
+        ).fetchall()
+        details[ch] = {
+            "messages": n_msg,
+            "messages_unrecognised": len(parse_level),
+            "unrecognised_pct": share,
+            "errors_by_reason": reasons,
+            "top_reasons": [{"reason": r, "n": c} for r, c in top],
+        }
+        parts.append(f"{ch}: нерозпізнаних {share}% з {n_msg}, причини {reasons}")
+    return Check(
+        10,
+        "telegram",
+        "parse_errors (нерозпізнані < 1%)",
+        worst(statuses),
+        max(d["unrecognised_pct"] for d in details.values()),
+        "; ".join(parts)
+        + ". end_without_start — відбої тривог, що почались до початку вибірки або під час збою каналу.",
+        details,
+    )
+
+
+def check_idempotency(conn, channels: list[str], rebuild_fn) -> Check:
+    """Re-insert every stored message (what a repeated backfill does) and rebuild twice."""
+    from airalert.tg import store
+
+    before = store.count(conn, "raw_messages")
+    rows = [
+        store.RawMessage(*r)
+        for r in conn.execute(
+            "SELECT channel, msg_id, posted_at, edited_at, text, received_at, ingest_mode FROM raw_messages"
+        )
+    ]
+    inserted = store.insert_messages(conn, rows)
+    after = store.count(conn, "raw_messages")
+    snap = []
+    for _ in range(2):
+        for ch in channels:
+            rebuild_fn(conn, ch)
+        snap.append(
+            conn.execute(
+                "SELECT * FROM alerts ORDER BY channel, started_at, location, level, raion, hromada, alert_type"
+            ).fetchall()
+        )
+    same = snap[0] == snap[1]
+    ok = inserted == 0 and before == after and same
+    return Check(
+        11,
+        "telegram",
+        "Ідемпотентність backfill і детермінізм rebuild",
+        "PASS" if ok else "FAIL",
+        inserted,
+        f"Повторна вставка {len(rows)} повідомлень додала {inserted} рядків ({before} → {after}); "
+        f"два rebuild поспіль дають {'однакові' if same else 'РІЗНІ'} alerts.",
+        {"raw_before": before, "raw_after": after, "reinserted": len(rows), "rebuild_identical": same},
+    )
+
+
+def check_live_latency(conn) -> Check:
+    df = pd.read_sql_query(
+        "SELECT channel, posted_at, received_at FROM raw_messages WHERE ingest_mode='live'", conn
+    )
+    if df.empty:
+        return Check(
+            12,
+            "telegram",
+            "Live-затримка received_at − posted_at",
+            "SKIP",
+            None,
+            "Live-повідомлень ще немає (колектор не запускався).",
+        )
+    lat = (clean.to_utc(df["received_at"]) - clean.to_utc(df["posted_at"])).dt.total_seconds()
+    # Catch-up after downtime is legitimately late; report steady state separately.
+    steady = lat[lat <= 300]
+    details = {
+        "messages": len(df),
+        "all": {
+            "median_s": float(lat.median()),
+            "p95_s": float(lat.quantile(0.95)),
+            "max_s": float(lat.max()),
+        },
+        "steady_state_le_5min": {
+            "messages": len(steady),
+            "median_s": float(steady.median()) if len(steady) else None,
+            "p95_s": float(steady.quantile(0.95)) if len(steady) else None,
+        },
+        "by_channel": {
+            ch: {"messages": len(g), "median_s": float(g.median()), "p95_s": float(g.quantile(0.95))}
+            for ch, g in lat.groupby(df["channel"])
+        },
+    }
+    p95 = details["steady_state_le_5min"]["p95_s"]
+    status = "PASS" if p95 is not None and p95 <= 30 else "WARN"
+    return Check(
+        12,
+        "telegram",
+        "Live-затримка received_at − posted_at",
+        status,
+        p95,
+        f"{len(df)} live-повідомлень; медіана {lat.median():.1f} с, p95 {lat.quantile(0.95):.1f} с "
+        f"(усталений режим ≤ 5 хв: p95 {p95} с; довші — дочитування після простою).",
+        details,
+    )
+
+
+def check_seams(raw: pd.DataFrame, seam: pd.Timestamp) -> Check:
+    """No interval of one location overlaps another one from a different source (double counting)."""
+    keys = [*clean.LOCATION_KEYS, "alert_type"]
+    d = raw.sort_values([*keys, "started_at"], kind="mergesort").reset_index(drop=True)
+    prev_end = d.groupby(keys, sort=False)["finished_at"].shift()
+    prev_src = d.groupby(keys, sort=False)["source"].shift()
+    prev_end = prev_end.fillna(pd.Timestamp("2262-01-01", tz="UTC")).where(prev_src.notna())
+    overlap = prev_src.notna() & (d["started_at"] < prev_end)
+    cross = overlap & (prev_src != d["source"])
+    examples = (
+        d[cross][["location", "level", "raion", "alert_type", "source", "started_at"]].head(10).astype(str)
+    )
+    kyiv = d[(d["location"] == KYIV) & (d["alert_type"] == "air_raid")]
+    near = kyiv[
+        (kyiv["started_at"] >= seam - pd.Timedelta(hours=12))
+        & (kyiv["started_at"] < seam + pd.Timedelta(hours=12))
+    ]
+    return Check(
+        13,
+        "build",
+        "Шви між джерелами: немає дублів",
+        "PASS" if not cross.any() else "FAIL",
+        int(cross.sum()),
+        f"Перекриттів між інтервалами різних джерел однієї локації: {int(cross.sum())} "
+        f"(в межах одного джерела: {int((overlap & ~cross).sum())}). Біля шва {seam.isoformat()} у Києві "
+        f"{len(near)} тривог: {', '.join(near['source'] + ' ' + near['started_at'].astype(str))}.",
+        {
+            "cross_source_overlaps": int(cross.sum()),
+            "same_source_overlaps": int((overlap & ~cross).sum()),
+            "examples": examples.to_dict("records"),
+            "kyiv_near_seam": near[["source", "started_at", "finished_at"]].astype(str).to_dict("records"),
+        },
+    )

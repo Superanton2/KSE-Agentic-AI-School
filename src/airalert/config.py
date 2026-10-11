@@ -9,6 +9,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 VADIMKIN_REPO_URL = "https://github.com/Vadimkin/ukrainian-air-raid-sirens-dataset"
 OFFICIAL_CHANNEL = "air_alert_ua"
 VOLUNTEER_CHANNEL = "UkraineAlarmSignal"
+LIVE_CHANNELS = [OFFICIAL_CHANNEL, VOLUNTEER_CHANNEL]
+HEARTBEAT_MAX_AGE_SECONDS = 300
 KYIV = "Kyiv City"
 
 

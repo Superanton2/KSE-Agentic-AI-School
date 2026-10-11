@@ -36,7 +36,7 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
-ignore = ["RUF001", "RUF002", "RUF003", "E501"]  # Ukrainian text is intentional; line length is enforced by `ruff format`
+ignore = ["RUF001", "RUF002", "RUF003", "E501", "B008"]  # Ukrainian text is intentional; line length via `ruff format`; B008: typer.Option idiom
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

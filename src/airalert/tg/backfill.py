@@ -27,9 +27,11 @@ def to_raw(message, channel: str, mode: str) -> store.RawMessage:
     )
 
 
-async def _fetch(client: TelegramClient, conn: sqlite3.Connection, channel: str, mode: str, **kw) -> int:
+async def _fetch(
+    client: TelegramClient, conn: sqlite3.Connection, channel: str, mode: str, peer=None, **kw
+) -> int:
     inserted, buf = 0, []
-    async for m in client.iter_messages(channel, reverse=True, **kw):
+    async for m in client.iter_messages(peer or channel, reverse=True, **kw):
         buf.append(to_raw(m, channel, mode))
         if len(buf) >= BATCH:
             inserted += store.insert_messages(conn, buf)
@@ -57,6 +59,7 @@ async def catch_up(
     channel: str,
     mode: str = "backfill",
     since: datetime | None = None,
+    peer=None,
 ) -> int:
     """Fetch everything after the newest stored message; with ``since``, also fill the history between
     ``since`` and the oldest stored message. Re-running never creates duplicates."""
@@ -65,12 +68,12 @@ async def catch_up(
     if since is not None and (first is None or datetime.fromisoformat(first[1]) > since):
         older_than = first[0] if first else 0
         inserted += await _with_flood_wait(
-            lambda: _fetch(client, conn, channel, mode, offset_date=since, max_id=older_than)
+            lambda: _fetch(client, conn, channel, mode, peer, offset_date=since, max_id=older_than)
         )
     elif first is None:
         raise ValueError(f"no messages stored for {channel}; pass --since for the first backfill")
     # Recomputed inside the lambda so a retry after FloodWait resumes from where it stopped.
     inserted += await _with_flood_wait(
-        lambda: _fetch(client, conn, channel, mode, min_id=store.max_msg_id(conn, channel) or 0)
+        lambda: _fetch(client, conn, channel, mode, peer, min_id=store.max_msg_id(conn, channel) or 0)
     )
     return inserted

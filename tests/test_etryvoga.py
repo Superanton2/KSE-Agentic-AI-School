@@ -72,3 +72,13 @@ def test_place_forms():
 def test_truncated_list_is_an_error(etryvoga_msgs):
     r = parse(etryvoga_msgs[615720])
     assert "truncated_place_list" in r.errors and r.events
+
+
+def test_bulleted_batch_since_september():
+    r = parse(
+        "🟢 Відбій тривоги\n• Вознесенський район (Миколаївська обл.)\n• Первомайський район (Миколаївська обл.)"
+    )
+    assert not r.errors and [e.location.raion for e in r.events] == [
+        "Voznesenskyi raion",
+        "Pervomaiskyi raion",
+    ]
