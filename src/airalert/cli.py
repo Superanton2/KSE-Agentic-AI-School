@@ -162,7 +162,7 @@ def rebuild_alerts(channel: str = OFFICIAL_CHANNEL) -> None:
         st = rebuild.rebuild(conn, channel)
     typer.echo(
         f"{channel}: {st.messages} messages, {st.events} events -> {st.alerts} alerts "
-        f"({st.open_alerts} open); ignored {dict(st.ignored)}; errors {dict(st.errors)}"
+        f"({st.open_alerts} open); by type {st.by_type}; source gaps end at {st.gaps}; ignored {dict(st.ignored)}; errors {dict(st.errors)}"
     )
 
 

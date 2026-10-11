@@ -41,6 +41,11 @@ _HROMADA_PINNED = {
 # Hashtags seen in the channel that do not follow the naming rule.
 HASHTAG_ALIASES = {
     "#херсон": "#м_херсон_та_херсонська_територіальна_громада",  # https://t.me/air_alert_ua/5538
+    # Raions renamed in 2024 that states.json and the dataset still keep under the old name;
+    # єТривога uses the new names. Map them to the dataset name to keep location keys continuous.
+    "#берестинський_район": "#красноградський_район",
+    "#володимирський_район": "#володимирволинський_район",
+    "#шептицький_район": "#червоноградський_район",
 }
 _EN_SPECIAL = {"м. Київ": "Kyiv City", "Київ": "Kyiv City"}
 
