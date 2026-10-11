@@ -1,0 +1,12 @@
+.env
+*.session
+*.session-journal
+data/raw/
+data/live/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+.DS_Store
