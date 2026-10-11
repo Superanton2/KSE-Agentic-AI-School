@@ -156,15 +156,20 @@ def build_cmd() -> None:
             typer.echo(f"{ch}: {st.alerts} alerts, by type {st.by_type}, errors {dict(st.errors)}")
         result = build_mod.build(conn, frames.official_clean, dataset_commit, Path.cwd())
         checks = validate.run_dataset_checks(frames)
-        checks += [
-            validate.check_parser_vs_dataset(
-                frames.official_clean, result.tg_official, result.official_outages, result.tg_volunteer
-            ),
-            validate.check_parse_errors(conn, CHANNELS),
-            validate.check_idempotency(conn, CHANNELS, rebuild.rebuild),
-            validate.check_live_latency(conn),
-            validate.check_seams(result.raw, build_mod.SEAM),
-        ]
+        if store.count(conn, "raw_messages") == 0:  # clean clone: Telegram steps not run yet
+            checks += validate.pending_telegram_checks(
+                "Telegram-дані відсутні (tg-login + tg-backfill не запускались)."
+            )[:4]
+        else:
+            checks += [
+                validate.check_parser_vs_dataset(
+                    frames.official_clean, result.tg_official, result.official_outages, result.tg_volunteer
+                ),
+                validate.check_parse_errors(conn, CHANNELS),
+                validate.check_idempotency(conn, CHANNELS, rebuild.rebuild),
+                validate.check_live_latency(conn),
+            ]
+        checks.append(validate.check_seams(result.raw, build_mod.SEAM))
     pq, mf = build_mod.write(result, s.processed_dir)
     meta = {
         "generated_at": pd.Timestamp.now(tz="UTC").isoformat(timespec="seconds"),
