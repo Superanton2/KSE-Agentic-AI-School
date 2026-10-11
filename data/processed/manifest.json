@@ -1,0 +1,47 @@
+{
+  "built_at": "2026-10-11T18:48:06+00:00",
+  "code_git_sha": "0b62522b86021187554f7273622dd7a834b3662f",
+  "vadimkin_dataset_commit": "bf0c323c78e3e4508721458797dcd38c95df13f3",
+  "seam_dataset_to_telegram": "2026-08-26T00:00:00+00:00",
+  "telegram_max_posted_at": {
+    "air_alert_ua": "2026-09-07T06:09:04+00:00",
+    "UkraineAlarmSignal": "2026-10-11T18:46:02+00:00"
+  },
+  "official_outages": [
+    {
+      "start": "2026-08-29T04:55:28+00:00",
+      "end": "2026-08-30T12:42:54+00:00"
+    },
+    {
+      "start": "2026-08-30T12:42:54+00:00",
+      "end": "2026-09-02T13:48:04+00:00"
+    },
+    {
+      "start": "2026-09-07T06:09:04+00:00",
+      "end": "2026-10-11T18:48:05.410658+00:00"
+    }
+  ],
+  "volunteer_outages": [],
+  "rows": {
+    "oblast_union/dataset_official": 79534,
+    "oblast_union/tg_official": 743,
+    "oblast_union/tg_volunteer": 4690,
+    "raw/dataset_official": 181811,
+    "raw/tg_official": 3811,
+    "raw/tg_volunteer": 26428
+  },
+  "rows_by_alert_type": {
+    "air_raid": 204716,
+    "air_raid_red": 7066,
+    "kab": 104,
+    "drones": 93,
+    "artillery": 31,
+    "missile": 22,
+    "ballistic": 13,
+    "threat_other": 3,
+    "street_fight": 1,
+    "radiation": 1
+  },
+  "open_intervals_raw": 62,
+  "max_started_at": "2026-10-11T18:46:02+00:00"
+}

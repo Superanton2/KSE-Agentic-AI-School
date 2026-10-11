@@ -1,8 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-10-11T17:40:57+00:00",
+    "generated_at": "2026-10-11T18:48:09+00:00",
     "vadimkin_commit": "bf0c323c78e3e4508721458797dcd38c95df13f3",
-    "vadimkin_committed_at": "2026-10-11T04:50:14+00:00"
+    "code_git_sha": "0b62522b86021187554f7273622dd7a834b3662f",
+    "seam": "2026-08-26T00:00:00+00:00",
+    "official_outages": "2026-08-29 04:55…2026-08-30 12:42; 2026-08-30 12:42…2026-09-02 13:48; 2026-09-07 06:09…2026-10-11 18:48"
   },
   "status": "WARN",
   "checks": [
@@ -230,12 +232,12 @@
       "scope": "dataset_official",
       "name": "Свіжість",
       "status": "WARN",
-      "value": 34.51,
-      "summary": "Останній старт 2026-09-07T05:28:22+00:00, відставання 34.51 дн. Джерело застаріло: діру після цієї дати добираємо з Telegram air_alert_ua (шов C = 2026-09-01).",
+      "value": 34.56,
+      "summary": "Останній старт 2026-09-07T05:28:22+00:00, відставання 34.56 дн. Джерело застаріло: діру після цієї дати добираємо з Telegram air_alert_ua (шов C = 2026-09-01).",
       "details": {
         "max_started_at": "2026-09-07T05:28:22+00:00",
-        "now": "2026-10-11T17:40:57.253906+00:00",
-        "lag_days": 34.51
+        "now": "2026-10-11T18:48:06.240475+00:00",
+        "lag_days": 34.56
       }
     },
     {
@@ -243,12 +245,12 @@
       "scope": "dataset_volunteer",
       "name": "Свіжість",
       "status": "PASS",
-      "value": 0.54,
-      "summary": "Останній старт 2026-10-11T04:36:59+00:00, відставання 0.54 дн.",
+      "value": 0.59,
+      "summary": "Останній старт 2026-10-11T04:36:59+00:00, відставання 0.59 дн.",
       "details": {
         "max_started_at": "2026-10-11T04:36:59+00:00",
-        "now": "2026-10-11T17:40:57.253906+00:00",
-        "lag_days": 0.54
+        "now": "2026-10-11T18:48:06.240475+00:00",
+        "lag_days": 0.59
       }
     },
     {
@@ -1124,30 +1126,184 @@
     },
     {
       "id": 9,
-      "scope": "telegram",
-      "name": "Парсер vs датасет на перекритті 2026-08-25…2026-09-07 (ціль ≥ 95%)",
-      "status": "SKIP",
-      "value": null,
-      "summary": "Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill).",
-      "details": {}
+      "scope": "telegram: air_alert_ua vs dataset",
+      "name": "Парсер vs датасет на перекритті (±1 хв, ціль ≥ 95%)",
+      "status": "PASS",
+      "value": 100.0,
+      "summary": "100.0% з 1005 інтервалів датасету (Kyiv City, Kyivska oblast, Zhytomyrska oblast, Chernihivska oblast, Cherkaska oblast, Poltavska oblast) знайдено в Telegram зі стартом і кінцем ±1 хв; з урахуванням 10 інтервалів, що зачіпають збій каналу, — 99.015%. Київ, єТривога vs air_alert_ua: 92.157% збігів ±1 хв, медіанне запізнення старту єТривоги 11 с.",
+      "details": {
+        "window": [
+          "2026-08-25T06:00:00+00:00",
+          "2026-09-07T06:00:00+00:00"
+        ],
+        "rate_excluding_outage_pct": 100.0,
+        "rate_all_pct": 99.015,
+        "dataset_intervals": 1015,
+        "touching_outage": 10,
+        "by_location": {
+          "Kyiv City": "51/51",
+          "Kyivska oblast": "312/312",
+          "Zhytomyrska oblast": "50/50",
+          "Chernihivska oblast": "224/224",
+          "Cherkaska oblast": "163/163",
+          "Poltavska oblast": "205/205"
+        },
+        "misses": [
+          {
+            "location": "Chernihivska oblast",
+            "level": "raion",
+            "raion": "Chernihivskyi raion",
+            "started_at": "2026-08-29 04:27:26+00:00",
+            "finished_at": "2026-09-02 16:41:59+00:00",
+            "flags": "",
+            "touches_outage": "True"
+          },
+          {
+            "location": "Chernihivska oblast",
+            "level": "raion",
+            "raion": "Nizhynskyi raion",
+            "started_at": "2026-08-29 04:33:34+00:00",
+            "finished_at": "2026-08-29 05:33:34+00:00",
+            "flags": "end_imputed",
+            "touches_outage": "True"
+          },
+          {
+            "location": "Kyiv City",
+            "level": "oblast",
+            "raion": "",
+            "started_at": "2026-08-29 04:29:09+00:00",
+            "finished_at": "2026-08-29 05:29:09+00:00",
+            "flags": "end_imputed",
+            "touches_outage": "True"
+          },
+          {
+            "location": "Kyivska oblast",
+            "level": "raion",
+            "raion": "Boryspilskyi raion",
+            "started_at": "2026-08-29 00:43:11+00:00",
+            "finished_at": "2026-09-02 16:42:16+00:00",
+            "flags": "",
+            "touches_outage": "True"
+          },
+          {
+            "location": "Kyivska oblast",
+            "level": "raion",
+            "raion": "Brovarskyi raion",
+            "started_at": "2026-08-29 00:30:05+00:00",
+            "finished_at": "2026-09-02 16:42:22+00:00",
+            "flags": "",
+            "touches_outage": "True"
+          },
+          {
+            "location": "Kyivska oblast",
+            "level": "raion",
+            "raion": "Buchanskyi raion",
+            "started_at": "2026-08-29 04:29:53+00:00",
+            "finished_at": "2026-08-29 05:29:53+00:00",
+            "flags": "end_imputed",
+            "touches_outage": "True"
+          },
+          {
+            "location": "Kyivska oblast",
+            "level": "raion",
+            "raion": "Fastivskyi raion",
+            "started_at": "2026-08-29 00:49:10+00:00",
+            "finished_at": "2026-09-02 16:42:11+00:00",
+            "flags": "",
+            "touches_outage": "True"
+          },
+          {
+            "location": "Kyivska oblast",
+            "level": "raion",
+            "raion": "Obukhivskyi raion",
+            "started_at": "2026-08-29 00:49:03+00:00",
+            "finished_at": "2026-09-02 16:42:05+00:00",
+            "flags": "",
+            "touches_outage": "True"
+          },
+          {
+            "location": "Kyivska oblast",
+            "level": "raion",
+            "raion": "Vyshhorodskyi raion",
+            "started_at": "2026-08-29 04:29:42+00:00",
+            "finished_at": "2026-08-29 05:29:42+00:00",
+            "flags": "end_imputed",
+            "touches_outage": "True"
+          },
+          {
+            "location": "Poltavska oblast",
+            "level": "raion",
+            "raion": "Poltavskyi raion",
+            "started_at": "2026-08-29 04:55:28+00:00",
+            "finished_at": "2026-08-29 05:55:28+00:00",
+            "flags": "end_imputed",
+            "touches_outage": "True"
+          }
+        ],
+        "kyiv_volunteer_vs_official": {
+          "official_intervals": 51,
+          "matched_pct": 92.157,
+          "volunteer_start_lag_s_median": 11.0,
+          "volunteer_start_lag_s_p95": 19.3
+        }
+      }
     },
     {
       "id": 10,
       "scope": "telegram",
-      "name": "parse_errors: кількість і топ причин (< 1%)",
-      "status": "SKIP",
-      "value": null,
-      "summary": "Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill).",
-      "details": {}
+      "name": "parse_errors (нерозпізнані < 1%)",
+      "status": "PASS",
+      "value": 0.006,
+      "summary": "air_alert_ua: нерозпізнаних 0.0% з 7207, причини {'end_without_start': 113}; UkraineAlarmSignal: нерозпізнаних 0.006% з 53057, причини {'truncated_place_list': 3, 'end_without_start': 67}. end_without_start — відбої тривог, що почались до початку вибірки або під час збою каналу.",
+      "details": {
+        "air_alert_ua": {
+          "messages": 7207,
+          "messages_unrecognised": 0,
+          "unrecognised_pct": 0.0,
+          "errors_by_reason": {
+            "end_without_start": 113
+          },
+          "top_reasons": [
+            {
+              "reason": "end_without_start",
+              "n": 113
+            }
+          ]
+        },
+        "UkraineAlarmSignal": {
+          "messages": 53057,
+          "messages_unrecognised": 3,
+          "unrecognised_pct": 0.006,
+          "errors_by_reason": {
+            "truncated_place_list": 3,
+            "end_without_start": 67
+          },
+          "top_reasons": [
+            {
+              "reason": "end_without_start",
+              "n": 67
+            },
+            {
+              "reason": "truncated_place_list",
+              "n": 3
+            }
+          ]
+        }
+      }
     },
     {
       "id": 11,
       "scope": "telegram",
-      "name": "Ідемпотентність backfill",
-      "status": "SKIP",
-      "value": null,
-      "summary": "Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill).",
-      "details": {}
+      "name": "Ідемпотентність backfill і детермінізм rebuild",
+      "status": "PASS",
+      "value": 0,
+      "summary": "Повторна вставка 60264 повідомлень додала 0 рядків (60264 → 60264); два rebuild поспіль дають однакові alerts.",
+      "details": {
+        "raw_before": 60264,
+        "raw_after": 60264,
+        "reinserted": 60264,
+        "rebuild_identical": true
+      }
     },
     {
       "id": 12,
@@ -1155,17 +1311,28 @@
       "name": "Live-затримка received_at − posted_at",
       "status": "SKIP",
       "value": null,
-      "summary": "Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill).",
+      "summary": "Live-повідомлень ще немає (колектор не запускався).",
       "details": {}
     },
     {
       "id": 13,
-      "scope": "telegram",
-      "name": "Шов C = 2026-09-01: немає дублів/пропусків",
-      "status": "SKIP",
-      "value": null,
-      "summary": "Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill).",
-      "details": {}
+      "scope": "build",
+      "name": "Шви між джерелами: немає дублів",
+      "status": "PASS",
+      "value": 0,
+      "summary": "Перекриттів між інтервалами різних джерел однієї локації: 0 (в межах одного джерела: 0). Біля шва 2026-08-26T00:00:00+00:00 у Києві 1 тривог: dataset_official 2026-08-25 20:54:26+00:00.",
+      "details": {
+        "cross_source_overlaps": 0,
+        "same_source_overlaps": 0,
+        "examples": [],
+        "kyiv_near_seam": [
+          {
+            "source": "dataset_official",
+            "started_at": "2026-08-25 20:54:26+00:00",
+            "finished_at": "2026-08-25 21:41:42+00:00"
+          }
+        ]
+      }
     }
   ]
 }

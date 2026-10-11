@@ -1,9 +1,11 @@
 # Звіт якості даних — фаза 1
 
-Згенеровано: `2026-10-11T17:40:57+00:00` · загальний статус: **WARN**
+Згенеровано: `2026-10-11T18:48:09+00:00` · загальний статус: **WARN**
 
 - **vadimkin_commit**: `bf0c323c78e3e4508721458797dcd38c95df13f3`
-- **vadimkin_committed_at**: `2026-10-11T04:50:14+00:00`
+- **code_git_sha**: `0b62522b86021187554f7273622dd7a834b3662f`
+- **seam**: `2026-08-26T00:00:00+00:00`
+- **official_outages**: `2026-08-29 04:55…2026-08-30 12:42; 2026-08-30 12:42…2026-09-02 13:48; 2026-09-07 06:09…2026-10-11 18:48`
 
 ## Зведення
 
@@ -19,16 +21,16 @@
 | 4 | dataset_volunteer | Перекриття інтервалів однієї локації | ✅ PASS | 0 | Після дедупу злито 0 рядків у перекриті інтервали (Київ: 0); результат позначено прапорцем merged_overlap. |
 | 5 | dataset_official | Тривалості | ⚠️ WARN | 2.617 | Рівно 3600 с (імпутація автора): 255, з них Київ 1; < 60 с: 453; > 12 год: 4144; рівно 1800 с: 38. |
 | 5 | dataset_volunteer | Тривалості | ⚠️ WARN | 6.214 | naive=True (кінець домальовано як старт+30 хв): 5812 (5.011%), з них Київ 214; < 60 с: 1367; > 12 год: 28; рівно 1800 с: 5855. |
-| 6 | dataset_official | Свіжість | ⚠️ WARN | 34.51 | Останній старт 2026-09-07T05:28:22+00:00, відставання 34.51 дн. Джерело застаріло: діру після цієї дати добираємо з Telegram air_alert_ua (шов C = 2026-09-01). |
-| 6 | dataset_volunteer | Свіжість | ✅ PASS | 0.54 | Останній старт 2026-10-11T04:36:59+00:00, відставання 0.54 дн. |
+| 6 | dataset_official | Свіжість | ⚠️ WARN | 34.56 | Останній старт 2026-09-07T05:28:22+00:00, відставання 34.56 дн. Джерело застаріло: діру після цієї дати добираємо з Telegram air_alert_ua (шов C = 2026-09-01). |
+| 6 | dataset_volunteer | Свіжість | ✅ PASS | 0.59 | Останній старт 2026-10-11T04:36:59+00:00, відставання 0.59 дн. |
 | 7 | dataset_official | Дні без жодної тривоги по Україні | ⚠️ WARN | 3 | 3 днів (UTC) з 1638 без жодного запису. Перші: 2026-08-30, 2026-08-31, 2026-09-01 |
 | 7 | dataset_volunteer | Дні без жодної тривоги по Україні | ✅ PASS | 0 | 0 днів (UTC) з 1690 без жодного запису. |
 | 8 | kyiv: official vs volunteer | Перехресна згода по Києву | ⚠️ WARN | 75.6 | Вікно 2022-03-15…2026-09-05: збіг стартів ±2 хв 75.6%; сумарні години official 2625.2 vs volunteer 2036.9 (розрив 22.41%). Якщо зіставити за КІНЦЕМ (±2 хв, 94.0% тривог), волонтерський старт пізніший за офіційний більш ніж на 2 хв у 23.7% пар — розрив годин пояснюється запізнілими стартами eTryvoga, а не офіційним джерелом. |
-| 9 | telegram | Парсер vs датасет на перекритті 2026-08-25…2026-09-07 (ціль ≥ 95%) | ⏸ SKIP | None | Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill). |
-| 10 | telegram | parse_errors: кількість і топ причин (< 1%) | ⏸ SKIP | None | Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill). |
-| 11 | telegram | Ідемпотентність backfill | ⏸ SKIP | None | Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill). |
-| 12 | telegram | Live-затримка received_at − posted_at | ⏸ SKIP | None | Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill). |
-| 13 | telegram | Шов C = 2026-09-01: немає дублів/пропусків | ⏸ SKIP | None | Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill). |
+| 9 | telegram: air_alert_ua vs dataset | Парсер vs датасет на перекритті (±1 хв, ціль ≥ 95%) | ✅ PASS | 100.0 | 100.0% з 1005 інтервалів датасету (Kyiv City, Kyivska oblast, Zhytomyrska oblast, Chernihivska oblast, Cherkaska oblast, Poltavska oblast) знайдено в Telegram зі стартом і кінцем ±1 хв; з урахуванням 10 інтервалів, що зачіпають збій каналу, — 99.015%. Київ, єТривога vs air_alert_ua: 92.157% збігів ±1 хв, медіанне запізнення старту єТривоги 11 с. |
+| 10 | telegram | parse_errors (нерозпізнані < 1%) | ✅ PASS | 0.006 | air_alert_ua: нерозпізнаних 0.0% з 7207, причини {'end_without_start': 113}; UkraineAlarmSignal: нерозпізнаних 0.006% з 53057, причини {'truncated_place_list': 3, 'end_without_start': 67}. end_without_start — відбої тривог, що почались до початку вибірки або під час збою каналу. |
+| 11 | telegram | Ідемпотентність backfill і детермінізм rebuild | ✅ PASS | 0 | Повторна вставка 60264 повідомлень додала 0 рядків (60264 → 60264); два rebuild поспіль дають однакові alerts. |
+| 12 | telegram | Live-затримка received_at − posted_at | ⏸ SKIP | None | Live-повідомлень ще немає (колектор не запускався). |
+| 13 | build | Шви між джерелами: немає дублів | ✅ PASS | 0 | Перекриттів між інтервалами різних джерел однієї локації: 0 (в межах одного джерела: 0). Біля шва 2026-08-26T00:00:00+00:00 у Києві 1 тривог: dataset_official 2026-08-25 20:54:26+00:00. |
 
 ## Деталі
 
@@ -235,25 +237,25 @@ naive=True (кінець домальовано як старт+30 хв): 5812 (
 
 ### 6. Свіжість — dataset_official (WARN)
 
-Останній старт 2026-09-07T05:28:22+00:00, відставання 34.51 дн. Джерело застаріло: діру після цієї дати добираємо з Telegram air_alert_ua (шов C = 2026-09-01).
+Останній старт 2026-09-07T05:28:22+00:00, відставання 34.56 дн. Джерело застаріло: діру після цієї дати добираємо з Telegram air_alert_ua (шов C = 2026-09-01).
 
 ```json
 {
   "max_started_at": "2026-09-07T05:28:22+00:00",
-  "now": "2026-10-11T17:40:57.253906+00:00",
-  "lag_days": 34.51
+  "now": "2026-10-11T18:48:06.240475+00:00",
+  "lag_days": 34.56
 }
 ```
 
 ### 6. Свіжість — dataset_volunteer (PASS)
 
-Останній старт 2026-10-11T04:36:59+00:00, відставання 0.54 дн.
+Останній старт 2026-10-11T04:36:59+00:00, відставання 0.59 дн.
 
 ```json
 {
   "max_started_at": "2026-10-11T04:36:59+00:00",
-  "now": "2026-10-11T17:40:57.253906+00:00",
-  "lag_days": 0.54
+  "now": "2026-10-11T18:48:06.240475+00:00",
+  "lag_days": 0.59
 }
 ```
 
@@ -346,23 +348,204 @@ naive=True (кінець домальовано як старт+30 хв): 5812 (
 }
 ```
 
-### 9. Парсер vs датасет на перекритті 2026-08-25…2026-09-07 (ціль ≥ 95%) — telegram (SKIP)
+### 9. Парсер vs датасет на перекритті (±1 хв, ціль ≥ 95%) — telegram: air_alert_ua vs dataset (PASS)
 
-Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill).
+100.0% з 1005 інтервалів датасету (Kyiv City, Kyivska oblast, Zhytomyrska oblast, Chernihivska oblast, Cherkaska oblast, Poltavska oblast) знайдено в Telegram зі стартом і кінцем ±1 хв; з урахуванням 10 інтервалів, що зачіпають збій каналу, — 99.015%. Київ, єТривога vs air_alert_ua: 92.157% збігів ±1 хв, медіанне запізнення старту єТривоги 11 с.
 
-### 10. parse_errors: кількість і топ причин (< 1%) — telegram (SKIP)
+```json
+{
+  "window": [
+    "2026-08-25T06:00:00+00:00",
+    "2026-09-07T06:00:00+00:00"
+  ],
+  "rate_excluding_outage_pct": 100.0,
+  "rate_all_pct": 99.015,
+  "dataset_intervals": 1015,
+  "touching_outage": 10,
+  "by_location": {
+    "Kyiv City": "51/51",
+    "Kyivska oblast": "312/312",
+    "Zhytomyrska oblast": "50/50",
+    "Chernihivska oblast": "224/224",
+    "Cherkaska oblast": "163/163",
+    "Poltavska oblast": "205/205"
+  },
+  "misses": [
+    {
+      "location": "Chernihivska oblast",
+      "level": "raion",
+      "raion": "Chernihivskyi raion",
+      "started_at": "2026-08-29 04:27:26+00:00",
+      "finished_at": "2026-09-02 16:41:59+00:00",
+      "flags": "",
+      "touches_outage": "True"
+    },
+    {
+      "location": "Chernihivska oblast",
+      "level": "raion",
+      "raion": "Nizhynskyi raion",
+      "started_at": "2026-08-29 04:33:34+00:00",
+      "finished_at": "2026-08-29 05:33:34+00:00",
+      "flags": "end_imputed",
+      "touches_outage": "True"
+    },
+    {
+      "location": "Kyiv City",
+      "level": "oblast",
+      "raion": "",
+      "started_at": "2026-08-29 04:29:09+00:00",
+      "finished_at": "2026-08-29 05:29:09+00:00",
+      "flags": "end_imputed",
+      "touches_outage": "True"
+    },
+    {
+      "location": "Kyivska oblast",
+      "level": "raion",
+      "raion": "Boryspilskyi raion",
+      "started_at": "2026-08-29 00:43:11+00:00",
+      "finished_at": "2026-09-02 16:42:16+00:00",
+      "flags": "",
+      "touches_outage": "True"
+    },
+    {
+      "location": "Kyivska oblast",
+      "level": "raion",
+      "raion": "Brovarskyi raion",
+      "started_at": "2026-08-29 00:30:05+00:00",
+      "finished_at": "2026-09-02 16:42:22+00:00",
+      "flags": "",
+      "touches_outage": "True"
+    },
+    {
+      "location": "Kyivska oblast",
+      "level": "raion",
+      "raion": "Buchanskyi raion",
+      "started_at": "2026-08-29 04:29:53+00:00",
+      "finished_at": "2026-08-29 05:29:53+00:00",
+      "flags": "end_imputed",
+      "touches_outage": "True"
+    },
+    {
+      "location": "Kyivska oblast",
+      "level": "raion",
+      "raion": "Fastivskyi raion",
+      "started_at": "2026-08-29 00:49:10+00:00",
+      "finished_at": "2026-09-02 16:42:11+00:00",
+      "flags": "",
+      "touches_outage": "True"
+    },
+    {
+      "location": "Kyivska oblast",
+      "level": "raion",
+      "raion": "Obukhivskyi raion",
+      "started_at": "2026-08-29 00:49:03+00:00",
+      "finished_at": "2026-09-02 16:42:05+00:00",
+      "flags": "",
+      "touches_outage": "True"
+    },
+    {
+      "location": "Kyivska oblast",
+      "level": "raion",
+      "raion": "Vyshhorodskyi raion",
+      "started_at": "2026-08-29 04:29:42+00:00",
+      "finished_at": "2026-08-29 05:29:42+00:00",
+      "flags": "end_imputed",
+      "touches_outage": "True"
+    },
+    {
+      "location": "Poltavska oblast",
+      "level": "raion",
+      "raion": "Poltavskyi raion",
+      "started_at": "2026-08-29 04:55:28+00:00",
+      "finished_at": "2026-08-29 05:55:28+00:00",
+      "flags": "end_imputed",
+      "touches_outage": "True"
+    }
+  ],
+  "kyiv_volunteer_vs_official": {
+    "official_intervals": 51,
+    "matched_pct": 92.157,
+    "volunteer_start_lag_s_median": 11.0,
+    "volunteer_start_lag_s_p95": 19.3
+  }
+}
+```
 
-Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill).
+### 10. parse_errors (нерозпізнані < 1%) — telegram (PASS)
 
-### 11. Ідемпотентність backfill — telegram (SKIP)
+air_alert_ua: нерозпізнаних 0.0% з 7207, причини {'end_without_start': 113}; UkraineAlarmSignal: нерозпізнаних 0.006% з 53057, причини {'truncated_place_list': 3, 'end_without_start': 67}. end_without_start — відбої тривог, що почались до початку вибірки або під час збою каналу.
 
-Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill).
+```json
+{
+  "air_alert_ua": {
+    "messages": 7207,
+    "messages_unrecognised": 0,
+    "unrecognised_pct": 0.0,
+    "errors_by_reason": {
+      "end_without_start": 113
+    },
+    "top_reasons": [
+      {
+        "reason": "end_without_start",
+        "n": 113
+      }
+    ]
+  },
+  "UkraineAlarmSignal": {
+    "messages": 53057,
+    "messages_unrecognised": 3,
+    "unrecognised_pct": 0.006,
+    "errors_by_reason": {
+      "truncated_place_list": 3,
+      "end_without_start": 67
+    },
+    "top_reasons": [
+      {
+        "reason": "end_without_start",
+        "n": 67
+      },
+      {
+        "reason": "truncated_place_list",
+        "n": 3
+      }
+    ]
+  }
+}
+```
+
+### 11. Ідемпотентність backfill і детермінізм rebuild — telegram (PASS)
+
+Повторна вставка 60264 повідомлень додала 0 рядків (60264 → 60264); два rebuild поспіль дають однакові alerts.
+
+```json
+{
+  "raw_before": 60264,
+  "raw_after": 60264,
+  "reinserted": 60264,
+  "rebuild_identical": true
+}
+```
 
 ### 12. Live-затримка received_at − posted_at — telegram (SKIP)
 
-Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill).
+Live-повідомлень ще немає (колектор не запускався).
 
-### 13. Шов C = 2026-09-01: немає дублів/пропусків — telegram (SKIP)
+### 13. Шви між джерелами: немає дублів — build (PASS)
 
-Telegram-дані ще не зібрані (потрібен tg-login + tg-backfill).
+Перекриттів між інтервалами різних джерел однієї локації: 0 (в межах одного джерела: 0). Біля шва 2026-08-26T00:00:00+00:00 у Києві 1 тривог: dataset_official 2026-08-25 20:54:26+00:00.
+
+```json
+{
+  "cross_source_overlaps": 0,
+  "same_source_overlaps": 0,
+  "examples": [],
+  "kyiv_near_seam": [
+    {
+      "source": "dataset_official",
+      "started_at": "2026-08-25 20:54:26+00:00",
+      "finished_at": "2026-08-25 21:41:42+00:00"
+    }
+  ]
+}
+```
 
