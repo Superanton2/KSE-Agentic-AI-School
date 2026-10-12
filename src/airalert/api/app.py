@@ -88,7 +88,7 @@ class Engine:
                  replay_at: pd.Timestamp | None = None):
         self.data_dir, self.alerts_db, self.sitrep_db, self.clock = data_dir, alerts_db, sitrep_db, clock
         self.reader = reader or (lambda now: L.read(self.alerts_db, self.sitrep_db, now))
-        self.pkl, self.replay_at = pkl or model_path(data_dir), replay_at
+        self.pkl, self.fixed_pkl, self.replay_at = pkl or model_path(data_dir), pkl is not None, replay_at
         self.loaded_mtime = None
         self.load_model()
         self.live: L.Live | None = None
@@ -100,6 +100,8 @@ class Engine:
 
     def load_model(self) -> None:
         """(Re)load the ensemble and the card when the nightly refit replaced them."""
+        if not self.fixed_pkl:  # the nightly model replaces the fallback as soon as it appears
+            self.pkl = model_path(self.data_dir)
         pkl, card = self.pkl, self.data_dir / "processed" / CARD_FILE
         mtime = (pkl.stat().st_mtime, card.stat().st_mtime)
         if mtime == self.loaded_mtime:
