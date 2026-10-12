@@ -512,6 +512,96 @@ def drones_motion(seed: int = 0) -> None:
     typer.echo(f"report: {out}")
 
 
+@app.command("drones-features")
+def drones_features(
+    check_leak: int = typer.Option(
+        5, help="random grid points re-computed from data truncated at t (0 = skip)"
+    ),
+    seed: int = 0,
+) -> None:
+    """As-of drone 'pressure field' features on a 5-min grid -> data/processed/drone_features.parquet,
+    leakage check and lift vs the raion-alert baseline -> reports/drone_features.md."""
+    import json
+
+    import numpy as np
+
+    from airalert.drones import features as fe
+    from airalert.drones import motion as mo
+    from airalert.drones.gazetteer import Gazetteer
+
+    s = get_settings()
+    mentions = pd.read_parquet(s.processed_dir / "drone_mentions.parquet")
+    p = json.loads((s.processed_dir / "drone_motion_params.json").read_text())
+    params = mo.MotionParams(p["sigma_theta"], p["sigma_v"])
+    centroids = Gazetteer.load(s.gazetteer_dir).oblast_centroids
+    times = fe.grid(pd.Timestamp("2026-08-10", tz="UTC"), mentions["known_at"].max())
+    feats = fe.build(mentions, centroids, params, times)
+    feats.to_parquet(s.processed_dir / "drone_features.parquet", index=False, compression="zstd")
+    typer.echo(f"{len(feats)} rows x {len(fe.FEATURES)} features")
+
+    leak = []
+    rng = np.random.default_rng(seed)
+    busy = feats.index[feats["mentions_last_60m"] > 0].to_numpy()  # check where something is going on
+    for i in rng.choice(busy, size=min(check_leak, len(busy)), replace=False):
+        t = feats.at[i, "t"]
+        prep = fe.prepare(mentions[mentions["known_at"] <= t], centroids, params)
+        again = fe.features_at(prep, t)
+        same = all(
+            (np.isnan(a) and np.isnan(b)) if isinstance(a, float) and np.isnan(a) else a == b
+            for a, b in ((again[c], feats.at[i, c]) for c in fe.FEATURES)
+        )
+        leak.append((t, same))
+        typer.echo(f"leak check {t}: {'identical' if same else 'DIFFERENT'}")
+
+    alerts = pd.read_parquet(s.processed_dir / "alerts.parquet")
+    cal = feats[feats["t"] < pd.Timestamp("2026-09-13", tz="UTC")].reset_index(drop=True)
+    cal_t = pd.DatetimeIndex(cal["t"])
+    table = fe.lift_table(cal, fe.alert_labels(alerts, cal_t), fe.raion_alert_active(alerts, cal_t))
+    md = [
+        "# Drone pressure-field features",
+        "",
+        f"`data/processed/drone_features.parquet`: {len(feats)} rows (5-min UTC grid, {feats['t'].min():%Y-%m-%d} … "
+        f"{feats['t'].max():%Y-%m-%d %H:%M}), as-of: row t uses only mentions with known_at ≤ t. Main source kudy_letyt; "
+        "kpszsu only as auxiliary counters (parser recall 0.66 raw on the hold-out); motion model "
+        f"σ_θ={params.sigma_theta}, σ_v={params.sigma_v} (fitted on 2026-08-10…09-12).",
+        "",
+        "## Leakage check",
+        "",
+        f"{len(leak)} random busy grid points recomputed from data truncated at t: "
+        f"**{sum(ok for _, ok in leak)}/{len(leak)} bit-identical**.",
+        "",
+        "## Lift on the calibration period (2026-08-10 … 2026-09-12)",
+        "",
+        "Lift = P(Kyiv City alert starts within H | feature on) / P(… | off), grid points outside an alert only. "
+        "Baseline: a raion alert in Kyiv oblast is on (as known at t). No modelling, single features.",
+        "",
+        "| feature | share on | lift 15 | lift 30 | lift 60 | lift 120 |",
+        "|---|---|---|---|---|---|",
+        *[
+            f"| {r.feature} | {r.share_on:.1%} | {r.lift_15:.1f} | {r.lift_30:.1f} | {r.lift_60:.1f} | {r.lift_120:.1f} |"
+            for r in table.itertuples()
+        ],
+        "",
+        "### Incremental: only grid points with **no raion alert** in Kyiv oblast",
+        "",
+        "Does the feature say something the raion alerts do not (yet)?",
+        "",
+        "| feature | lift 15 | lift 30 | lift 60 | lift 120 |",
+        "|---|---|---|---|---|",
+        *[
+            f"| {r.feature} | {r.lift_15_no_raion:.1f} | {r.lift_30_no_raion:.1f} | {r.lift_60_no_raion:.1f} "
+            f"| {r.lift_120_no_raion:.1f} |"
+            for r in table.itertuples()
+            if not r.feature.startswith("raion")
+        ],
+        "",
+    ]
+    (s.reports_dir / "drone_features.md").write_text("\n".join(md) + "\n", encoding="utf-8")
+    typer.echo(table.round(2).to_string(index=False))
+    if not all(ok for _, ok in leak):
+        raise typer.Exit(1)
+
+
 @app.command("rebuild-alerts")
 def rebuild_alerts(channel: str = OFFICIAL_CHANNEL) -> None:
     """Rebuild alerts + parse_errors from raw_messages (deterministic)."""

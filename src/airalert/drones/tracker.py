@@ -40,7 +40,7 @@ class Track:
     count: int = 1
 
 
-def observations(mentions: pd.DataFrame, channels=("kudy_letyt",)) -> pd.DataFrame:
+def observations(mentions: pd.DataFrame, channels=("kudy_letyt",), as_of: bool = False) -> pd.DataFrame:
     """Mentions usable for tracking: drones, point places, not late-edited history, latest text version."""
     m = mentions[
         mentions["channel"].isin(channels)
@@ -51,10 +51,16 @@ def observations(mentions: pd.DataFrame, channels=("kudy_letyt",)) -> pd.DataFra
         & mentions["rel"].isin(["target", "via", "bare"])
     ].copy()
     # an edited message replaces its earlier version; keep the latest version of each message line
-    m = m.sort_values("version").drop_duplicates(["channel", "msg_id", "line_no", "place_norm"], keep="last")
+    if as_of:  # features: every version is a new observation at the moment we could read it (no look-ahead)
+        m["t"] = m["known_at"]
+    else:  # calibration: the final text of each message line, at the time it was reported
+        m = m.sort_values("version").drop_duplicates(
+            ["channel", "msg_id", "line_no", "place_norm"], keep="last"
+        )
+        m["t"] = m["observed_at"]
     m["speed_class"] = m["kind"].map(SPEED_CLASS)
     m["count"] = m["count"].fillna(1).astype(int)
-    return m.sort_values(["observed_at", "msg_id", "line_no"]).reset_index(drop=True)
+    return m.sort_values(["t", "msg_id", "line_no"]).reset_index(drop=True)
 
 
 def associate(obs: pd.DataFrame) -> pd.Series:
@@ -62,8 +68,9 @@ def associate(obs: pd.DataFrame) -> pd.Series:
     track_of = np.full(len(obs), -1, dtype=int)
     open_tracks: list[Track] = []
     next_id = 0
-    for _, grp in obs.groupby(["observed_at", "channel", "msg_id"], sort=True):
-        t = grp["observed_at"].iloc[0]
+    keys = ["t", "channel", "msg_id", *(["version"] if "version" in obs else [])]
+    for _, grp in obs.groupby(keys, sort=True):
+        t = grp["t"].iloc[0]
         open_tracks = [tr for tr in open_tracks if (t - tr.last_t).total_seconds() <= CLOSE_AFTER_MIN * 60]
         # candidate pairs (distance, track, row), nearest first; one row per track per message
         pairs = []
@@ -101,8 +108,11 @@ def build_tracks(obs: pd.DataFrame, centroids: dict[str, tuple[float, float]]) -
     """Observations with ``track_id``, ``step`` and the motion state at each observation:
     ``pos_lat/pos_lon`` (position estimate), ``heading_to_target`` (deg), ``prev_*`` (previous observation)."""
     obs = obs.copy()
+    if "t" not in obs:
+        obs["t"] = obs["observed_at"]
+    obs = obs.sort_values(["t", "msg_id", "line_no"]).reset_index(drop=True)
     obs["track_id"] = associate(obs)
-    obs = obs.sort_values(["track_id", "observed_at", "msg_id", "line_no"]).reset_index(drop=True)
+    obs = obs.sort_values(["track_id", "t", "msg_id", "line_no"], kind="stable").reset_index(drop=True)
     obs["step"] = obs.groupby("track_id").cumcount()
     # previous observation (for calibration pairs) and the last *different* earlier target (position estimate:
     # kudy_letyt repeats the same "курсом на Y" in consecutive posts — that is no movement information)

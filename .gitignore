@@ -12,3 +12,4 @@ __pycache__/
 .DS_Store
 data/work/
 data/processed/drone_lines.parquet
+data/processed/drone_tracks.parquet
