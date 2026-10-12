@@ -612,6 +612,16 @@ def model_features(check_leak: int = typer.Option(200, help="random t recomputed
     typer.echo(f"{len(g)} grid points ({int(g['calm'].sum())} calm) -> {s.reports_dir / 'model_lift.md'}")
 
 
+@app.command("model-eval")
+def model_eval(n_trips: int = 2000) -> None:
+    """Phase 4: C selection, walk-forward test, KM, product backtest -> reports/model_eval.md."""
+    from airalert.model import pipeline
+
+    s = get_settings()
+    r = pipeline.evaluate_all(s.data_dir, s.reports_dir, n_trips)
+    typer.echo(f"product model {r['product']}; backtest BSS vs B1 {r['bt']['bss_vs_B1']:.3f}")
+
+
 @app.command("rebuild-alerts")
 def rebuild_alerts(channel: str = OFFICIAL_CHANNEL) -> None:
     """Rebuild alerts + parse_errors from raw_messages (deterministic)."""
