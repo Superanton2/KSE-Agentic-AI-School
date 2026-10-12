@@ -6,6 +6,15 @@ const ATTRIBUTION = 'Esri, HERE, Garmin, © <a href="https://www.openstreetmap.o
 
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
+// Мітка магазину — червона шпилька, як у картах. Розмітка наша (не з мережі), колір — з CSS (--dest).
+const PIN_SVG = '<svg viewBox="0 0 24 32" aria-hidden="true"><path class="pin-body" d="M12 .8C5.8.8.8 5.7.8 11.9c0 8.3 11.2 19.3 11.2 19.3s11.2-11 11.2-19.3C23.2 5.7 18.2.8 12 .8z"/><circle class="pin-dot" cx="12" cy="12" r="4.2"/></svg>';
+const pinIcon = (selected) => L.divIcon({
+  className: selected ? 'pin is-selected' : 'pin',
+  html: PIN_SVG,
+  iconSize: selected ? [34, 45] : [22, 29],
+  iconAnchor: selected ? [17, 45] : [11, 29],
+});
+
 export function createMap(el) {
   // minZoom 10 і maxBounds — щоб не можна було відвести карту далеко від Києва.
   const map = L.map(el, {
@@ -19,12 +28,20 @@ export function createMap(el) {
 
   const c = { border: css('--border'), text: css('--text'), bg: css('--bg'), accent: css('--accent'), muted: css('--muted') };
   const storeLayer = L.layerGroup().addTo(map);
-  const stores = new Map(); // id → circleMarker
+  const stores = new Map(); // id → L.marker
   let me = null, meAcc = null, start = null, selected = null;
 
-  const storeStyle = (on) => on
-    ? { radius: 9, color: c.accent, weight: 4, fillColor: c.bg, fillOpacity: 1 } // кільце — щоб не плутати з точкою «я»
-    : { radius: 6, color: c.bg, weight: 2, fillColor: c.text, fillOpacity: 1 };
+  // Доступність мітки: роль, назва (OSM — недовірена, лише aria-label) і Enter/пробіл → вибір.
+  // Викликати після кожного setIcon: Leaflet створює новий елемент.
+  const a11y = (m) => {
+    const el = m.getElement();
+    if (!el) return;
+    el.setAttribute('role', 'button');
+    el.setAttribute('aria-label', m.storeLabel);
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); m.fire('click'); }
+    });
+  };
 
   return {
     map,
@@ -40,23 +57,23 @@ export function createMap(el) {
       stores.clear();
       for (const f of geojson.features) {
         const p = f.properties;
-        const m = L.circleMarker([p.lat, p.lon], { ...storeStyle(false), bubblingMouseEvents: false })
+        const m = L.marker([p.lat, p.lon], { icon: pinIcon(false), keyboard: true, riseOnHover: true })
           .on('click', () => onSelect(p.id))
           .addTo(storeLayer);
-        // Назви з OSM — недовірені: лише textContent / aria-label, не HTML.
-        m.getElement()?.setAttribute('aria-label', label(p));
-        m.getElement()?.setAttribute('role', 'button');
-        m.getElement()?.setAttribute('tabindex', '0');
-        m.getElement()?.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') onSelect(p.id); });
+        m.storeLabel = label(p);
+        a11y(m);
         stores.set(p.id, m);
       }
     },
 
     selectStore(id) {
-      if (selected) stores.get(selected)?.setStyle(storeStyle(false)).setRadius(6);
+      const restyle = (m, on) => {
+        m.setIcon(pinIcon(on)).setZIndexOffset(on ? 1000 : 0);
+        a11y(m);
+      };
+      if (selected && stores.has(selected)) restyle(stores.get(selected), false);
       selected = id;
-      const m = stores.get(id);
-      if (m) m.setStyle(storeStyle(true)).setRadius(9).bringToFront();
+      if (stores.has(id)) restyle(stores.get(id), true);
     },
 
     setMe(latlng, accuracy) {

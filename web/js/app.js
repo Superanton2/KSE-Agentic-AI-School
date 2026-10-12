@@ -2,7 +2,7 @@
 // Ймовірність — заглушка prob.js (рахує окремий модуль); час дороги — справжній (route.js).
 // Старт поїздки — як у картах: «моя локація» за замовчуванням, інша адреса — через пошук.
 import { getModelCard, getRaions, getState, getStores, isStale } from './api.js';
-import { inKyiv, watchLocation } from './geo.js';
+import { inKyiv, KYIV_CENTER, watchLocation } from './geo.js';
 import { applyI18n, loadLang, t } from './i18n.js';
 import { createMap } from './map.js';
 import { closePanel, registerPanel } from './panels.js';
@@ -35,7 +35,9 @@ let stopWatch = () => {};
 // ──────────────────────────────────────────────────────────────
 const findStore = (id) => app.stores.find((s) => s.properties.id === id)?.properties;
 const storeView = (p) => ({ ...p, name: /^metro( київ)?$/i.test(p.name) ? 'Metro' : p.name });
-const startLatLng = () => app.from?.latlng ?? app.me?.latlng ?? null;
+// Геолокація поза Києвом (на ноутбуці буває хибна — Wi-Fi/IP) стартом не вважається.
+const meUsable = () => !!app.me && inKyiv(app.me.latlng);
+const startLatLng = () => app.from?.latlng ?? (meUsable() ? app.me.latlng : null);
 
 function nearestStore(latlng) {
   let best = null, bestKm = Infinity;
@@ -48,10 +50,10 @@ function nearestStore(latlng) {
 
 // Підказка під статусом; з action — це кнопка (напр. «вкажіть, звідки їдете» → пошук).
 let hintTimer = null, hintAction = null;
-function showHint(key, { ms = 0, action = null } = {}) {
+function showHint(key, { ms = 0, action = null, vars } = {}) {
   const el = document.getElementById('hint');
   clearTimeout(hintTimer);
-  el.textContent = key ? t(key) : '';
+  el.textContent = key ? t(key, vars) : '';
   el.hidden = !key;
   hintAction = action;
   el.classList.toggle('is-action', !!action);
@@ -94,9 +96,16 @@ function onLocation(pos) {
   app.me = pos;
   app.geoProblem = null;
   app.mapView.setMe(pos.latlng, pos.accuracy);
-  if (first) showHint(inKyiv(pos.latlng) ? null : 'geo.outside', { ms: 8000 });
+  if (!app.from) showFarHint();
   if (app.from) return; // їдемо з адреси з пошуку — синя точка оновлюється, маршрут ні
   if (moved) onStartChanged({ fit: first });
+}
+
+// Поза Києвом — кажемо, наскільки далеко, і пропонуємо вказати адресу; у Києві — прибираємо підказку.
+function showFarHint() {
+  if (meUsable()) return showHint(null);
+  const km = Math.round(haversineKm(app.me.latlng, KYIV_CENTER));
+  showHint('geo.far', { vars: { km }, action: () => search.open() });
 }
 
 function onLocationError(reason) {
@@ -121,8 +130,9 @@ function useMyLocation() {
   app.from = null;
   app.mapView.setStart(null);
   if (app.me) {
+    showFarHint();
     onStartChanged();
-    if (!app.storeId) app.mapView.panTo(app.me.latlng);
+    if (!app.storeId && meUsable()) app.mapView.panTo(app.me.latlng);
   } else {
     startWatching(); // після відмови браузер може спитати ще раз, якщо користувач змінив дозвіл
   }
@@ -148,7 +158,7 @@ function render() {
   if (!store) return renderCard(null);
   const set = app.settings;
   const manual = set.manualTravel !== null;
-  const from = app.from ? { label: app.from.label } : app.me ? { me: true } : null;
+  const from = app.from ? { label: app.from.label } : meUsable() ? { me: true } : null;
   if (!from && !manual) return renderCard({ store: storeView(store), nostart: true }, now);
   const travelMin = manual ? set.manualTravel : app.travel?.minutes;
   if (travelMin == null) return renderCard(null);
@@ -206,7 +216,9 @@ function setupUi() {
   search = createSearch({
     stores: () => app.stores.map((f) => f.properties),
     storeLabel: (p) => ({ title: storeView(p).name, sub: p.address }),
-    myLocation: () => (app.from || !app.me ? { title: t('search.my_location'), sub: t(app.me ? 'search.my_location.sub' : 'search.my_location.ask') } : null),
+    myLocation: () => (app.from || !meUsable()
+      ? { title: t('search.my_location'), sub: t(meUsable() ? 'search.my_location.sub' : app.me ? 'search.my_location.far' : 'search.my_location.ask') }
+      : null),
     onMe: useMyLocation,
     onStore: selectStore,
     onPlace: setFrom,
