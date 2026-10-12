@@ -1,17 +1,19 @@
 // Ініціалізація, стан, цикл оновлення.
 // Ймовірність — заглушка prob.js (рахує окремий модуль); час дороги — справжній (route.js).
-import { getRaions, getState, getStores, isStale } from './api.js';
+import { getModelCard, getRaions, getState, getStores, isStale } from './api.js';
 import { inKyiv, KYIV_CENTER, locate } from './geo.js';
 import { applyI18n, loadLang, t } from './i18n.js';
 import { createMap } from './map.js';
+import { closePanel, registerPanel } from './panels.js';
 import { estimate } from './prob.js';
 import { cacheKey, createRouter, fallbackTravel, haversineKm } from './route.js';
 import { createSearch } from './search.js';
+import { bindSettingsForm, loadSettings } from './settings.js';
 import { renderCard, renderStatus, showBanner } from './ui.js';
+import { unsureReason } from './unsure.js';
 
 const POLL_MS = 15_000;
 const POLL_MAX_MS = 120_000;
-const SHOP_MIN = 60; // до панелі налаштувань
 
 const app = {
   state: null, lastOkAt: 0,
@@ -19,6 +21,8 @@ const app = {
   me: null,        // { latlng, accuracy } — лише в пам'яті
   travel: null,    // { key, minutes, approx }
   cardClosed: false, // користувач закрив картку — не відкривати її самим лише кліком по карті
+  settings: loadSettings(),
+  modelCard: null,  // skill по горизонтах — для «Дуже неточно»
 };
 const travel = createRouter();
 
@@ -87,12 +91,19 @@ function render() {
   const stale = isStale(app.state, app.lastOkAt, now);
   if (app.state) renderStatus(app.state, stale, now);
   const store = findStore(app.storeId);
-  if (!store || !app.travel) return renderCard(null);
-  const base = { store: storeView(store), travel: app.travel.minutes, approx: app.travel.approx, shop: SHOP_MIN };
-  renderCard(stale ? { ...base, nodata: true } : {
-    ...base,
-    ...estimate({ state: app.state, store, travelMin: app.travel.minutes, shopMin: SHOP_MIN }),
-  }, now);
+  const set = app.settings;
+  const manual = set.manualTravel !== null;
+  if (!store || (!app.travel && !manual)) return renderCard(null);
+  const travelMin = manual ? set.manualTravel : app.travel.minutes;
+  const base = { store: storeView(store), travel: travelMin, approx: !manual && app.travel.approx, manual, shop: set.shopMean };
+  if (stale) return renderCard({ ...base, nodata: true }, now);
+
+  const r = estimate({ state: app.state, store, travelMin, settings: set });
+  const reason = unsureReason({
+    travel: travelMin, wait: r.wait ? Math.min(r.wait.median, set.waitMax) : 0, openDelay: set.openDelay,
+    shop: set.shopMean, band: r.band, skill: app.modelCard?.skill,
+  });
+  renderCard({ ...base, ...r, unsure: reason !== null, unsureReason: reason }, now);
 }
 
 // Опитування /api/state: кожні 15 с; при помилках — тихий повтор із подвоєнням паузи до 2 хв.
@@ -150,7 +161,8 @@ async function main() {
 
   app.mapView = createMap(document.getElementById('map'));
   const geo = useGeolocation(); // діалог браузера показуємо одразу, паралельно з даними
-  const [, stores, raions] = await Promise.allSettled([pollFirst(), getStores(), getRaions()]);
+  const [, stores, raions, card] = await Promise.allSettled([pollFirst(), getStores(), getRaions(), getModelCard()]);
+  if (card.status === 'fulfilled') app.modelCard = card.value;
   if (raions.status === 'fulfilled') app.mapView.setRaions(raions.value);
   if (stores.status === 'fulfilled') {
     app.stores = stores.value.features;
@@ -175,8 +187,27 @@ async function main() {
       if (s) app.mapView.fitTrip(latlng, [s.lat, s.lon]);
     },
   });
-  document.getElementById('btn-search').addEventListener('click', () => (search.isOpen ? search.close() : search.open()));
+  document.getElementById('btn-search').addEventListener('click', () => {
+    if (search.isOpen) return search.close();
+    closePanel();
+    search.open();
+  });
   setupMenu();
+
+  // ⚙ і ⓘ: висувні панелі; відкриття однієї закриває пошук та іншу.
+  const closeSearch = () => search.isOpen && search.close();
+  registerPanel('settings', 'btn-settings', closeSearch);
+  registerPanel('info', 'btn-info', closeSearch);
+  bindSettingsForm(app.settings, {
+    fmt: (k, v) => {
+      if (k === 'manualTravel') return v === null ? t('settings.off') : t('dur.min', { m: v });
+      if (k === 'shopSd') return `±${t('dur.min', { m: v })}`;
+      if (k === 'waitMax' && v === 0) return t('settings.noWait');
+      return t('dur.min', { m: v });
+    },
+    suggestTravel: () => (app.travel ? Math.round(app.travel.minutes) : null),
+    onChange: (s) => { app.settings = s; render(); },
+  });
 
   document.getElementById('card-close').addEventListener('click', () => {
     app.storeId = null;

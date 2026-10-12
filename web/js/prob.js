@@ -9,7 +9,8 @@ const STUB = {
   red: { p: 0.28, band: [0.19, 0.4], wait: { median: 34, p80: 58 }, curve: curveFrom([0.28, 0.3, 0.33, 0.37, 0.42, 0.46, 0.49, 0.52, 0.54, 0.53, 0.51, 0.49, 0.46]) },
 };
 
-export function estimate({ state, store, travelMin, shopMin }) {
+// Вхід, який отримає справжній модуль: стан тривоги, магазин, час дороги, налаштування (покупки, очікування…).
+export function estimate({ state /* , store, travelMin, settings */ }) {
   const s = state?.status === 'alert' ? STUB[state.level === 'red' ? 'red' : 'yellow'] : STUB.calm;
   return { ...s, best: s.curve.reduce((a, b) => (b.p > a.p ? b : a)) };
 }

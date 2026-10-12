@@ -44,9 +44,12 @@ export function renderCard(r, now = Date.now()) {
   $('card-addr').textContent = r.store.address;
   $('card-p').textContent = r.nodata ? t('card.nodata') : `${pct(r.p)}%`;
   $('card-word').textContent = r.nodata ? '' : t(`card.word.${kind}`);
-  $('card-band').textContent = r.nodata ? '' : t('card.band', { lo: pct(r.band[0]), hi: pct(r.band[1]) });
+  const band = r.nodata ? '' : t('card.band', { lo: pct(r.band[0]), hi: pct(r.band[1]) });
+  $('card-band').textContent = r.unsureReason ? `${band} · ${t(`unsure.${r.unsureReason}`)}` : band;
   $('card-band').hidden = r.nodata;
-  $('card-trip').textContent = t(r.approx ? 'card.trip_approx' : 'card.trip', { travel: Math.round(r.travel), shop: Math.round(r.shop) });
+  const tripKey = r.manual ? 'card.trip_manual' : r.approx ? 'card.trip_approx' : 'card.trip';
+  $('card-trip').textContent = t(tripKey, { travel: Math.round(r.travel), shop: Math.round(r.shop) });
+  $('card-note').hidden = !!r.manual; // затори — лише для маршруту OSRM
 
   const wait = $('card-wait');
   wait.hidden = !r.wait || r.nodata;

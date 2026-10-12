@@ -27,7 +27,7 @@ function shiftTimes(v, delta) {
 const mockCalls = {};
 async function getMock(name) {
   const m = await getJSON(`mock/${name}.json`);
-  let v = m.variants ? (m.variants[mockVariant] ?? m.variants.calm) : m.data;
+  let v = m.variants?.[mockVariant] ?? m.variants?.calm ?? m.data;
   if (Array.isArray(v)) {
     const n = (mockCalls[name] = (mockCalls[name] ?? -1) + 1);
     v = m.variants[v[Math.min(n, v.length - 1)]];

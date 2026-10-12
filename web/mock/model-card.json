@@ -3,9 +3,27 @@
   "data": {
     "updated_at": null,
     "test_period": null,
-    "skill": {"0-30": null, "30-60": null, "60-120": null},
+    "skill": {
+      "0-30": null,
+      "30-60": null,
+      "60-120": null
+    },
     "metrics": [],
     "calibration": [],
     "notes": null
+  },
+  "variants": {
+    "unsure": {
+      "updated_at": null,
+      "test_period": null,
+      "skill": {
+        "0-30": -0.03,
+        "30-60": -0.05,
+        "60-120": -0.02
+      },
+      "metrics": [],
+      "calibration": [],
+      "notes": null
+    }
   }
 }

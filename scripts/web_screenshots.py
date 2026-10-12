@@ -32,7 +32,7 @@ def leaks_coords(req) -> bool:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default="http://localhost:8080")
-    ap.add_argument("--states", default="calm,alert,alert-red,stale,calm+nogeo,calm+search,flip+banner,model")
+    ap.add_argument("--states", default="calm,alert,alert-red,stale,unsure,calm+nogeo,calm+search,calm+settings,calm+info,flip+banner,model")
     ap.add_argument("--devices", default="mobile,desktop")
     args = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
@@ -75,6 +75,10 @@ def main() -> None:
                         page.wait_for_selector(".opt-place", timeout=12000)
                     except PWTimeout:
                         print(f"  {state}-{dev}: no Photon results", file=sys.stderr)
+                elif flag in ("settings", "info"):
+                    page.click(f"#btn-{flag}")
+                    page.wait_for_selector(f"#{flag}:not([hidden])")
+                    page.wait_for_timeout(300)  # slide-in
                 elif flag == "banner":  # mock=flip: the 2nd poll (after 15 s) turns calm into alert
                     page.wait_for_selector("#banner:not([hidden])", timeout=25000)
                 page.screenshot(path=str(path))
