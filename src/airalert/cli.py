@@ -320,6 +320,124 @@ def drones_gazetteer() -> None:
     typer.echo(f"{out}: {n} populated places with Ukrainian names")
 
 
+def _drones_db(db: Path | None) -> Path:
+    s = get_settings()
+    path = db or s.live_dir / "snapshots" / "drones.sqlite"
+    if not path.exists():
+        raise typer.BadParameter(
+            f"{path} not found — make a snapshot first: docker compose exec collector airalert db-snapshot"
+        )
+    return path
+
+
+@app.command("drones-parse")
+def drones_parse(db: Path = typer.Option(None, help="drones journal (default: the snapshot)")) -> None:
+    """Parse drone channels -> data/processed/drone_{mentions,lines}.parquet, misses CSV, reports/drone_parse.md."""
+    import sqlite3
+    from contextlib import closing
+
+    from airalert.drones import mentions as dm
+    from airalert.drones.gazetteer import Gazetteer
+
+    s = get_settings()
+    with closing(sqlite3.connect(_drones_db(db))) as conn:
+        raw, edits = dm.read_journal(conn)
+    lines, mentions = dm.build(raw, edits, Gazetteer.load(s.gazetteer_dir))
+    s.processed_dir.mkdir(parents=True, exist_ok=True)
+    mentions.to_parquet(s.processed_dir / "drone_mentions.parquet", index=False, compression="zstd")
+    lines.drop(columns=["message"]).to_parquet(
+        s.processed_dir / "drone_lines.parquet", index=False, compression="zstd"
+    )
+    dm.misses(mentions).to_csv(s.processed_dir / "drone_parse_misses.csv", index=False)
+    s.reports_dir.mkdir(parents=True, exist_ok=True)
+    (s.reports_dir / "drone_parse.md").write_text(dm.report_md(lines, mentions), encoding="utf-8")
+    share = mentions.assign(ok=mentions["lat"].notna()).groupby("channel")["ok"].mean().round(3).to_dict()
+    typer.echo(f"{len(lines)} lines, {len(mentions)} mentions; with coordinates: {share}")
+
+
+@app.command("drones-sample")
+def drones_sample(
+    n: int = 300,
+    seed: int = 20260812,
+    db: Path = typer.Option(None, help="drones journal (default: the snapshot)"),
+    out: Path = typer.Option(None, help="default: data/labels/sample.jsonl"),
+) -> None:
+    """Stratified sample of parsed lines for manual labelling -> data/labels/sample.jsonl (+ _meta.json)."""
+    import json
+    import sqlite3
+    from contextlib import closing
+
+    from airalert.drones import evaluate as ev
+    from airalert.drones import mentions as dm
+    from airalert.drones.gazetteer import Gazetteer
+
+    s = get_settings()
+    with closing(sqlite3.connect(_drones_db(db))) as conn:
+        raw, edits = dm.read_journal(conn)
+    lines, mentions = dm.build(raw, edits, Gazetteer.load(s.gazetteer_dir))
+    messages = {
+        (r.channel, int(r.msg_id), int(r.version)): r.message
+        for r in lines.drop_duplicates(["channel", "msg_id", "version"]).itertuples(index=False)
+    }
+    rows = ev.sample(lines, mentions, messages, n, seed)
+    out = out or s.data_dir / "labels" / "sample.jsonl"
+    ev.write_jsonl(rows, out)
+    meta = {"n": len(rows), "seed": seed, "strata_sizes": ev.strata_sizes(lines, mentions)}
+    out.with_name(out.stem + "_meta.json").write_text(
+        json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8"
+    )
+    by = pd.Series([r["channel"] for r in rows]).value_counts().to_dict()
+    typer.echo(f"{out}: {len(rows)} lines {by}")
+
+
+@app.command("drones-eval")
+def drones_eval(
+    gold: Path = typer.Option(None, help="default: data/labels/gold.jsonl"),
+    mentions_path: Path = typer.Option(
+        None, "--mentions", help="default: data/processed/drone_mentions.parquet"
+    ),
+) -> None:
+    """Precision/recall of the parser vs gold labels (kind, count, oblast, place) -> reports/drone_parse_eval.md."""
+    import json
+
+    from airalert.drones import evaluate as ev
+
+    s = get_settings()
+    labels = s.data_dir / "labels"
+    gold_rows = ev.read_jsonl(gold or labels / "gold.jsonl")
+    mentions = pd.read_parquet(mentions_path or s.processed_dir / "drone_mentions.parquet")
+    weights = None
+    if (labels / "sample_meta.json").exists() and (labels / "sample.jsonl").exists():
+        meta = json.loads((labels / "sample_meta.json").read_text(encoding="utf-8"))
+        weights = ev.weights_for(ev.read_jsonl(labels / "sample.jsonl"), meta["strata_sizes"])
+    table, errors = ev.evaluate(gold_rows, mentions, weights)
+    missed = ev.meets_targets(table)
+    md = [
+        "# Drone parser vs gold labels",
+        "",
+        f"{len(gold_rows)} labelled lines. `precision`/`recall` are measured on the stratified sample, which "
+        "over-samples failure strata; `w_precision`/`w_recall` re-weight it to the whole stream by stratum size "
+        "(the targets are checked on these).",
+        "",
+        ev.md_table(table),
+        "",
+    ]
+    md += (
+        ["## Targets", "", *(f"- MISSED: {m}" for m in missed)] if missed else ["## Targets", "", "- all met"]
+    )
+    md += ["", "## Errors", ""] + [
+        f"- `{e['id']}` **{e['error']}** gold={json.dumps(e['gold'], ensure_ascii=False)} "
+        f"pred={json.dumps(e['pred'], ensure_ascii=False, default=str)}"
+        for e in errors
+    ]
+    (s.reports_dir / "drone_parse_eval.md").write_text("\n".join(md) + "\n", encoding="utf-8")
+    typer.echo(table.to_string(index=False))
+    typer.echo(f"errors: {dict(ev.error_summary(errors))}; report: {s.reports_dir / 'drone_parse_eval.md'}")
+    if missed:
+        typer.echo("TARGETS MISSED: " + "; ".join(missed))
+        raise typer.Exit(1)
+
+
 @app.command("rebuild-alerts")
 def rebuild_alerts(channel: str = OFFICIAL_CHANNEL) -> None:
     """Rebuild alerts + parse_errors from raw_messages (deterministic)."""

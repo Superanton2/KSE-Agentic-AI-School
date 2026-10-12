@@ -11,3 +11,4 @@ __pycache__/
 .hypothesis/
 .DS_Store
 data/work/
+data/processed/drone_lines.parquet
