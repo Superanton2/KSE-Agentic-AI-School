@@ -293,15 +293,18 @@ def create_app(data_dir: Path | None = None, web_dir: Path | None = None, alerts
     def estimate(
         travel: float = Query(..., ge=0, le=180),
         depart_in: float = Query(0, ge=0, le=120),
-        shop_mean: float = Query(60, ge=sim.SHOP_MIN, le=sim.SHOP_MAX),
+        shop_mean: float = Query(60, ge=5, le=240),
         shop_sd: float = Query(15, ge=0, le=60),
+        shop_min: float = Query(sim.SHOP_MIN, ge=0, le=240),
+        shop_max: float = Query(sim.SHOP_MAX, ge=0, le=240),
         wait_max: float = Query(0, ge=0, le=60),
         open_delay: float = Query(0, ge=0, le=30),
     ):
         if not eng.scen or not eng.state:
             return unavailable()
         params = {"depart_in": depart_in, "travel": travel, "shop_mean": shop_mean, "shop_sd": shop_sd,
-                  "wait_max": wait_max, "open_delay": open_delay}
+                  "wait_max": wait_max, "open_delay": open_delay, "shop_min": min(shop_min, shop_max),
+                  "shop_max": max(shop_min, shop_max)}
         out = eng.estimate(params)
         return json.loads(json.dumps(out, default=lambda x: None if isinstance(x, float) and math.isinf(x) else x))
 

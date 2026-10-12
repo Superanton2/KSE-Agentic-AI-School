@@ -1,6 +1,7 @@
 """sim.py on the shared cases (tests/fixtures/sim_cases.json — the same file a JS port must pass)."""
 
 import itertools
+import math
 import json
 from pathlib import Path
 
@@ -79,3 +80,46 @@ def test_deterministic_and_band():
     assert a == b
     lo, hi = a["p_band"]
     assert lo <= hi and len(a["curve"]) == 13 and a["best"] in a["curve"]
+
+
+def _trip_phase3(alerts, horizon, elapsed, depart_in, travel, T, wait_max, open_delay):
+    """trip() before the venue presets: closed only while the alert is on."""
+    arrive = elapsed + depart_in + travel
+    wait, open_ = None, arrive
+    for s, e in alerts:
+        if s <= arrive and (e is None or e > arrive):
+            wait = math.inf if e is None else e - arrive
+            if wait > wait_max:
+                return "fail", wait
+            open_ = e + open_delay
+            break
+    if open_ + T > horizon:
+        return "beyond", wait
+    for s, _ in alerts:
+        if open_ < s <= open_ + T:
+            return "fail", wait
+    return "success", wait
+
+
+def test_venue_closed_after_all_clear():
+    assert _case("arrive 5 after all-clear, open_delay 15, wait_max 0")["expect"]["p"] == 0
+    ok = _case("arrive 5 after all-clear, open_delay 15, wait_max 15")["expect"]
+    assert ok["p"] == 1 and ok["wait_median"] == 10
+    assert sim.trip([[-30, -5]], 120, 0, 0, 0, 15, 15, 15) == ("success", 10)
+    assert sim.trip([[-30, -5], [20, 40]], 120, 0, 0, 0, 15, 15, 15) == ("fail", 10)  # opens at 10, alert at 20
+    assert 0 < _case("shop_mean 15, sd 5")["expect"]["p"] < 1  # clipped to 20 every trip would hit the alert at 28
+    assert sim.shop_time(0, 15, 5, 5, 60) < 20
+
+
+def test_metro_regression_open_delay_0():
+    """Metro (open_delay 0, default bounds) is bit-identical to phase 3: old fixtures and random trips."""
+    old = json.loads((Path(__file__).parent / "fixtures" / "sim_cases.json").read_text())["cases"]
+    for c in old:
+        if c["params"]["open_delay"] == 0 and "shop_min" not in c["params"]:
+            assert sim.simulate(c["scenarios"], c["elapsed_min"], c["params"], seed=c["seed"]) == c["expect"], c["name"]
+    sc = _random_scen(2)
+    rng = np.random.default_rng(3)
+    for s in sc["scenarios"]:
+        args = (s["alerts"], 120, float(rng.uniform(0, 10)), 0, float(rng.uniform(0, 40)), float(rng.uniform(20, 120)),
+                float(rng.choice([0, 5, 15, 60])), 0)
+        assert sim.trip(*args) == _trip_phase3(*args)

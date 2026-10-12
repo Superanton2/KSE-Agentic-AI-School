@@ -4,9 +4,10 @@ Deterministic and portable: the PRNG is mulberry32 seeded with ``seed + scenario
 that JavaScript reproduces exactly), the normal draw is Box–Muller from two uniforms. Shared cases live in
 ``tests/fixtures/sim_cases.json``.
 
-Per scenario s: T ~ N(shop_mean, shop_sd) clipped to [20, 120]; arrive = elapsed + depart_in + travel; if an alert
-is on at arrive (ends at e): e − arrive ≤ wait_max → open = e + open_delay, else failure; open + T > horizon →
-beyond horizon; success iff no alert starts in (open, open + T].
+Per scenario s: T ~ N(shop_mean, shop_sd) clipped to [shop_min, shop_max] (default [20, 120]); arrive = elapsed +
+depart_in + travel; the venue is closed on [start, end + open_delay) of every alert — if arrive falls in such an
+interval: open − arrive ≤ wait_max → wait until open = end + open_delay, else failure; open + T > horizon → beyond
+horizon; success iff no alert starts in (open, open + T]. With open_delay = 0 this is the original phase-3 rule.
 """
 
 import math
@@ -36,11 +37,11 @@ def mulberry32(seed: int):
     return nxt
 
 
-def shop_time(seed: int, mean: float, sd: float) -> float:
+def shop_time(seed: int, mean: float, sd: float, lo: float = SHOP_MIN, hi: float = SHOP_MAX) -> float:
     r = mulberry32(seed)
     u1, u2 = r(), r()
     z = math.sqrt(-2.0 * math.log(1.0 - u1)) * math.cos(2.0 * math.pi * u2)
-    return min(max(mean + sd * z, SHOP_MIN), SHOP_MAX)
+    return min(max(mean + sd * z, lo), hi)
 
 
 def trip(alerts: list, horizon: float, elapsed: float, depart_in: float, travel: float, T: float,
@@ -50,8 +51,8 @@ def trip(alerts: list, horizon: float, elapsed: float, depart_in: float, travel:
     wait = None
     open_ = arrive
     for s, e in alerts:
-        if s <= arrive and (e is None or e > arrive):
-            wait = math.inf if e is None else e - arrive
+        if s <= arrive and (e is None or e + open_delay > arrive):
+            wait = math.inf if e is None else e + open_delay - arrive
             if wait > wait_max:
                 return "fail", wait
             open_ = e + open_delay
@@ -77,7 +78,8 @@ def simulate(scen: dict, elapsed_min: float, params: dict, seed: int = 0, curve:
     sc = scen["scenarios"]
     H = scen["horizon_min"]
     members = scen.get("members", 1)
-    Ts = [shop_time(seed + i, params["shop_mean"], params["shop_sd"]) for i in range(len(sc))]
+    lo, hi = params.get("shop_min", SHOP_MIN), params.get("shop_max", SHOP_MAX)
+    Ts = [shop_time(seed + i, params["shop_mean"], params["shop_sd"], lo, hi) for i in range(len(sc))]
 
     def run(depart_in: float) -> dict:
         ok = np.zeros(members)

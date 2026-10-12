@@ -563,7 +563,7 @@
    }
   },
   {
-   "name": "open_delay 10 shifts window to (20,80] -> fail",
+   "name": "open_delay 10 shifts window to (20,80] -> fail, wait counts to opening",
    "scenarios": {
     "generated_at": "2026-10-12T12:00:00Z",
     "horizon_min": 120,
@@ -601,8 +601,8 @@
      0.0
     ],
     "share_beyond": 0.0,
-    "wait_median": 10,
-    "wait_p80": 10,
+    "wait_median": 20,
+    "wait_p80": 20,
     "curve": [
      {
       "depart_in": 0,
@@ -614,7 +614,7 @@
      },
      {
       "depart_in": 10,
-      "p": 1.0
+      "p": 0.0
      },
      {
       "depart_in": 15,
@@ -658,8 +658,8 @@
      }
     ],
     "best": {
-     "depart_in": 10,
-     "p": 1.0
+     "depart_in": 0,
+     "p": 0.0
     }
    }
   },
@@ -1588,71 +1588,723 @@
    },
    "seed": 11,
    "expect": {
-    "p": 0.5125,
+    "p": 0.5,
     "p_band": [
-     0.4,
+     0.375,
      0.625
     ],
     "share_beyond": 0.0,
-    "wait_median": 31,
-    "wait_p80": 44,
+    "wait_median": 36,
+    "wait_p80": 49,
     "curve": [
      {
       "depart_in": 0,
-      "p": 0.5125
+      "p": 0.5
      },
      {
       "depart_in": 5,
-      "p": 0.5125
+      "p": 0.5
      },
      {
       "depart_in": 10,
-      "p": 0.5375
+      "p": 0.5125
      },
      {
       "depart_in": 15,
-      "p": 0.5375
+      "p": 0.525
      },
      {
       "depart_in": 20,
-      "p": 0.5316455696202531
+      "p": 0.5063291139240507
      },
      {
       "depart_in": 25,
-      "p": 0.5512820512820513
+      "p": 0.5063291139240507
      },
      {
       "depart_in": 30,
-      "p": 0.5733333333333334
+      "p": 0.5384615384615384
      },
      {
       "depart_in": 35,
-      "p": 0.5774647887323944
+      "p": 0.5694444444444444
      },
      {
       "depart_in": 40,
-      "p": 0.546875
+      "p": 0.5223880597014925
      },
      {
       "depart_in": 45,
-      "p": 0.6181818181818182
+      "p": 0.5818181818181818
      },
      {
       "depart_in": 50,
-      "p": 0.6304347826086957
+      "p": 0.5918367346938775
      },
      {
       "depart_in": 55,
-      "p": 0.5609756097560976
+      "p": 0.5365853658536586
      },
      {
       "depart_in": 60,
-      "p": 0.5161290322580645
+      "p": 0.48484848484848486
      }
     ],
     "best": {
      "depart_in": 50,
-     "p": 0.6304347826086957
+     "p": 0.5918367346938775
+    }
+   }
+  },
+  {
+   "name": "arrive 5 after all-clear, open_delay 15, wait_max 0 -> fail",
+   "seed": 11,
+   "elapsed_min": 0,
+   "params": {
+    "depart_in": 0,
+    "travel": 0,
+    "shop_mean": 15,
+    "shop_sd": 0,
+    "shop_min": 5,
+    "shop_max": 60,
+    "wait_max": 0,
+    "open_delay": 15
+   },
+   "scenarios": {
+    "generated_at": "2026-10-12T12:00:00Z",
+    "horizon_min": 120,
+    "members": 1,
+    "scenarios": [
+     {
+      "m": 0,
+      "alerts": [
+       [
+        -30,
+        -5
+       ]
+      ]
+     }
+    ]
+   },
+   "expect": {
+    "p": 0.0,
+    "p_band": [
+     0.0,
+     0.0
+    ],
+    "share_beyond": 0.0,
+    "wait_median": 10,
+    "wait_p80": 10,
+    "curve": [
+     {
+      "depart_in": 0,
+      "p": 0.0
+     },
+     {
+      "depart_in": 5,
+      "p": 0.0
+     },
+     {
+      "depart_in": 10,
+      "p": 1.0
+     },
+     {
+      "depart_in": 15,
+      "p": 1.0
+     },
+     {
+      "depart_in": 20,
+      "p": 1.0
+     },
+     {
+      "depart_in": 25,
+      "p": 1.0
+     },
+     {
+      "depart_in": 30,
+      "p": 1.0
+     },
+     {
+      "depart_in": 35,
+      "p": 1.0
+     },
+     {
+      "depart_in": 40,
+      "p": 1.0
+     },
+     {
+      "depart_in": 45,
+      "p": 1.0
+     },
+     {
+      "depart_in": 50,
+      "p": 1.0
+     },
+     {
+      "depart_in": 55,
+      "p": 1.0
+     },
+     {
+      "depart_in": 60,
+      "p": 1.0
+     }
+    ],
+    "best": {
+     "depart_in": 10,
+     "p": 1.0
+    }
+   }
+  },
+  {
+   "name": "arrive 5 after all-clear, open_delay 15, wait_max 15 -> success, wait 10",
+   "seed": 11,
+   "elapsed_min": 0,
+   "params": {
+    "depart_in": 0,
+    "travel": 0,
+    "shop_mean": 15,
+    "shop_sd": 0,
+    "shop_min": 5,
+    "shop_max": 60,
+    "wait_max": 15,
+    "open_delay": 15
+   },
+   "scenarios": {
+    "generated_at": "2026-10-12T12:00:00Z",
+    "horizon_min": 120,
+    "members": 1,
+    "scenarios": [
+     {
+      "m": 0,
+      "alerts": [
+       [
+        -30,
+        -5
+       ],
+       [
+        30,
+        50
+       ]
+      ]
+     }
+    ]
+   },
+   "expect": {
+    "p": 1.0,
+    "p_band": [
+     1.0,
+     1.0
+    ],
+    "share_beyond": 0.0,
+    "wait_median": 10,
+    "wait_p80": 10,
+    "curve": [
+     {
+      "depart_in": 0,
+      "p": 1.0
+     },
+     {
+      "depart_in": 5,
+      "p": 1.0
+     },
+     {
+      "depart_in": 10,
+      "p": 1.0
+     },
+     {
+      "depart_in": 15,
+      "p": 0.0
+     },
+     {
+      "depart_in": 20,
+      "p": 0.0
+     },
+     {
+      "depart_in": 25,
+      "p": 0.0
+     },
+     {
+      "depart_in": 30,
+      "p": 0.0
+     },
+     {
+      "depart_in": 35,
+      "p": 0.0
+     },
+     {
+      "depart_in": 40,
+      "p": 0.0
+     },
+     {
+      "depart_in": 45,
+      "p": 0.0
+     },
+     {
+      "depart_in": 50,
+      "p": 1.0
+     },
+     {
+      "depart_in": 55,
+      "p": 1.0
+     },
+     {
+      "depart_in": 60,
+      "p": 1.0
+     }
+    ],
+    "best": {
+     "depart_in": 0,
+     "p": 1.0
+    }
+   }
+  },
+  {
+   "name": "shop_mean 15, sd 5, bounds [5,60] -> T not clipped to 20",
+   "seed": 11,
+   "elapsed_min": 0,
+   "params": {
+    "depart_in": 0,
+    "travel": 10,
+    "shop_mean": 15,
+    "shop_sd": 5,
+    "shop_min": 5,
+    "shop_max": 60,
+    "wait_max": 0,
+    "open_delay": 0
+   },
+   "scenarios": {
+    "generated_at": "2026-10-12T12:00:00Z",
+    "horizon_min": 120,
+    "members": 1,
+    "scenarios": [
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        28,
+        50
+       ]
+      ]
+     }
+    ]
+   },
+   "expect": {
+    "p": 0.65,
+    "p_band": [
+     0.65,
+     0.65
+    ],
+    "share_beyond": 0.0,
+    "wait_median": null,
+    "wait_p80": null,
+    "curve": [
+     {
+      "depart_in": 0,
+      "p": 0.65
+     },
+     {
+      "depart_in": 5,
+      "p": 0.3
+     },
+     {
+      "depart_in": 10,
+      "p": 0.05
+     },
+     {
+      "depart_in": 15,
+      "p": 0.0
+     },
+     {
+      "depart_in": 20,
+      "p": 0.0
+     },
+     {
+      "depart_in": 25,
+      "p": 0.0
+     },
+     {
+      "depart_in": 30,
+      "p": 0.0
+     },
+     {
+      "depart_in": 35,
+      "p": 0.0
+     },
+     {
+      "depart_in": 40,
+      "p": 1.0
+     },
+     {
+      "depart_in": 45,
+      "p": 1.0
+     },
+     {
+      "depart_in": 50,
+      "p": 1.0
+     },
+     {
+      "depart_in": 55,
+      "p": 1.0
+     },
+     {
+      "depart_in": 60,
+      "p": 1.0
+     }
+    ],
+    "best": {
+     "depart_in": 40,
+     "p": 1.0
     }
    }
   }
