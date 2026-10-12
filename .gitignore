@@ -13,3 +13,6 @@ __pycache__/
 data/work/
 data/processed/drone_lines.parquet
 data/processed/drone_tracks.parquet
+.claude
+.idea
+.gitignore
