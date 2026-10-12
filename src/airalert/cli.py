@@ -602,6 +602,16 @@ def drones_features(
         raise typer.Exit(1)
 
 
+@app.command("model-features")
+def model_features(check_leak: int = typer.Option(200, help="random t recomputed from truncated sources")) -> None:
+    """Phase 4 grid: labels + as-of features -> data/processed/model_grid.parquet, reports/model_lift.md."""
+    from airalert.model import pipeline
+
+    s = get_settings()
+    g = pipeline.build_grid(s.data_dir, s.reports_dir, check_leak)
+    typer.echo(f"{len(g)} grid points ({int(g['calm'].sum())} calm) -> {s.reports_dir / 'model_lift.md'}")
+
+
 @app.command("rebuild-alerts")
 def rebuild_alerts(channel: str = OFFICIAL_CHANNEL) -> None:
     """Rebuild alerts + parse_errors from raw_messages (deterministic)."""
