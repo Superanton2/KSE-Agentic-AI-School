@@ -74,13 +74,17 @@ def period_counts(alerts: pd.DataFrame, end: pd.Timestamp) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def build_grid(data_dir: Path, reports_dir: Path, check_leak: int = 200) -> pd.DataFrame:
-    sources, end = load(data_dir)
+def build_grid(data_dir: Path, reports_dir: Path, check_leak: int = 200, db: Path | None = None,
+               report: bool = True) -> pd.DataFrame:
+    sources, end = load(data_dir, db)
     times = F.grid(D.TRAIN_START, end)
     g = F.build(sources, times, end)
-    g.to_parquet(data_dir / "processed" / GRID_FILE, index=False, compression="zstd")
     leak = leak_check(sources, g, check_leak)
-    lift_report(g, sources, end, leak, data_dir, reports_dir)
+    if not all(ok for _, ok in leak):
+        raise RuntimeError("leak check failed: features differ on truncated sources")
+    g.to_parquet(data_dir / "processed" / GRID_FILE, index=False, compression="zstd")
+    if report:
+        lift_report(g, sources, end, leak, data_dir, reports_dir)
     return g
 
 
@@ -407,7 +411,63 @@ def backtest_summary(bt: pd.DataFrame, model: str, n_boot: int = 1000, seed: int
     return out
 
 
-def fit_final(data_dir: Path, model: str, C: float, seed: int = 0) -> dict:
+CARD_FILE = "model_card.json"
+SKILL_BUCKETS = {"0-30": 30, "30-60": 60, "60-120": 120}
+
+
+def model_card(data_dir: Path, updated_at: str | None = None, db: Path | None = None) -> dict:
+    """data/processed/model_card.json from the saved evaluation run (raw numbers, no rounding in our favour)."""
+    ev = eval_dir(data_dir)
+    summ = json.loads((ev / "summary.json").read_text())
+    product = summ["product"]
+    mt = pd.read_csv(ev / "metrics.csv")
+    boots = pd.read_csv(ev / "bootstrap.csv")
+    cal = pd.read_csv(ev / "calibration.csv")
+    bt = json.loads((ev / "backtest_summary.json").read_text())
+    dur = json.loads((ev / "duration.json").read_text())
+    sources, _ = load(data_dir, db)
+    a = sources.alerts
+    day = kyiv_day(a["started_at"])
+    n_test_starts = int(((day >= D.TEST_START_DAY) & (day <= D.TEST_END_DAY)).sum())
+
+    def bss(H):
+        r = mt[(mt["model"] == product) & (mt["H"] == H)]
+        return float(r["bss_vs_B1"].iloc[0])
+
+    bss_ci = boots[(boots["stat"] == "bss") & (boots["a"] == product)]
+    ab = boots[(boots["stat"] == "diff") & (boots["a"] == "M1b") & (boots["b"] == "M1a")]
+    card = {
+        "updated_at": updated_at or datetime.now(UTC).isoformat(),
+        "evaluated_at": summ["run_at"],
+        "code_sha": summ["code_sha"],
+        "product_model": product,
+        "test_period": [str(D.TEST_START_DAY), str(D.TEST_END_DAY)],
+        "n_test_starts": n_test_starts,
+        "n_test_points": summ["n_test_points"],
+        "reference": "B1 (14-day rate)",
+        "skill": {k: bss(H) for k, H in SKILL_BUCKETS.items()},
+        "metrics": mt.to_dict("records"),
+        "bss_ci": bss_ci[["H", "point", "lo", "hi"]].to_dict("records"),
+        "calibration": cal[cal["model"].isin([product, "B1"])].to_dict("records"),
+        "ablation": {"comparison": "M1b (with drone features) − M1a (alerts + time), Brier",
+                     "by_horizon": ab[["H", "point", "lo", "hi"]].to_dict("records"),
+                     "significant": bool(((ab["hi"] < 0) | (ab["lo"] > 0)).any())},
+        "duration": {"km_from": "2026-08-17", "median_min": dur["km_median"], "n": dur["n_km"],
+                     "check": dur["checks"]["08-17"]},
+        "product_backtest": {k: bt[k] for k in ("n_trips", "success_rate", "bss_vs_B1", "bss_ci", product, "B1",
+                                                "calibration")},
+        "notes": ("Ймовірності — оцінка шансу встигнути, не порада з безпеки. Ознаки дронів не покращили прогноз на "
+                  "тесті (див. ablation), тому в продукті модель без них. Тест: один місяць з вищою інтенсивністю "
+                  "тривог, ніж у навчанні; довірчі інтервали широкі."),
+    }
+    out = data_dir / "processed" / CARD_FILE
+    tmp = out.with_suffix(".tmp")
+    tmp.write_text(json.dumps(card, ensure_ascii=False, indent=1, default=float))
+    tmp.replace(out)
+    return card
+
+
+def fit_final(data_dir: Path, model: str, C: float, seed: int = 0, db: Path | None = None) -> dict:
     """Product model refit on all data whose label window closed (t + 120 min ≤ data end) + N_MEMBERS refits on
     day-bootstraps → data/processed/model_final.pkl (members, KM, metadata)."""
     import pickle
@@ -415,7 +475,7 @@ def fit_final(data_dir: Path, model: str, C: float, seed: int = 0) -> dict:
     from airalert.model import duration as U
     from airalert.model import hazard as HZ
 
-    sources, end = load(data_dir)
+    sources, end = load(data_dir, db)
     g = pd.read_parquet(data_dir / "processed" / GRID_FILE)
     rows = F.hazard_rows(g)
     mask = ((g["t"] >= D.TRAIN_START) & (g["t"] + pd.Timedelta(minutes=120) <= end)).to_numpy()
@@ -434,6 +494,9 @@ def fit_final(data_dir: Path, model: str, C: float, seed: int = 0) -> dict:
     km = U.KM.fit(sources.alerts[sources.alerts["started_at"] >= U.KM_START])
     art = {"model": model, "C": C, "members": members, "km_S": km.S, "fitted_at": datetime.now(UTC).isoformat(),
            "train_end": end.isoformat(), "code_sha": git_sha()}
-    with open(data_dir / "processed" / FINAL_FILE, "wb") as f:
+    out = data_dir / "processed" / FINAL_FILE
+    tmp = out.with_suffix(".tmp")
+    with open(tmp, "wb") as f:
         pickle.dump(art, f)
+    tmp.replace(out)  # atomic: the API never sees a half-written file
     return art

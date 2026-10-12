@@ -622,6 +622,65 @@ def model_eval(n_trips: int = 2000) -> None:
     typer.echo(f"product model {r['product']}; backtest BSS vs B1 {r['bt']['bss_vs_B1']:.3f}")
 
 
+@app.command("model-fit")
+def model_fit(
+    rebuild: bool = typer.Option(True, help="rebuild the grid first"),
+    from_live: bool = typer.Option(False, help="back up the live alerts DB read-only into data/work first"),
+    at: str = typer.Option("", help="HH:MM Kyiv time: run every day at that time (nightly service)"),
+) -> None:
+    """Nightly: (grid rebuild) -> refit the product ensemble on all closed labels -> model_card.json."""
+    import json
+    import time as _time
+
+    from airalert.model import pipeline
+
+    s = get_settings()
+
+    def once() -> None:
+        db = None
+        if from_live:  # read-only online backup: safe even from another container (cannot touch the WAL)
+            import sqlite3
+            from contextlib import closing
+
+            db = s.data_dir / "work" / "alerts.sqlite"
+            db.parent.mkdir(parents=True, exist_ok=True)
+            with closing(sqlite3.connect(f"file:{s.sqlite_path}?mode=ro", uri=True, timeout=30)) as a, \
+                    closing(sqlite3.connect(db)) as b:
+                a.backup(b)
+        if rebuild:
+            pipeline.build_grid(s.data_dir, s.reports_dir, check_leak=20, db=db, report=False)
+        summ = json.loads((pipeline.eval_dir(s.data_dir) / "summary.json").read_text())
+        art = pipeline.fit_final(s.data_dir, summ["product"], summ["C"][summ["product"]], db=db)
+        pipeline.model_card(s.data_dir, updated_at=art["fitted_at"], db=db)
+        typer.echo(f"{art['model']} x{len(art['members'])} fitted on data to {art['train_end']}")
+
+    if not at:
+        once()
+        return
+    hh, mm = (int(x) for x in at.split(":"))
+    while True:
+        now = pd.Timestamp.now(tz="Europe/Kyiv")
+        nxt = now.normalize() + pd.Timedelta(hours=hh, minutes=mm)
+        if nxt <= now:
+            nxt += pd.Timedelta(days=1)
+        log.info("next refit at %s", nxt)
+        _time.sleep((nxt - now).total_seconds())
+        try:
+            once()
+        except Exception:
+            log.exception("nightly refit failed; the API keeps the previous model")
+
+
+@app.command("serve")
+def serve(host: str = "127.0.0.1", port: int = 8000) -> None:
+    """FastAPI: /api/state, /api/scenarios, /api/estimate, /api/model-card + static web/."""
+    import uvicorn
+
+    from airalert.api.app import create_app
+
+    uvicorn.run(create_app(), host=host, port=port, access_log=False, log_level="info")
+
+
 @app.command("rebuild-alerts")
 def rebuild_alerts(channel: str = OFFICIAL_CHANNEL) -> None:
     """Rebuild alerts + parse_errors from raw_messages (deterministic)."""
