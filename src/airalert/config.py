@@ -17,7 +17,8 @@ SITREP_URL = "https://alerts.in.ua/llm"
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    # empty values (TG_API_ID= in a fresh .env, passed through by docker env_file) mean "not set"
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore", env_ignore_empty=True)
 
     tg_api_id: int | None = None
     tg_api_hash: SecretStr | None = None

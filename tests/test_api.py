@@ -129,14 +129,16 @@ def test_model_card_static_and_headers(client):
 def test_cold_start_unknown(tmp_path):
     """Empty data/live: the API does not crash; state is «unknown», estimate is 503, health answers."""
     _model(tmp_path / "data")
+    _sitrep_db(tmp_path / "sitrep.sqlite")  # the SITREP poller is already up, the Telegram collector is not
     app = create_app(data_dir=tmp_path / "data", web_dir=tmp_path / "web", alerts_db=tmp_path / "none.sqlite",
-                     sitrep_db=tmp_path / "none2.sqlite", clock=lambda: NOW, background=False)
+                     sitrep_db=tmp_path / "sitrep.sqlite", clock=lambda: NOW, background=False)
     with TestClient(app) as c:
         s = c.get("/api/state").json()
         assert s["status"] == "unknown" and s["data_as_of"] is None and s["mode"] == "live"
         assert c.get("/api/estimate?travel=20").status_code == 503
         h = c.get("/api/health").json()
         assert h["sources"]["alerts"]["ok"] is False and h["model"] == "M1a"
+        assert h["sources"]["sitrep"]["data_as_of"]
 
 
 def test_health(client):
@@ -162,3 +164,27 @@ def test_fallback_model_then_nightly(tmp_path):
         (data / "processed" / "model_final.pkl").hardlink_to(fb / "model_final.pkl")  # the nightly refit lands
         eng.refresh()
         assert eng.pkl == data / "processed" / "model_final.pkl"
+
+
+def test_ro_connect_wal_db_in_readonly_dir(tmp_path):
+    """The API mounts data/live read-only: a WAL DB whose writer removed -wal/-shm must still be readable."""
+    import sqlite3
+
+    from airalert.api.live import ro_connect
+
+    d = tmp_path / "live"
+    d.mkdir()
+    with closing(sqlite3.connect(d / "x.sqlite")) as c:
+        c.execute("PRAGMA journal_mode=WAL")
+        c.execute("CREATE TABLE t(v)")
+        c.execute("INSERT INTO t VALUES (42)")
+        c.commit()
+    assert not (d / "x.sqlite-wal").exists()
+    d.chmod(0o555)
+    try:
+        with closing(ro_connect(d / "x.sqlite")) as c:
+            assert c.execute("SELECT v FROM t").fetchone() == (42,)
+        with pytest.raises(sqlite3.OperationalError):
+            ro_connect(d / "missing.sqlite")
+    finally:
+        d.chmod(0o755)

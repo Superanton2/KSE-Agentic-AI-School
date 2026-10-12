@@ -657,7 +657,9 @@ def model_fit(
 
             db = s.data_dir / "work" / "alerts.sqlite"
             db.parent.mkdir(parents=True, exist_ok=True)
-            with closing(sqlite3.connect(f"file:{s.sqlite_path}?mode=ro", uri=True, timeout=30)) as a, \
+            from airalert.api.live import ro_connect
+
+            with closing(ro_connect(s.sqlite_path, timeout=30)) as a, \
                     closing(sqlite3.connect(db)) as b:
                 a.backup(b)
         if rebuild:

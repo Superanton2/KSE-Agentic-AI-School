@@ -100,24 +100,32 @@ M1b − M1a: +0.0006 [−0.0078, 0.0083] на 30 хв, +0.0037 [−0.0076, 0.013
 - самооцінку парсера замінили незалежною сліпою розміткою hold-out
   ([`reports/drone_parse_eval_holdout.md`](reports/drone_parse_eval_holdout.md)).
 
-## Live-режим
+## Live-режим і сервер
 
 ```bash
 cp .env.example .env    # TG_API_ID / TG_API_HASH з my.telegram.org
 make login              # інтерактивно; сесія — у ~/.config/airalert/ (600), поза репо
 make up                 # collector, sitrep, api, nightly; чекає, поки /api/health відповість
-make ps / make logs / make down
-make model              # перенавчити з живої БД (знімок усередині колектора)
-make snapshot           # копії всіх live-БД у data/work/backup/<дата>/, ротація 7 днів
-make deploy HOST=user@host DIR=/opt/airalert   # сервер: docs/DEPLOY.md (Proxmox VM, тунель, бекапи)
+make ps / make logs / make health / make down
+make model              # перенавчити зараз з живої БД (знімок усередині колектора)
+make snapshot / make cron                         # бекап журналів / щонічний бекап у crontab
+make migrate HOST=user@host DIR=/opt/airalert     # перенести живий колектор з ноутбука на сервер
+make deploy HOST=user@host DIR=/opt/airalert      # оновити код на сервері
 ```
 
+Сервер (Proxmox VM) — [`docs/DEPLOY.md`](docs/DEPLOY.md): потрібні лише docker, make, git, curl, rsync; усе інше — в образі.
+
+Без нагляду: колектор сам оновлює таблицю тривог з нових повідомлень (раз на ≤ 10 с) і на порожньому `data/live`
+сам завантажує історію каналів (`TG_ALERTS_SINCE`, `TG_DRONE_SINCE`); `nightly` о 04:00 перенавчає модель, а на
+новому сервері — одразу, і відмовляється вчитись на журналі без історії; API підхоплює нову модель без перезапуску;
+логи — 3 × 10 МБ на контейнер.
+
 Холодний старт: на порожньому `data/live` API не падає — `/api/state` віддає `status: "unknown"`, сайт показує
-«Немає свіжих даних», поки колектор не наздожене. Якщо навченої моделі ще немає (`model_final.pkl` у `.gitignore`),
-`make up` спершу запускає `make model-fallback` — модель на закомічених даних у `data/work/replay/latest/`, API пише
-warning і переходить на нічну модель, щойно `nightly` її створить. `GET /api/health` → `{code_sha, model_updated_at,
-sources: {alerts, drones, sitrep: {data_as_of, ok}}}`. Час повного холодного циклу (`make down && rm -rf data/live/* &&
-make up` → живий статус) на ноутбуці ще не заміряно.
+«Немає свіжих даних». Якщо навченої моделі ще немає (`model_final.pkl` у `.gitignore`), `make up` спершу робить
+`make model-fallback` — модель на закомічених даних у `data/work/replay/latest/`; API пише warning і переходить на
+нічну модель, щойно `nightly` її створить. Перевірено в ізольованому стеку (порожній `data/live`, sitrep + api +
+nightly): API відповідає за 5 с, SITREP видно в `/api/health` за хвилину. Колектор з Telegram у цій перевірці не
+запускався (одна сесія — один колектор); його холодний старт покриває `tests/test_live.py`.
 
 ## Структура репо
 

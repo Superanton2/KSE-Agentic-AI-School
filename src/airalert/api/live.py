@@ -22,8 +22,24 @@ HISTORY = pd.Timedelta(days=16)  # the features look back 14 days
 STALE_SITREP = pd.Timedelta(minutes=10)
 
 
-def _ro(db: Path) -> sqlite3.Connection:
-    return sqlite3.connect(f"file:{db}?mode=ro", uri=True, timeout=5)
+def ro_connect(db: Path, timeout: float = 5) -> sqlite3.Connection:
+    """Read-only, from a read-only mount. A WAL database without its -wal/-shm files (the writer checkpointed and
+    removed them) cannot be opened with ``mode=ro`` when the directory is not writable; without a -wal file the
+    main file holds every committed transaction, so ``immutable=1`` reads exactly that."""
+    if not db.exists():
+        raise sqlite3.OperationalError(f"no database {db}")
+    c = sqlite3.connect(f"file:{db}?mode=ro", uri=True, timeout=timeout)
+    try:
+        c.execute("SELECT 1 FROM sqlite_master LIMIT 1").fetchall()
+        return c
+    except sqlite3.OperationalError:
+        c.close()
+        if Path(f"{db}-wal").exists():
+            raise
+        return sqlite3.connect(f"file:{db}?mode=ro&immutable=1", uri=True, timeout=timeout)
+
+
+_ro = ro_connect
 
 
 def _retry(fn, attempts: int = 3):

@@ -111,6 +111,8 @@ services:
     profiles: ["serve"]
     entrypoint: ["airalert", "model-fit", "--from-live", "--at", "04:00"]
     command: []
+    healthcheck:  # the image default checks collector heartbeats; nightly has none
+      disable: true
     environment:
       DATA_DIR: /app/data
       MPLCONFIGDIR: /tmp

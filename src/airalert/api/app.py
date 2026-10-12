@@ -115,6 +115,14 @@ class Engine:
         if pkl.parent.name != "processed" and self.replay_at is None:
             log.warning("no nightly model in data/processed; using the fallback %s (`make model` fits one on live data)", pkl)
 
+    def sitrep_only(self, now: pd.Timestamp) -> L.Live | None:
+        """Alerts unreadable: keep the SITREP part for /api/health."""
+        try:
+            level, ok, shb = L.read_sitrep(self.sitrep_db, now)
+        except Exception:
+            return None
+        return L.Live(pd.DataFrame(columns=D.ALERT_COLS), False, None, level, ok, shb)
+
     def mode(self) -> dict:
         if self.replay_at is None:
             return {"mode": "live"}
@@ -130,7 +138,7 @@ class Engine:
             lv = self.reader(now)
         except Exception as e:  # e.g. a cold start: the collector has not created its DB yet
             log.warning("live read failed: %s", e)
-            self.live = None
+            self.live = self.sitrep_only(now)
             if self.state and self.state["status"] != "unknown":
                 self.state = {**self.state, "sources_ok": {"alerts": False, "drones": False}}
             else:
