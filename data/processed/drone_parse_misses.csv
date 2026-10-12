@@ -1,503 +1,510 @@
 place_raw,match,channel,n,oblast
 Миколаївку,ambiguous,kudy_letyt,21,UA.17
+Калинопіль,none,kudy_letyt,15,UA.01
 Ширяєве,none,kudy_letyt,15,UA.17
+Гайдамацьке,none,kudy_letyt,12,UA.10
 Південне,ambiguous,kpszsu,12,nan
 Кременчуцького водосховища,none,kpszsu,12,"UA.18,nan"
 Просяну,ambiguous,kudy_letyt,11,UA.04
 центральної частини Києва,none,kpszsu,11,nan
-акваторії Чорного моря,none,kudy_letyt,10,"UA.08,UA.16,nan"
 зону відчуження Чорнобильської АЕС,none,kpszsu,10,nan
-Лавіна,none,kyiv_nebo,10,UA.12
-північ Київщини,none,kpszsu,10,"UA.02,nan"
 Поліський природний заповідник,none,kudy_letyt,10,UA.27
 Сергіївку,ambiguous,kudy_letyt,10,UA.17
 південь Одещини,none,kpszsu,10,nan
-південь Одещини (Вилкове),none,kpszsu,9,nan
-Дергачі/Малу Данилівку,ambiguous,kpszsu,9,nan
+акваторії Чорного моря,none,kudy_letyt,10,"UA.08,UA.16,nan"
+північ Київщини,none,kpszsu,10,"UA.02,nan"
+Лавіна,none,kyiv_nebo,10,UA.12
 Мости,ambiguous,kyiv_nebo,9,nan
+Дергачі/Малу Данилівку,ambiguous,kpszsu,9,nan
+південь Одещини (Вилкове),none,kpszsu,9,nan
 Іванків,ambiguous,kpszsu,9,"UA.12,nan"
 Київське водосховище,none,kpszsu,8,UA.02
-Лебедівку,ambiguous,kudy_letyt,7,UA.13
 Пеньківку,ambiguous,kudy_letyt,7,UA.23
-Затоку,ambiguous,kpszsu,7,nan
-Дмитрівку,ambiguous,kudy_letyt,7,"UA.04,UA.16"
-півночі Чернігівщини вектором руху,none,kpszsu,7,nan
 столиці,none,kpszsu,7,"UA.13,nan"
+півночі Чернігівщини вектором руху,none,kpszsu,7,nan
+Лебедівку,ambiguous,kudy_letyt,7,UA.13
+Дмитрівку,ambiguous,kudy_letyt,7,"UA.04,UA.16"
 Калинівку,ambiguous,kudy_letyt,7,"UA.12,UA.13"
+Затоку,ambiguous,kpszsu,7,nan
 захід та,none,kpszsu,6,"UA.01,UA.02,UA.13,UA.23,UA.27,nan"
 Чорноморське,ambiguous,kpszsu,6,nan
-Затоки,ambiguous,kpszsu,6,nan
 Сергіївку/Затоку,ambiguous,kpszsu,6,"UA.17,nan"
+Затоки,ambiguous,kpszsu,6,nan
 Підлітає,none,kyiv_nebo,6,UA.12
-Лавіни,none,kyiv_nebo,5,UA.12
-Кременчуцьке водосховище,none,kpszsu,5,nan
-Гоголеве,ambiguous,kudy_letyt,5,UA.18
-Козина,ambiguous,kpszsu,5,nan
-Київщині в районах н.п. Боярка/Чабани,none,kpszsu,5,nan
-Нароўля,none,kudy_letyt,5,BY
 заході Запоріжжя,none,kpszsu,5,nan
 півночі Запоріжжя,none,kpszsu,5,nan
+Київщині в районах н.п. Боярка/Чабани,none,kpszsu,5,nan
 Циркони,none,kyiv_nebo,5,UA.12
+Кременчуцьке водосховище,none,kpszsu,5,nan
+Гоголеве,ambiguous,kudy_letyt,5,UA.18
 Самарський ліс,none,kudy_letyt,5,UA.04
+Лавіни,none,kyiv_nebo,5,UA.12
+Нароўля,none,kudy_letyt,5,BY
 Південний міст,none,kudy_letyt,5,UA.12
-Сергіївку,ambiguous,kpszsu,4,UA.17
-південь та,none,kpszsu,4,"UA.04,UA.07,UA.21"
-Сергіївки,ambiguous,kpszsu,4,"UA.17,nan"
+Козина,ambiguous,kpszsu,5,nan
 Схоже,none,kyiv_nebo,4,UA.12
-Південного,ambiguous,kpszsu,4,nan
-межі між Чернігівщиною та Сумщиною,none,kpszsu,4,nan
 територію Білорусі,none,kudy_letyt,4,"BY,nan"
-Х-22,none,kpszsu,4,nan
-Хриплин,none,kudy_letyt,4,UA.06
-Улянівку,ambiguous,kudy_letyt,4,UA.21
-Одещині н.п.Балта,none,kpszsu,4,nan
 Нові Санжари Полтавщина,none,kpszsu,4,nan
 Чорноморське/Одесу,ambiguous,kpszsu,4,nan
-Білгород-Дністровський район Одещини,none,kpszsu,4,nan
-Миколаївку,ambiguous,kpszsu,4,"UA.12,UA.17,nan"
+Одещині н.п.Балта,none,kpszsu,4,nan
 Мар'янівку,ambiguous,kudy_letyt,4,UA.27
-Остер,ambiguous,kpszsu,3,nan
-Калібр,none,kudy_letyt,3,nan
-Славгород,none,kudy_letyt,3,UA.02
-Степанівки/Сум,ambiguous,kpszsu,3,nan
-Наднизько,none,kyiv_nebo,3,UA.12
-півдня Одещини,none,kpszsu,3,nan
-Чорноморське/Південне,ambiguous,kpszsu,3,nan
-Талалаївку/Дмитрівку,none,kpszsu,3,UA.21
-н.п.Городня\Сновськ,none,kpszsu,3,UA.02
+Миколаївку,ambiguous,kpszsu,4,"UA.12,UA.17,nan"
+Південного,ambiguous,kpszsu,4,nan
+Улянівку,ambiguous,kudy_letyt,4,UA.21
+Сергіївки,ambiguous,kpszsu,4,"UA.17,nan"
+Білгород-Дністровський район Одещини,none,kpszsu,4,nan
+Х-22,none,kpszsu,4,nan
+Хриплин,none,kudy_letyt,4,UA.06
+межі між Чернігівщиною та Сумщиною,none,kpszsu,4,nan
+південь та,none,kpszsu,4,"UA.04,UA.07,UA.21"
+Сергіївку,ambiguous,kpszsu,4,UA.17
 Калинівку/Васильків,ambiguous,kpszsu,3,UA.13
 Маяки,ambiguous,kpszsu,3,nan
-Канівського водосховища,none,kpszsu,3,nan
-Пирогів,none,kudy_letyt,3,UA.13
-Смотрич,ambiguous,kudy_letyt,3,UA.09
-Українку,ambiguous,kudy_letyt,3,nan
-межі між Сумщиною та Чернігівщиною,none,kpszsu,3,nan
-Козин,ambiguous,kpszsu,3,nan
-захід (Чернігівщина),none,kpszsu,3,UA.02
-Нові Бучмани,none,kudy_letyt,3,UA.27
-Козирку,none,kudy_letyt,3,UA.16
-межі Харківщини та Сумщини,none,kpszsu,3,nan
-Устинівка,ambiguous,kpszsu,3,nan
+Славгород,none,kudy_letyt,3,UA.02
+н.п.Городня\Сновськ,none,kpszsu,3,UA.02
 Мазыр,none,kudy_letyt,3,BY
-межі Миколаївщини та Одещини,none,kpszsu,3,nan
-Ямпіль,none,kpszsu,3,UA.21
+захід (Чернігівщина),none,kpszsu,3,UA.02
+Іванівки,ambiguous,kpszsu,3,nan
+Устинівка,ambiguous,kpszsu,3,nan
+півдня Одещини,none,kpszsu,3,nan
+Калібр,none,kudy_letyt,3,nan
+Ізмаїльський район,none,kpszsu,3,nan
+Козин,ambiguous,kpszsu,3,nan
+Канівського водосховища,none,kpszsu,3,nan
+Степанівки/Сум,ambiguous,kpszsu,3,nan
 Солоне,ambiguous,kpszsu,3,nan
+Смотрич,ambiguous,kudy_letyt,3,UA.09
+межі між Сумщиною та Чернігівщиною,none,kpszsu,3,nan
+межі Миколаївщини та Одещини,none,kpszsu,3,nan
+межі Харківщини та Сумщини,none,kpszsu,3,nan
+Козирку,none,kudy_letyt,3,UA.16
+Наднизько,none,kyiv_nebo,3,UA.12
+Ямпіль,none,kpszsu,3,UA.21
+Остер,ambiguous,kpszsu,3,nan
 північ та,none,kpszsu,3,"UA.07,nan"
+Чорноморське/Південне,ambiguous,kpszsu,3,nan
+Українку,ambiguous,kudy_letyt,3,nan
 схід Чернігівщини,none,kpszsu,3,"UA.21,nan"
 столицю,none,kpszsu,3,nan
-Іванівки,ambiguous,kpszsu,3,nan
-Ізмаїльський район,none,kpszsu,3,nan
+Нові Бучмани,none,kudy_letyt,3,UA.27
+Харківський,none,kyiv_nebo,2,UA.12
+Кам'яний Брід,ambiguous,kudy_letyt,2,UA.27
+містом Одеса,none,kpszsu,2,nan
+Миколаєва вектором руху Баштанка,none,kpszsu,2,nan
+Капаткевічы,none,kudy_letyt,2,"BY,nan"
+Хмельниччину вектором руху Шепетівка,none,kpszsu,2,nan
+Сарата,ambiguous,kpszsu,2,nan
+Хто,none,kyiv_nebo,2,UA.12
 межі між Миколаївщиною та Одещиною,none,kpszsu,2,nan
-Богуслав,ambiguous,kpszsu,2,nan
-т.о.Верхній Рогачик,none,kudy_letyt,2,UA.08
+Петрыкаў,none,kudy_letyt,2,BY
 Почули,none,kyiv_nebo,2,UA.12
+Калібр,none,kpszsu,2,nan
+Київщині напрямок Вишневе,none,kpszsu,2,nan
+Харкова півночі,none,kpszsu,2,nan
+Х-59/69,none,kpszsu,2,nan
+н.п. Ширяєве,none,kpszsu,2,UA.17
 КРЗ,none,kudy_letyt,2,UA.24
 К,none,kpszsu,2,nan
-Х-101,none,kpszsu,2,nan
-півночі Рівненщини вектором руху,none,kpszsu,2,nan
-Варнярку,none,kudy_letyt,2,UA.23
+н.п.Гайдамацьке,none,kpszsu,2,UA.10
+Побили,none,kyiv_nebo,2,UA.12
 Знам'янку,ambiguous,kpszsu,2,nan
 Знам'янки,ambiguous,kpszsu,2,nan
-обласний центр,none,kpszsu,2,"UA.02,UA.21"
 Звягель вектором руху,none,kpszsu,2,nan
-Х-59/69,none,kpszsu,2,nan
 Затоку/Сергіївку,ambiguous,kpszsu,2,nan
-Балістика,none,kyiv_nebo,2,UA.12
-Видубичи,none,kpszsu,2,UA.12
-Болярку,ambiguous,kudy_letyt,2,UA.27
-Затока/Сергіївка,ambiguous,kpszsu,2,nan
-захід Козятин (Вінниччина),none,kpszsu,2,UA.23
-Княжичі,ambiguous,kudy_letyt,2,UA.13
-межі Вінниччини та Черкащини,none,kpszsu,2,nan
-Південне/Чорноморське,ambiguous,kpszsu,2,nan
-т.о.Пологи,none,kudy_letyt,2,UA.26
-Харківський,none,kyiv_nebo,2,UA.12
-Харкова півночі,none,kpszsu,2,nan
-південь (,none,kpszsu,2,UA.02
-Вишневе/Київ,ambiguous,kpszsu,2,nan
-Ціль,none,kyiv_nebo,2,UA.12
-Чорне море,none,kpszsu,2,nan
-Київщини вектором руху Біла Церква,none,kpszsu,2,nan
-м Запоріжжя,none,kpszsu,2,nan
-північ (Київщина),none,kpszsu,2,UA.13
-містом Одеса,none,kpszsu,2,nan
-Петрыкаў,none,kudy_letyt,2,BY
-Хто,none,kyiv_nebo,2,UA.12
-північ Хмельниччини,none,kpszsu,2,UA.27
-Капаткевічы,none,kudy_letyt,2,"BY,nan"
-Київщині напрямок Вишневе,none,kpszsu,2,nan
-Побили,none,kyiv_nebo,2,UA.12
-лінії розмежування Миколаївщини та Одещини,none,kpszsu,2,nan
-Чорнобильську зону відчуження,none,kudy_letyt,2,UA.13
-н.п. Ширяєве,none,kpszsu,2,UA.17
-Кам'яний Брід,ambiguous,kudy_letyt,2,UA.27
-Чорнобильську зону відчуження вилетів в Білорусь,none,kudy_letyt,2,UA.13
-Калібр,none,kpszsu,2,nan
-Хмельниччину вектором руху Шепетівка,none,kpszsu,2,nan
-Чорного моря,none,kpszsu,2,"UA.08,nan"
-Чабани,ambiguous,kpszsu,2,nan
-Запоріжжя,ambiguous,kpszsu,2,UA.04
-Чабани\Вишневе,none,kpszsu,2,UA.12
-Вижив,none,kyiv_nebo,2,UA.12
-Дніпровського водосховища,none,kpszsu,2,"UA.04,nan"
-Опришівці,none,kudy_letyt,2,UA.06
-півдні Києва,none,kpszsu,2,nan
-загрозу крилатого озброєння,none,kudy_letyt,2,nan
-Ямпіль,none,kudy_letyt,2,UA.21
-Сарата,ambiguous,kpszsu,2,nan
-Іллінці,ambiguous,kpszsu,2,nan
-межі Харківщини та Дніпропетровщини,none,kpszsu,2,nan
-дрони-перехоплювачі,none,kyiv_nebo,2,UA.12
-Суми та,none,kpszsu,2,"UA.21,nan"
-Десну,ambiguous,kpszsu,2,nan
-Вінниччині поблизу Хмільника,none,kpszsu,2,nan
-Чернігівщини,none,kudy_letyt,2,RU
-Вінниччині рухається,none,kpszsu,2,nan
-півночі Києва,none,kpszsu,2,nan
-Є,none,kyiv_nebo,2,UA.12
-Голосіївський ліс,none,kudy_letyt,2,UA.12
-ГЕС,none,kyiv_nebo,2,UA.12
-Краснопілка / Одеса,none,kpszsu,2,UA.17
-півночі Київщини рухаються,none,kpszsu,2,nan
-сході Запоріжжя,none,kpszsu,2,nan
-Білгород-Дністровська,none,kpszsu,2,nan
-заході та в центрі,none,kpszsu,2,UA.02
-межі,none,kudy_letyt,2,"UA.13,UA.27"
-заході та сході від Запоріжжя,none,kpszsu,2,nan
+Х-101,none,kpszsu,2,nan
 межі між Дніпропетровською та Харківською областями,none,kpszsu,2,nan
-Південь Києва,none,kyiv_nebo,2,UA.12
-Відубичи,none,kpszsu,2,UA.12
-ЗБІР ЗАКРИТО,none,kyiv_nebo,2,UA.12
-півночі Чернігівщини рухається,none,kpszsu,2,nan
-Житомирщині н.п. Черняхів,none,kpszsu,2,nan
-Вилетів,none,kyiv_nebo,2,UA.12
-Житомирщину вектором руху Радомишль,none,kpszsu,2,nan
-Чернігівщині вектором руху,none,kpszsu,2,nan
-Житомирщину (Корнин,none,kpszsu,2,UA.13
-Ту-95МС,none,kudy_letyt,2,UA.12
-Живий,none,kyiv_nebo,2,UA.12
-Вільшани,ambiguous,kpszsu,2,nan
+межі Харківщини та Дніпропетровщини,none,kpszsu,2,nan
+Ціль,none,kyiv_nebo,2,UA.12
+Княжичі,ambiguous,kudy_letyt,2,UA.13
+заході та в центрі,none,kpszsu,2,UA.02
+заході та сході від Запоріжжя,none,kpszsu,2,nan
+загрозу крилатого озброєння,none,kudy_letyt,2,nan
+дрони-перехоплювачі,none,kyiv_nebo,2,UA.12
+Південне/Чорноморське,ambiguous,kpszsu,2,nan
+Затока/Сергіївка,ambiguous,kpszsu,2,nan
+Ямпіль,none,kudy_letyt,2,UA.21
 Ту-160,none,kudy_letyt,2,UA.12
 Ширяєве,none,kpszsu,2,UA.17
-Миколаєва вектором руху Баштанка,none,kpszsu,2,nan
-схід Волині,none,kpszsu,2,nan
+Суми та,none,kpszsu,2,"UA.21,nan"
+Ту-95МС,none,kudy_letyt,2,UA.12
+Чорного моря,none,kpszsu,2,"UA.08,nan"
+лінії розмежування Миколаївщини та Одещини,none,kpszsu,2,nan
+м Запоріжжя,none,kpszsu,2,nan
+межі,none,kudy_letyt,2,"UA.13,UA.27"
+межі Вінничини та Черкащини,none,kpszsu,2,nan
+Чорнобильську зону відчуження вилетів в Білорусь,none,kudy_letyt,2,UA.13
+Чорнобильську зону відчуження,none,kudy_letyt,2,UA.13
+межі Вінниччини та Черкащини,none,kpszsu,2,nan
+Чорне море,none,kpszsu,2,nan
+Краснопілка / Одеса,none,kpszsu,2,UA.17
+Чернігівщині вектором руху,none,kpszsu,2,nan
+Чернігівщини,none,kudy_letyt,2,RU
+Опришівці,none,kudy_letyt,2,UA.06
+Чабани\Вишневе,none,kpszsu,2,UA.12
+Чабани,ambiguous,kpszsu,2,nan
+Південь Києва,none,kyiv_nebo,2,UA.12
+захід Козятин (Вінниччина),none,kpszsu,2,UA.23
+Київщини вектором руху Біла Церква,none,kpszsu,2,nan
+півдні Києва,none,kpszsu,2,nan
+Житомирщину (Корнин,none,kpszsu,2,UA.13
+півночі Рівненщини вектором руху,none,kpszsu,2,nan
+т.о.Пологи,none,kudy_letyt,2,UA.26
+Балістика,none,kyiv_nebo,2,UA.12
+Відубичи,none,kpszsu,2,UA.12
+т.о.Верхній Рогачик,none,kudy_letyt,2,UA.08
+Вільшани,ambiguous,kpszsu,2,nan
+півночі Київщини рухаються,none,kpszsu,2,nan
+Вінниччині поблизу Хмільника,none,kpszsu,2,nan
 півдня Дніпропетровщини,none,kpszsu,2,nan
 півдня Києва,none,kpszsu,2,nan
+Вінниччині рухається,none,kpszsu,2,nan
+Дніпровського водосховища,none,kpszsu,2,"UA.04,nan"
+ГЕС,none,kyiv_nebo,2,UA.12
+північ Хмельниччини,none,kpszsu,2,UA.27
+Богуслав,ambiguous,kpszsu,2,nan
+Болярку,ambiguous,kudy_letyt,2,UA.27
 Білгород-Дністровського району,none,kpszsu,2,nan
-межі Вінничини та Черкащини,none,kpszsu,2,nan
-Чернігівщині змінив напрямок руху,none,kpszsu,1,UA.13
-півночі Чернгівщини,none,kpszsu,1,nan
-Чернігівщині: в центрі,none,kpszsu,1,nan
-Чугуїв Балаклію,none,kpszsu,1,UA.07
-Ямпіль вилітає в Молдову,none,kudy_letyt,1,UA.23
-Ямпіль вилетів в Молдову,none,kudy_letyt,1,UA.23
-Ямпіль в Молдову,none,kudy_letyt,1,UA.23
-сході Харківщини ( Борова,none,kpszsu,1,nan
-сході Харківщини вектором руху,none,kpszsu,1,nan
-схід Вінниччини,none,kpszsu,1,nan
-Чуднів Житомирщина,none,kpszsu,1,nan
-Чорномоськ,none,kpszsu,1,nan
+півночі Києва,none,kpszsu,2,nan
+схід Волині,none,kpszsu,2,nan
+сході Запоріжжя,none,kpszsu,2,nan
+Десну,ambiguous,kpszsu,2,nan
+Білгород-Дністровська,none,kpszsu,2,nan
+Голосіївський ліс,none,kudy_letyt,2,UA.12
+Живий,none,kyiv_nebo,2,UA.12
+Варнярку,none,kudy_letyt,2,UA.23
+ЗБІР ЗАКРИТО,none,kyiv_nebo,2,UA.12
+Видубичи,none,kpszsu,2,UA.12
+Є,none,kyiv_nebo,2,UA.12
+Вишневе/Київ,ambiguous,kpszsu,2,nan
+Вижив,none,kyiv_nebo,2,UA.12
+Іллінці,ambiguous,kpszsu,2,nan
+Запоріжжя,ambiguous,kpszsu,2,UA.04
+Житомирщину вектором руху Радомишль,none,kpszsu,2,nan
+обласний центр,none,kpszsu,2,"UA.02,UA.21"
+південь (,none,kpszsu,2,UA.02
+півночі Чернігівщини рухається,none,kpszsu,2,nan
+Вилетів,none,kyiv_nebo,2,UA.12
+північ (Київщина),none,kpszsu,2,UA.13
+Житомирщині н.п. Черняхів,none,kpszsu,2,nan
+північ Черкащини та,none,kpszsu,1,nan
 Чигирину,ambiguous,kpszsu,1,nan
-Чорноморського,none,kpszsu,1,UA.16
-Чорноморського,ambiguous,kpszsu,1,nan
-схід Одещини (Березівка),none,kpszsu,1,nan
-схід Харківщини,none,kpszsu,1,nan
-Чорноморськ\Одесу,none,kpszsu,1,nan
-Чорнобиль вилетіли в Білорусь,none,kudy_letyt,1,UA.13
-Чкркащині,none,kpszsu,1,nan
-Чернігів та,none,kpszsu,1,nan
-Хмільниччину (н.п.Летичів),none,kpszsu,1,nan
-Чернігвщині,none,kpszsu,1,nan
-Чернгівщину,none,kpszsu,1,nan
-тисячі кілометрів у глиб ворожої території,none,kudy_letyt,1,nan
-удар,none,kyiv_nebo,1,UA.12
-Українку,ambiguous,kpszsu,1,nan
-Турунчук,none,kudy_letyt,1,UA.17
-узбережжя Одещини,none,kpszsu,1,nan
-Троєщину,none,kudy_letyt,1,UA.13
-Тростянець Ладижин,none,kpszsu,1,UA.23
-Тростянець,ambiguous,kudy_letyt,1,nan
-Томаківку від Запоріжжя,none,kudy_letyt,1,UA.04
-Той,none,kyiv_nebo,1,UA.12
-Тернівку,ambiguous,kudy_letyt,1,nan
-Тернопільщину вектором руху,none,kpszsu,1,nan
-Тернопільщину вектор руху Тернопіль,none,kpszsu,1,nan
-Талалаївку/Ромни,none,kpszsu,1,UA.21
-ході Харківщини,none,kpszsu,1,nan
-Також,none,kyiv_nebo,1,UA.12
-центра міста,none,kpszsu,1,nan
-центральною частиною міста,none,kpszsu,1,UA.12
-центральної частиною Києва,none,kpszsu,1,nan
-Сум та,none,kpszsu,1,UA.21
-центру столиці,none,kpszsu,1,nan
-Старохолісся,none,kudy_letyt,1,UA.13
-Старовойтове вилітає в Польщу,none,kudy_letyt,1,UA.24
-територію Молдови,none,kudy_letyt,1,MD
-Українку/Обухів,ambiguous,kpszsu,1,nan
-Уласы,none,kudy_letyt,1,BY
-Це,none,kyiv_nebo,1,UA.12
-Чернгівщини,none,kpszsu,1,UA.21
-схід Черкащини,none,kpszsu,1,nan
-Черкас півдня,none,kpszsu,1,nan
-Цілі,none,kyiv_nebo,1,UA.12
 Циркон,none,kyiv_nebo,1,UA.12
-Циркон,none,kpszsu,1,nan
-схід від Черкас,none,kpszsu,1,nan
+Чорноморськ\Одесу,none,kpszsu,1,nan
 Церуху,none,kudy_letyt,1,BY
 Це Цикрони,none,kyiv_nebo,1,UA.12
+півночі та центральній частині області,none,kpszsu,1,nan
 Це Гербера,none,kyiv_nebo,1,UA.12
-схід та,none,kpszsu,1,UA.04
-т.о.Херсонщині,none,kudy_letyt,1,nan
-т.о.Василівки,none,kudy_letyt,1,UA.26
-сході Київщини рухається,none,kpszsu,1,nan
+Це,none,kyiv_nebo,1,UA.12
+Чорномоськ,none,kpszsu,1,nan
+північ Чернігівщини,none,kpszsu,1,nan
+Циркон,none,kpszsu,1,nan
+північ (н.п.Хмельове),none,kpszsu,1,UA.10
+північ (Кіровоградщина),none,kpszsu,1,UA.10
+Чернігів та,none,kpszsu,1,nan
+Чернігівщині: в центрі,none,kpszsu,1,nan
+північ Києва,none,kpszsu,1,nan
+Чернігівщині змінив напрямок руху,none,kpszsu,1,UA.13
+північ Житомирщини та,none,kpszsu,1,nan
+північ Кіровоградщини,none,kpszsu,1,nan
+Чорнобиль,none,kudy_letyt,1,UA.02
+Чорнобиль вилетіли в Білорусь,none,kudy_letyt,1,UA.13
+Хмільниччину (н.п.Летичів),none,kpszsu,1,nan
+північ Житомирщини,none,kpszsu,1,nan
+Чкркащині,none,kpszsu,1,nan
+Чернігвщині,none,kpszsu,1,nan
+Чернгівщину,none,kpszsu,1,nan
+Чернгівщини,none,kpszsu,1,UA.21
+північ Полтавщини,none,kpszsu,1,nan
+Черкас півдня,none,kpszsu,1,nan
+північ Полтавщини (Гадяч),none,kpszsu,1,nan
+північ Харківщини,none,kpszsu,1,nan
+Цілі,none,kyiv_nebo,1,UA.12
+північ Чернігівщини рухаються,none,kpszsu,1,nan
+наступну ніч таке саме попередження буде,none,kyiv_nebo,1,UA.12
 Хмельниччині р-н Вовковниці,none,kpszsu,1,nan
-Хмельниччині кусом,none,kpszsu,1,nan
-Харківщині рухаються,none,kpszsu,1,nan
-Х-22,none,kudy_letyt,1,nan
-Фіксація Білогородка,none,kyiv_nebo,1,UA.12
+Тростянець,ambiguous,kudy_letyt,1,nan
 т.о.Енергодару,none,kudy_letyt,1,UA.04
+Той,none,kyiv_nebo,1,UA.12
+Тернівку,ambiguous,kudy_letyt,1,nan
+т.о.Херсонщині,none,kudy_letyt,1,nan
+Тернопільщину вектором руху,none,kpszsu,1,nan
+Тернопільщину вектор руху Тернопіль,none,kpszsu,1,nan
+Тальне,none,kpszsu,1,UA.23
+Також,none,kyiv_nebo,1,UA.12
+територію Молдови,none,kudy_letyt,1,MD
+тисячі кілометрів у глиб ворожої території,none,kudy_letyt,1,nan
+Сум та,none,kpszsu,1,UA.21
+удар,none,kyiv_nebo,1,UA.12
+Старохолісся,none,kudy_letyt,1,UA.13
+Старовойтове вилітає в Польщу,none,kudy_letyt,1,UA.24
+узбережжя Одещини,none,kpszsu,1,nan
+ході Харківщини,none,kpszsu,1,nan
+Слувутич,none,kudy_letyt,1,UA.02
+Слобожанське Харківщина,none,kpszsu,1,nan
+центра міста,none,kpszsu,1,nan
+Славутич по межі,none,kudy_letyt,1,UA.02
+центральною частиною міста,none,kpszsu,1,UA.12
+центральної частиною Києва,none,kpszsu,1,nan
+центру столиці,none,kpszsu,1,nan
+Томаківку від Запоріжжя,none,kudy_letyt,1,UA.04
+Тростянець Ладижин,none,kpszsu,1,UA.23
+Хмельниччині кусом,none,kpszsu,1,nan
+т.о.Василівки,none,kudy_letyt,1,UA.26
+північ від Кременчука,none,kpszsu,1,nan
+Харківщині рухаються,none,kpszsu,1,nan
+північ від Сум,none,kpszsu,1,nan
+північ та захід,none,kpszsu,1,UA.13
+сході Київщини рухається,none,kpszsu,1,nan
+сході Харківщини ( Борова,none,kpszsu,1,nan
+Чуднів Житомирщина,none,kpszsu,1,nan
+Х-22,none,kudy_letyt,1,nan
+сході Харківщини вектором руху,none,kpszsu,1,nan
+Фіксація Білогородка,none,kyiv_nebo,1,UA.12
 Федорівку,ambiguous,kudy_letyt,1,UA.16
 Улянівку,ambiguous,kpszsu,1,UA.21
-"аеродром ""Оленья",none,kudy_letyt,1,nan
-захід та південь,none,kpszsu,1,UA.13
-водосховище,none,kudy_letyt,1,UA.02
-готові,none,kyiv_nebo,1,UA.12
-південь Одещини (Татарбунари),none,kpszsu,1,nan
-південь Миколаївщини,none,kpszsu,1,nan
-південь Києва,none,kpszsu,1,nan
-південь (Карлівка),none,kpszsu,1,UA.18
-"парку ""Тузловські лимани",none,kpszsu,1,UA.17
-озеро Шагани,none,kpszsu,1,UA.17
-одному,none,kpszsu,1,nan
-оголошення відбою,none,kpszsu,1,nan
-обласного центру,none,kpszsu,1,UA.07
+схід Вінниччини,none,kpszsu,1,nan
+Уласы,none,kudy_letyt,1,BY
+Українку/Обухів,ambiguous,kpszsu,1,nan
+схід Одещини (Березівка),none,kpszsu,1,nan
+схід Харківщини,none,kpszsu,1,nan
+Українку,ambiguous,kpszsu,1,nan
+схід Черкащини,none,kpszsu,1,nan
+Турунчук,none,kudy_letyt,1,UA.17
+схід від Черкас,none,kpszsu,1,nan
+схід та,none,kpszsu,1,UA.04
+Троєщину,none,kudy_letyt,1,UA.13
+Чугуїв Балаклію,none,kpszsu,1,UA.07
 півночі та в центрі,none,kpszsu,1,UA.02
-півночі та заході від Дніпра,none,kpszsu,1,nan
-о.Зміїний,none,kudy_letyt,1,UA.17
-наступну ніч таке саме попередження буде,none,kyiv_nebo,1,UA.12
-нас в область,none,kyiv_nebo,1,UA.12
-н.п.Товсте,ambiguous,kpszsu,1,nan
-н.п.Сергіївка,ambiguous,kpszsu,1,UA.17
-н.п.Південне,ambiguous,kpszsu,1,nan
-н.п.Колки,ambiguous,kpszsu,1,nan
-н.п.Дубровиця,ambiguous,kpszsu,1,nan
-півночі та заході від Черкас,none,kpszsu,1,nan
-півночі та півдні від Запоріжжя,none,kpszsu,1,nan
-н.п.Батурин Чернігівщина,none,kpszsu,1,UA.21
-н.п.Іванівка,ambiguous,kpszsu,1,UA.16
-півночі та півдні від Києва,none,kpszsu,1,nan
-півночі та півдні від Чернігова,none,kpszsu,1,nan
-південь Тернопільщини,none,kpszsu,1,nan
+Шепетівку,none,kpszsu,1,UA.27
+межі Одещини та Миколаївщини,none,kpszsu,1,nan
 південь Харківщини,none,kpszsu,1,nan
 південь Черкащини,none,kpszsu,1,UA.18
-півдні Одщини,none,kpszsu,1,nan
-півночі Полтавщини рухаються,none,kpszsu,1,nan
-півночі Київщини,none,kpszsu,1,UA.02
-півночі Київського водосховища,none,kpszsu,1,nan
-півночі Житомирщини,none,kpszsu,1,nan
-півночі Дніпропетровщини вектором руху,none,kpszsu,1,nan
-півдні та півночі міста,none,kpszsu,1,UA.12
-півдні та,none,kpszsu,1,nan
-півдні Харкова,none,kpszsu,1,nan
-півдні Сумщини рухаються,none,kpszsu,1,nan
-півдні Сумщини,none,kpszsu,1,nan
-півдні Охтирського району,none,kpszsu,1,UA.21
-півночі Чернігова,none,kpszsu,1,nan
-південь та Липованський острів,none,kpszsu,1,UA.17
-півдні Київщини вектор Обухів,none,kpszsu,1,nan
-півдні Запоріжжя,none,kpszsu,1,nan
-півдні Житомирщини та,none,kpszsu,1,nan
-півдня Одещини (Затока/Сергіївка),none,kpszsu,1,nan
-півночі Чернігівщини кур,none,kpszsu,1,nan
-півдня Миколаївщини та,none,kpszsu,1,nan
-півдня Миколаївщини,none,kpszsu,1,nan
-півдня Київщини,none,kpszsu,1,nan
-півднем Одещини,none,kpszsu,1,nan
-південь(,none,kpszsu,1,UA.02
-південь та північ,none,kpszsu,1,UA.07
-н.п. Ульянівка,ambiguous,kpszsu,1,UA.21
-н.п. Сарата,ambiguous,kpszsu,1,nan
-н.п. Радомишль,ambiguous,kpszsu,1,nan
-північ від Сум,none,kpszsu,1,nan
-м.Староконстянтинів,none,kpszsu,1,nan
-лінії розмежування Одещини та Миколаївщини,none,kpszsu,1,nan
-кінця доби,none,kyiv_nebo,1,UA.12
-кордону України,none,kpszsu,1,UA.13
-північ Черкащини та,none,kpszsu,1,nan
-захід та північ,none,kpszsu,1,nan
-захід від Кременчука,none,kpszsu,1,nan
-захід від Києва,none,kpszsu,1,nan
-північ Чернігівщини,none,kpszsu,1,nan
-північ Чернігівщини рухаються,none,kpszsu,1,nan
-північ від Кременчука,none,kpszsu,1,nan
-захід (Хмельниччина),none,kpszsu,1,UA.09
-північ Полтавщини (Гадяч),none,kpszsu,1,nan
-захід (Тернопільщину),none,kpszsu,1,UA.22
-захід (Одещина),none,kpszsu,1,UA.17
-захід (Кам'янське),none,kpszsu,1,nan
-захід (,none,kpszsu,1,UA.21
-заході та сході від Чернігова,none,kpszsu,1,nan
-заході Харківщини та,none,kpszsu,1,nan
-заході Житомиршини,none,kpszsu,1,nan
-жаль,none,kpszsu,1,nan
-північ та захід,none,kpszsu,1,UA.13
-довго,none,kyiv_nebo,1,UA.12
-державного кордону,none,kpszsu,1,nan
-північ Харківщини,none,kpszsu,1,nan
-межі,none,kpszsu,1,UA.04
-півночі та центральній частині області,none,kpszsu,1,nan
-межі між Сумщиною та Харківщиною,none,kpszsu,1,nan
-н.п. Бобринець рухається,none,kpszsu,1,UA.10
-н.п. Березнегувате,ambiguous,kpszsu,1,nan
-містом літають,none,kyiv_nebo,1,UA.12
-містом Оболонь),none,kpszsu,1,UA.12
 містом Дарниця,none,kpszsu,1,UA.12
 містом (Позняки,none,kpszsu,1,UA.12
+південь та Липованський острів,none,kpszsu,1,UA.17
 межі між Херсонщиною та Миколаївщиною,none,kpszsu,1,nan
-північ (Кіровоградщина),none,kpszsu,1,UA.10
-межі між Харківською та Дніпропетровською областями,none,kpszsu,1,nan
-північ (н.п.Хмельове),none,kpszsu,1,UA.10
-північ Житомирщини,none,kpszsu,1,nan
-межі між Кіровоградщиною та Черкащиною,none,kpszsu,1,nan
-межі Дніпропетровщини та Херсонщини,none,kpszsu,1,nan
-межі між Дніпропетровщиною та Миколаївщиною,none,kpszsu,1,nan
-північ Житомирщини та,none,kpszsu,1,nan
-північ Києва,none,kpszsu,1,nan
-межі Черкащини та Кіровоградщини,none,kpszsu,1,nan
-межі Харківщини та Дніпропетровщини південь Полтавщини,none,kpszsu,1,nan
-межі Сумщини та Харківщини,none,kpszsu,1,nan
-межі Одещини та Миколаївщини,none,kpszsu,1,nan
-північ Кіровоградщини,none,kpszsu,1,nan
-північ Полтавщини,none,kpszsu,1,nan
-межі Київщини та Житомирщини,none,kpszsu,1,nan
-межі Запоріжжя та Дніпропетровщини,none,kpszsu,1,nan
+південь та північ,none,kpszsu,1,UA.07
 межі між Харківщиною та Дніпропетровщиною,none,kpszsu,1,nan
+Слава ППО,none,kyiv_nebo,1,UA.12
+межі між Харківською та Дніпропетровською областями,none,kpszsu,1,nan
+південь(,none,kpszsu,1,UA.02
+межі між Сумщиною та Харківщиною,none,kpszsu,1,nan
+півднем Одещини,none,kpszsu,1,nan
+межі між Кіровоградщиною та Черкащиною,none,kpszsu,1,nan
+межі між Дніпропетровщиною та Миколаївщиною,none,kpszsu,1,nan
+межі Черкащини та Кіровоградщини,none,kpszsu,1,nan
+півдня Київщини,none,kpszsu,1,nan
+півдня Миколаївщини,none,kpszsu,1,nan
+межі Харківщини та Дніпропетровщини південь Полтавщини,none,kpszsu,1,nan
+півдня Миколаївщини та,none,kpszsu,1,nan
+півдня Одещини (Затока/Сергіївка),none,kpszsu,1,nan
+межі Сумщини та Харківщини,none,kpszsu,1,nan
+півдні Житомирщини та,none,kpszsu,1,nan
+містом Оболонь),none,kpszsu,1,UA.12
+південь Тернопільщини,none,kpszsu,1,nan
+містом літають,none,kyiv_nebo,1,UA.12
+н.п.Дубровиця,ambiguous,kpszsu,1,nan
+н.п.Товсте,ambiguous,kpszsu,1,nan
+н.п.Сергіївка,ambiguous,kpszsu,1,UA.17
+о.Зміїний,none,kudy_letyt,1,UA.17
+н.п.Південне,ambiguous,kpszsu,1,nan
+обласного центру,none,kpszsu,1,UA.07
+н.п.Колки,ambiguous,kpszsu,1,nan
+оголошення відбою,none,kpszsu,1,nan
+н.п.Калинопіль,none,kpszsu,1,UA.01
+одному,none,kpszsu,1,nan
+озеро Шагани,none,kpszsu,1,UA.17
+"парку ""Тузловські лимани",none,kpszsu,1,UA.17
+н.п. Березнегувате,ambiguous,kpszsu,1,nan
+н.п.Батурин Чернігівщина,none,kpszsu,1,UA.21
+н.п.Іванівка,ambiguous,kpszsu,1,UA.16
+південь (Карлівка),none,kpszsu,1,UA.18
+н.п. Ульянівка,ambiguous,kpszsu,1,UA.21
+н.п. Сарата,ambiguous,kpszsu,1,nan
+південь Києва,none,kpszsu,1,nan
+н.п. Радомишль,ambiguous,kpszsu,1,nan
+н.п. Бобринець рухається,none,kpszsu,1,UA.10
+південь Миколаївщини,none,kpszsu,1,nan
+південь Одещини (Татарбунари),none,kpszsu,1,nan
+півдні Запоріжжя,none,kpszsu,1,nan
+межі Київщини та Житомирщини,none,kpszsu,1,nan
+півночі та півдні від Чернігова,none,kpszsu,1,nan
+межі Запоріжжя та Дніпропетровщини,none,kpszsu,1,nan
+півночі Київщини,none,kpszsu,1,UA.02
+заході та сході від Чернігова,none,kpszsu,1,nan
+заході Харківщини та,none,kpszsu,1,nan
+півночі Полтавщини рухаються,none,kpszsu,1,nan
+заході Житомиршини,none,kpszsu,1,nan
+півночі Чернгівщини,none,kpszsu,1,nan
+півночі Чернігова,none,kpszsu,1,nan
+жаль,none,kpszsu,1,nan
+півночі Чернігівщини кур,none,kpszsu,1,nan
+довго,none,kyiv_nebo,1,UA.12
+державного кордону,none,kpszsu,1,nan
+готові,none,kyiv_nebo,1,UA.12
+водосховище,none,kudy_letyt,1,UA.02
+нас в область,none,kyiv_nebo,1,UA.12
+"аеродром ""Оленья",none,kudy_letyt,1,nan
+Ямпіль вилітає в Молдову,none,kudy_letyt,1,UA.23
+півночі та заході від Дніпра,none,kpszsu,1,nan
+Ямпіль вилетів в Молдову,none,kudy_letyt,1,UA.23
+Ямпіль в Молдову,none,kudy_letyt,1,UA.23
+півночі та заході від Черкас,none,kpszsu,1,nan
+півночі та півдні від Запоріжжя,none,kpszsu,1,nan
+Яготин,none,kudy_letyt,1,UA.01
+півночі та півдні від Києва,none,kpszsu,1,nan
+півночі Київського водосховища,none,kpszsu,1,nan
+захід (,none,kpszsu,1,UA.21
+захід (Кам'янське),none,kpszsu,1,nan
+кінця доби,none,kyiv_nebo,1,UA.12
+межі Дніпропетровщини та Херсонщини,none,kpszsu,1,nan
+півдні Київщини вектор Обухів,none,kpszsu,1,nan
+півдні Одщини,none,kpszsu,1,nan
+півдні Охтирського району,none,kpszsu,1,UA.21
+півдні Сумщини,none,kpszsu,1,nan
+півдні Сумщини рухаються,none,kpszsu,1,nan
+межі,none,kpszsu,1,UA.04
+м.Староконстянтинів,none,kpszsu,1,nan
+півдні Харкова,none,kpszsu,1,nan
+лінії розмежування Одещини та Миколаївщини,none,kpszsu,1,nan
+півдні та,none,kpszsu,1,nan
+захід (Одещина),none,kpszsu,1,UA.17
+півдні та півночі міста,none,kpszsu,1,UA.12
+кордону України,none,kpszsu,1,UA.13
+півночі Дніпропетровщини вектором руху,none,kpszsu,1,nan
+півночі Житомирщини,none,kpszsu,1,nan
+захід та північ,none,kpszsu,1,nan
+захід та південь,none,kpszsu,1,UA.13
+захід від Кременчука,none,kpszsu,1,nan
+захід від Києва,none,kpszsu,1,nan
+захід (Хмельниччина),none,kpszsu,1,UA.09
+захід (Тернопільщину),none,kpszsu,1,UA.22
 10 Шахедів,none,kyiv_nebo,1,UA.12
-Слувутич,none,kudy_letyt,1,UA.02
-Жажківа,none,kpszsu,1,UA.01
+Полтавщині - поблизу н.п Семенівка,none,kpszsu,1,nan
+Скрыгалаў,none,kudy_letyt,1,BY
+Друзі,none,kyiv_nebo,1,UA.12
+Добруш,none,kudy_letyt,1,BY
+Долинську від Кривого Рогу,none,kudy_letyt,1,UA.10
+Донеччину та,none,kpszsu,1,nan
 Дорогожичі,none,kyiv_nebo,1,UA.12
 Другий Жуляни,none,kyiv_nebo,1,UA.12
 Другий Наливайківка,none,kyiv_nebo,1,UA.12
-Друзі,none,kyiv_nebo,1,UA.12
 Дунаівці,none,kpszsu,1,UA.09
+Дніпропетровщині між н.п.Славгород та Синельникове,none,kpszsu,1,nan
 Ельск,none,kudy_letyt,1,BY
+Жажківа,none,kpszsu,1,UA.01
 Житомирщину,none,kudy_letyt,1,BY
-Запоріжжя від Славгорода,none,kudy_letyt,1,UA.26
 Житомирщину вектором руху Житомир,none,kpszsu,1,nan
 Житомирщину та,none,kpszsu,1,UA.13
 Житомтрщину,none,kyiv_nebo,1,UA.12
-Жуляни в Києві,none,kpszsu,1,nan
-ЗХатоку,none,kpszsu,1,nan
-Заечча,none,kudy_letyt,1,nan
-Донеччину та,none,kpszsu,1,nan
-Долинську від Кривого Рогу,none,kudy_letyt,1,UA.10
-Добруш,none,kudy_letyt,1,BY
 Дніпропетрорвщині,none,kpszsu,1,nan
-Дніпропетровщині між н.п.Славгород та Синельникове,none,kpszsu,1,nan
 Дніпропетпровщині,none,kpszsu,1,nan
-Дніпро від Губинихи,none,kudy_letyt,1,UA.04
-Дніпра та Запорізької області,none,kpszsu,1,UA.26
-Дніпр,none,kudy_letyt,1,UA.04
-Димерку,ambiguous,kyiv_nebo,1,nan
-Димерки,ambiguous,kyiv_nebo,1,nan
-Димер та,none,kpszsu,1,nan
-Детальніше,none,kpszsu,1,UA.12
-Десну,none,kpszsu,1,UA.13
-Десну,ambiguous,kudy_letyt,1,nan
+ЗХатоку,none,kpszsu,1,nan
 Дергач,none,kpszsu,1,nan
+Гнідин (висота 2,none,kudy_letyt,1,UA.12
+Городище (Черкащина) рухаються,none,kpszsu,1,UA.01
+Гранітне,ambiguous,kpszsu,1,UA.27
+Гранітне,ambiguous,kudy_letyt,1,UA.04
+Гребінки зв сходу,none,kpszsu,1,UA.13
 Дальні Гречани,none,kudy_letyt,1,UA.09
-Залісся,ambiguous,kudy_letyt,1,UA.13
-Запоріжжя(,ambiguous,kpszsu,1,UA.04
-Слобожанське Харківщина,none,kpszsu,1,nan
-Київ півдня,none,kpszsu,1,nan
+Десну,ambiguous,kudy_letyt,1,nan
+Дніпро від Губинихи,none,kudy_letyt,1,UA.04
+Детальніше,none,kpszsu,1,UA.12
+Димер та,none,kpszsu,1,nan
+Димерки,ambiguous,kyiv_nebo,1,nan
+Димерку,ambiguous,kyiv_nebo,1,nan
+Дніпр,none,kudy_letyt,1,UA.04
+Дніпра та Запорізької області,none,kpszsu,1,UA.26
+Жуляни в Києві,none,kpszsu,1,nan
+Заечча,none,kudy_letyt,1,nan
+Сергіївку (Одещина),ambiguous,kpszsu,1,UA.17
+КарДачі,none,kudy_letyt,1,UA.12
+Калинівку (знижується),ambiguous,kudy_letyt,1,UA.13
+Калинівку та,none,kpszsu,1,UA.13
+Кам'янку,ambiguous,kudy_letyt,1,UA.04
 Кам'янського водосховища,none,kpszsu,1,nan
 Камянське,none,kpszsu,1,nan
 Канатове,none,kudy_letyt,1,UA.10
-КарДачі,none,kudy_letyt,1,UA.12
 Кардачі,none,kudy_letyt,1,UA.12
+Калинівка,ambiguous,kpszsu,1,UA.12
 Кеплань,none,kudy_letyt,1,MD
+Київ півдня,none,kpszsu,1,nan
 Київське водосховище рухається,none,kpszsu,1,nan
-Запоріжжі рухаються,none,kpszsu,1,nan
 Київщину (Велика Димерка,none,kpszsu,1,UA.02
 Київщину вектор руху Баришівка,none,kpszsu,1,nan
 Київщину вектор руху Бровари,none,kpszsu,1,nan
-Київщину вектором руху,none,kpszsu,1,nan
-Київщину вектором руху Київ,none,kpszsu,1,nan
-Київщину та,none,kpszsu,1,UA.21
-Кам'янку,ambiguous,kudy_letyt,1,UA.04
-Калинівку та,none,kpszsu,1,UA.13
-Калинівку (знижується),ambiguous,kudy_letyt,1,UA.13
 Калинівка/Фастів,ambiguous,kpszsu,1,UA.13
-Калинівка,ambiguous,kpszsu,1,UA.12
-Кагарлик,none,kudy_letyt,1,UA.01
-Кагарлик,none,kpszsu,1,UA.01
-Ймовірно Циркон,none,kyiv_nebo,1,UA.12
-Ймовірно,none,kyiv_nebo,1,UA.12
-Зникли,none,kyiv_nebo,1,UA.12
-Зліт ТУшок,none,kyiv_nebo,1,UA.12
-Звягель Житомирщина вектором руху,none,kpszsu,1,nan
-Затоки/Сергіївки,ambiguous,kpszsu,1,nan
+Калинопіль,none,kpszsu,1,UA.01
+Залісся,ambiguous,kudy_letyt,1,UA.13
 Затока,ambiguous,kpszsu,1,nan
-Зароріжжі,none,kpszsu,1,nan
-Зарано,none,kyiv_nebo,1,UA.12
+Запоріжжя від Славгорода,none,kudy_letyt,1,UA.26
+Запоріжжя(,ambiguous,kpszsu,1,UA.04
+Запоріжжі рухаються,none,kpszsu,1,nan
 Запорізьку област,none,kpszsu,1,nan
-Гребінки зв сходу,none,kpszsu,1,UA.13
-Гранітне,ambiguous,kudy_letyt,1,UA.04
-Гранітне,ambiguous,kpszsu,1,UA.27
-Брагін (Білорусь),none,kudy_letyt,1,BY
+Зарано,none,kyiv_nebo,1,UA.12
+Зароріжжі,none,kpszsu,1,nan
+Затоки/Сергіївки,ambiguous,kpszsu,1,nan
+Кагарлик,none,kudy_letyt,1,UA.01
+Звягель Житомирщина вектором руху,none,kpszsu,1,nan
+Зліт ТУшок,none,kyiv_nebo,1,UA.12
+Зникли,none,kyiv_nebo,1,UA.12
+Ймовірно,none,kyiv_nebo,1,UA.12
+Ймовірно Циркон,none,kyiv_nebo,1,UA.12
+Кагарлик,none,kpszsu,1,UA.01
+Глобн,none,kudy_letyt,1,UA.18
+Гербери,none,kyiv_nebo,1,UA.12
+Герань-5,none,kyiv_nebo,1,UA.12
+Борової/Фастова,ambiguous,kpszsu,1,nan
+Березнувате,none,kpszsu,1,nan
+Березівка,ambiguous,kyiv_nebo,1,nan
 Березівки (Вінниччина),ambiguous,kpszsu,1,UA.23
 Берковець у Києві,none,kpszsu,1,nan
 Бобровицю,ambiguous,kpszsu,1,nan
 Бориспіль від міста,none,kudy_letyt,1,UA.12
-Борової/Фастова,ambiguous,kpszsu,1,nan
 БпЛАна півночі Одещини,none,kpszsu,1,nan
+Березне,none,kudy_letyt,1,UA.02
+Брагін (Білорусь),none,kudy_letyt,1,BY
 Брагіна,none,kudy_letyt,1,BY
-Городище (Черкащина) рухаються,none,kpszsu,1,UA.01
+Бровари,none,kudy_letyt,1,UA.01
 Бровари у центр Києва,none,kpszsu,1,nan
 Броварський район,none,kudy_letyt,1,UA.13
+Броварів,none,kyiv_nebo,1,UA.02
+Березну,none,kpszsu,1,UA.01
+Бережани,none,kudy_letyt,1,UA.15
+Гайдмацьке,none,kudy_letyt,1,UA.10
+Інший Жуляни,none,kyiv_nebo,1,UA.12
+Іванків/Димер,ambiguous,kpszsu,1,nan
+Іванівку,ambiguous,kpszsu,1,nan
+Ізмаїльський район Одещини,none,kpszsu,1,nan
+Ізюмський ліс,none,kudy_letyt,1,UA.07
+Інший Бортничі,none,kyiv_nebo,1,UA.12
+Інший Бровари,none,kyiv_nebo,1,UA.12
+Інший Куренівка,none,kyiv_nebo,1,UA.12
+Барвінкове Ізюмського району Харківщини,none,kpszsu,1,nan
+Їх,none,kyiv_nebo,1,UA.12
+Авіаторське,none,kudy_letyt,1,UA.18
+Азарычы за ним вилетів полювати Су-30,none,kudy_letyt,1,BY
+Арсенальна,none,kyiv_nebo,1,UA.12
+Байрамчу,none,kudy_letyt,1,UA.17
+Бандеролі,none,kyiv_nebo,1,UA.12
 Брянськ,none,kyiv_nebo,1,UA.12
 Букт,none,kudy_letyt,1,UA.01
 Бусову Гору,none,kudy_letyt,1,UA.12
-Бєлгородщину,none,kudy_letyt,1,UA.21
-Березівка,ambiguous,kyiv_nebo,1,nan
-Березнувате,none,kpszsu,1,nan
-Березне,none,kudy_letyt,1,UA.02
-Барвінкове Ізюмського району Харківщини,none,kpszsu,1,nan
-Бандеролі,none,kyiv_nebo,1,UA.12
-Байрамчу,none,kudy_letyt,1,UA.17
-Арсенальна,none,kyiv_nebo,1,UA.12
-Азарычы за ним вилетів полювати Су-30,none,kudy_letyt,1,BY
-Їх,none,kyiv_nebo,1,UA.12
-Інший Куренівка,none,kyiv_nebo,1,UA.12
-Інший Жуляни,none,kyiv_nebo,1,UA.12
-Інший Бровари,none,kyiv_nebo,1,UA.12
-Інший Бортничі,none,kyiv_nebo,1,UA.12
-Ізюмський ліс,none,kudy_letyt,1,UA.07
-Ізмаїльський район Одещини,none,kpszsu,1,nan
-Іванівку,ambiguous,kpszsu,1,nan
-Іванків/Димер,ambiguous,kpszsu,1,nan
-Білгород-Дністровський район,none,kpszsu,1,nan
-Білики,none,kudy_letyt,1,UA.10
-Білорусі,none,kudy_letyt,1,UA.13
-Вознесенського району,none,kpszsu,1,UA.16
-Гнідин (висота 2,none,kudy_letyt,1,UA.12
-Глобн,none,kudy_letyt,1,UA.18
-Гербери,none,kyiv_nebo,1,UA.12
-Герань-5,none,kyiv_nebo,1,UA.12
-Гайдмацьке,none,kudy_letyt,1,UA.10
-Вінниччині н.п. Муровані Курилівці,none,kpszsu,1,nan
-Вінничині а напрямку н.п.Липовець,none,kpszsu,1,nan
-Вільшанку,ambiguous,kudy_letyt,1,UA.01
-Вільшан/Харкова,ambiguous,kpszsu,1,nan
-Відомо,none,kyiv_nebo,1,UA.12
-Від Яготина,none,kyiv_nebo,1,UA.12
 Вороньків за Києвом,none,kpszsu,1,nan
-Волинської області вектором руху,none,kpszsu,1,nan
-Вокзальна,none,kyiv_nebo,1,UA.12
-Вовчанського району (Харківщина),none,kudy_letyt,1,UA.07
-Біляївка/Маяки,ambiguous,kpszsu,1,nan
-Вишневого,ambiguous,kpszsu,1,nan
 Вишневе-Чабани-Глеваха,none,kpszsu,1,nan
+Вишневого,ambiguous,kpszsu,1,nan
+Вовчанського району (Харківщина),none,kudy_letyt,1,UA.07
+Вознесенського району,none,kpszsu,1,UA.16
+Вокзальна,none,kyiv_nebo,1,UA.12
+Волинської області вектором руху,none,kpszsu,1,nan
+Від Яготина,none,kyiv_nebo,1,UA.12
+Бєлгородщину,none,kudy_letyt,1,UA.21
+Відомо,none,kyiv_nebo,1,UA.12
+Вільшан/Харкова,ambiguous,kpszsu,1,nan
+Вільшанку,ambiguous,kudy_letyt,1,UA.01
+Вінничині а напрямку н.п.Липовець,none,kpszsu,1,nan
+Вінниччині н.п. Муровані Курилівці,none,kpszsu,1,nan
+Гайдамацьке/Лісове,none,kpszsu,1,UA.10
 Вишневе,ambiguous,kpszsu,1,nan
 Вишеньки (висота 3,none,kudy_letyt,1,UA.12
 Вишгородський район Київщини,none,kpszsu,1,nan
@@ -505,67 +512,70 @@ place_raw,match,channel,n,oblast
 Виліт,none,kyiv_nebo,1,UA.12
 Весь Лівий берег,none,kyiv_nebo,1,UA.12
 Велику Димерку та,none,kpszsu,1,UA.13
+Великої Димерки,none,kpszsu,1,UA.02
 Вектор Бровари,none,kyiv_nebo,1,UA.12
 Вашківці в Молдову,none,kudy_letyt,1,UA.03
 Васілевічы,none,kudy_letyt,1,BY
 Василівку,ambiguous,kpszsu,1,UA.04
 Вакулечуе,none,kudy_letyt,1,UA.27
-Київщині в районах н.п. Обухів/Боярка/Чабани,none,kpszsu,1,nan
-Київщині наближається,none,kpszsu,1,nan
-Клавдієво-Тарасова,none,kudy_letyt,1,UA.13
-Петропавлівку по межі,none,kudy_letyt,1,UA.04
+Біляївка/Маяки,ambiguous,kpszsu,1,nan
+Білорусі,none,kudy_letyt,1,UA.13
+Білики,none,kudy_letyt,1,UA.10
+Білгород-Дністровський район,none,kpszsu,1,nan
+Київщину вектором руху,none,kpszsu,1,nan
+Київщину вектором руху Київ,none,kpszsu,1,nan
+Київщину та,none,kpszsu,1,UA.21
+Первомайська,ambiguous,kpszsu,1,nan
+ПЗТО,none,kudy_letyt,1,UA.04
 ПХЗ,none,kudy_letyt,1,UA.04
+Павлиш,none,kudy_letyt,1,UA.04
 Павлоград від Синельникового,none,kudy_letyt,1,UA.04
 Паньківщину,none,kudy_letyt,1,UA.12
 Первомайськ,ambiguous,kpszsu,1,nan
-Первомайська,ambiguous,kpszsu,1,nan
 Перемир'я,none,kyiv_nebo,1,UA.12
+Очаків від Одещини,none,kudy_letyt,1,UA.16
+Переяслав,none,kpszsu,1,UA.02
+Петропавлівку,ambiguous,kpszsu,1,nan
+Петропавлівку по межі,none,kudy_letyt,1,UA.04
 Печерського р-ну,none,kpszsu,1,nan
-Озерне,ambiguous,kpszsu,1,nan
 По,none,kyiv_nebo,1,UA.12
 Погребища (Вінниччина) вектором руху Козятин,none,kpszsu,1,UA.23
+Очків,none,kudy_letyt,1,UA.16
+Очаків Миколаївщини,none,kpszsu,1,nan
+Одещині (Лиманка,none,kpszsu,1,nan
+Оленья - поки тиша,none,kyiv_nebo,1,UA.12
+Озерне,ambiguous,kpszsu,1,nan
+Олександрівку,ambiguous,kpszsu,1,UA.17
+Олександрівку,ambiguous,kudy_letyt,1,UA.16
+Олександрівку та,none,kpszsu,1,UA.16
+Олександрійський (Кіровоградщина),none,kpszsu,1,UA.10
+Олександрію,ambiguous,kpszsu,1,nan
+Олишівку (Якщо полетить,none,kudy_letyt,1,UA.02
+Остер/Десну,ambiguous,kpszsu,1,nan
+Онікс,none,kpszsu,1,nan
+Оратова (Вінниччина) вектором руху Козятин,none,kpszsu,1,UA.23
+Оруч,none,kudy_letyt,1,UA.27
+Останній Берковець,none,kyiv_nebo,1,UA.12
+Останній Боярка,none,kyiv_nebo,1,UA.12
+Останній Білогородка,none,kyiv_nebo,1,UA.12
 Полтавщину Черкащину Київщину,none,kpszsu,1,UA.04
 Полтавщину в район н.п. Котельва,none,kpszsu,1,nan
 Полтавщину вектором руху Полтава,none,kpszsu,1,nan
-Полтавщині - поблизу н.п Семенівка,none,kpszsu,1,nan
-ПЗТО,none,kudy_letyt,1,UA.04
-Очків,none,kudy_letyt,1,UA.16
-Очаків від Одещини,none,kudy_letyt,1,UA.16
-Очаків Миколаївщини,none,kpszsu,1,nan
-Остер/Десну,ambiguous,kpszsu,1,nan
-Останній Білогородка,none,kyiv_nebo,1,UA.12
-Останній Боярка,none,kyiv_nebo,1,UA.12
-Останній Берковець,none,kyiv_nebo,1,UA.12
-Оруч,none,kudy_letyt,1,UA.27
-Оратова (Вінниччина) вектором руху Козятин,none,kpszsu,1,UA.23
-Онікс,none,kpszsu,1,nan
-Олишівку (Якщо полетить,none,kudy_letyt,1,UA.02
-Оленья - поки тиша,none,kyiv_nebo,1,UA.12
-Олександрію,ambiguous,kpszsu,1,nan
-Олександрійський (Кіровоградщина),none,kpszsu,1,UA.10
-Олександрівку та,none,kpszsu,1,UA.16
-Олександрівку,ambiguous,kudy_letyt,1,UA.16
-Полтавщині між н.п.Рамодан та Лубни,none,kpszsu,1,nan
-Полтащині (н.п. Нові Санжари),none,kpszsu,1,nan
-Польщі,none,kudy_letyt,1,UA.24
-Реактивні,none,kyiv_nebo,1,UA.12
-Славутич по межі,none,kudy_letyt,1,UA.02
-Слава ППО,none,kyiv_nebo,1,UA.12
-Скрыгалаў,none,kudy_letyt,1,BY
-Сергіївку (Одещина),ambiguous,kpszsu,1,UA.17
-Сергівку,ambiguous,kudy_letyt,1,UA.17
-Ріпки вилітає в Білорусь,none,kudy_letyt,1,UA.02
-Рівненщину в р-н Рокитного,none,kpszsu,1,nan
-Рэчыцу,none,kudy_letyt,1,BY
-Росєйку,none,kudy_letyt,1,UA.17
-Росєйку,none,kpszsu,1,nan
 Решетилівки вектором руху Хорол,none,kpszsu,1,UA.18
-Ретровіль,none,kyiv_nebo,1,UA.12
-Республіки Молдова,none,kpszsu,1,nan
-Реактивні Шахеди,none,kyiv_nebo,1,UA.12
-Рахни Лісові,none,kpszsu,1,UA.23
-5км,none,kyiv_nebo,1,UA.12
 Раково,none,kudy_letyt,1,UA.09
+Рахни Лісові,none,kpszsu,1,UA.23
+Реактивні,none,kyiv_nebo,1,UA.12
+Реактивні Шахеди,none,kyiv_nebo,1,UA.12
+Республіки Молдова,none,kpszsu,1,nan
+Ретровіль,none,kyiv_nebo,1,UA.12
+Ржищів,none,kpszsu,1,UA.01
+5км,none,kyiv_nebo,1,UA.12
+Росєйку,none,kpszsu,1,nan
+Росєйку,none,kudy_letyt,1,UA.17
+Рэчыцу,none,kudy_letyt,1,BY
+Рівненщину в р-н Рокитного,none,kpszsu,1,nan
+Ріпки вилітає в Білорусь,none,kudy_letyt,1,UA.02
+Сергівку,ambiguous,kudy_letyt,1,UA.17
 Радкаў,none,kudy_letyt,1,BY
 Підліт,none,kyiv_nebo,1,UA.12
 Північ Києва,none,kyiv_nebo,1,UA.12
@@ -579,61 +589,64 @@ place_raw,match,channel,n,oblast
 Пролітають Ніжин,none,kyiv_nebo,1,UA.12
 Прип'ять вилітають в Білорусь,none,kudy_letyt,1,UA.13
 Попадали,none,kyiv_nebo,1,UA.12
-Олександрівку,ambiguous,kpszsu,1,UA.17
+Понорницю,none,kudy_letyt,1,UA.21
+Польщі,none,kudy_letyt,1,UA.24
+Полтащині (н.п. Нові Санжари),none,kpszsu,1,nan
+Полтавщині між н.п.Рамодан та Лубни,none,kpszsu,1,nan
 Одещині: напрямком,none,kpszsu,1,nan
-Ковеля зв сходу,none,kpszsu,1,nan
-Лоєва,none,kudy_letyt,1,BY
+Одещину в р-н Доброслава,none,kpszsu,1,nan
+Київщині в районах н.п. Обухів/Боярка/Чабани,none,kpszsu,1,nan
+Липовця,ambiguous,kpszsu,1,nan
+Кіта Келлога,none,kyiv_nebo,1,UA.12
+Лавіною,none,kyiv_nebo,1,UA.12
 Лавіну,none,kyiv_nebo,1,UA.12
 Лельчыцы,none,kudy_letyt,1,BY
 Летіли,none,kyiv_nebo,1,UA.12
 Лиманів (Миколаївщина),ambiguous,kudy_letyt,1,UA.16
-Липовця,ambiguous,kpszsu,1,nan
 Лисову Гору,none,kudy_letyt,1,UA.16
+Кіровоградщині ц напрямку Знам'янки,none,kpszsu,1,nan
+Лоєва,none,kudy_letyt,1,BY
 Лугова,none,kudy_letyt,1,UA.16
-Одещині (Лиманка,none,kpszsu,1,nan
 Луцьк (маєте 10 хв,none,kudy_letyt,1,UA.24
 Львівщину н.п. Броди,none,kpszsu,1,nan
 Лівобережна,none,kyiv_nebo,1,UA.12
 Лісовий масив Києва,none,kpszsu,1,nan
+Кіровогращині,none,kpszsu,1,nan
+Кіровоградщині н.п. Долинська,none,kpszsu,1,nan
+Одещину (Сергіїівка,none,kpszsu,1,nan
+Копоп,none,kudy_letyt,1,UA.02
+Київщині наближається,none,kpszsu,1,nan
+Клавдієво-Тарасова,none,kudy_letyt,1,UA.13
+Ковеля зв сходу,none,kpszsu,1,nan
+Кодиму вилетів в Молдову,none,kudy_letyt,1,UA.17
+Козин/Обухів,ambiguous,kpszsu,1,nan
+Коломак,ambiguous,kpszsu,1,nan
+Коростень від Овруча,none,kudy_letyt,1,UA.27
+Кульчиївці,none,kudy_letyt,1,nan
+Кошари,ambiguous,kpszsu,1,nan
+Краснопавлівки,none,kpszsu,1,UA.17
+Кременчука рухаються,none,kpszsu,1,nan
+Кремечука,none,kpszsu,1,nan
+Криворізький район Дніпропетровщини,none,kpszsu,1,UA.16
+Кубу,none,kudy_letyt,1,UA.12
 Маневрує Житомирська траса,none,kyiv_nebo,1,UA.12
 Маяків,ambiguous,kpszsu,1,nan
-Лавіною,none,kyiv_nebo,1,UA.12
-Кіта Келлога,none,kyiv_nebo,1,UA.12
-Кіровогращині,none,kpszsu,1,nan
-Кіровоградщині ц напрямку Знам'янки,none,kpszsu,1,nan
-Кіровоградщині н.п. Долинська,none,kpszsu,1,nan
-Кульчиївці,none,kudy_letyt,1,nan
-Кубу,none,kudy_letyt,1,UA.12
-Криворізький район Дніпропетровщини,none,kpszsu,1,UA.16
-Кремечука,none,kpszsu,1,nan
-Кременчука рухаються,none,kpszsu,1,nan
-Краснопавлівки,none,kpszsu,1,UA.17
-Кошари,ambiguous,kpszsu,1,nan
-Коростень від Овруча,none,kudy_letyt,1,UA.27
-Копоп,none,kudy_letyt,1,UA.02
-Коломак,ambiguous,kpszsu,1,nan
-Козин/Обухів,ambiguous,kpszsu,1,nan
-Кодиму вилетів в Молдову,none,kudy_letyt,1,UA.17
 Мда,none,kyiv_nebo,1,UA.12
-Мене,none,kpszsu,1,nan
-Мену та,none,kpszsu,1,UA.02
-Низько,none,kyiv_nebo,1,UA.12
-Одещину в р-н Доброслава,none,kpszsu,1,nan
-Одещину (Сергіїівка,none,kpszsu,1,nan
-Одещину (Лиманка,none,kpszsu,1,nan
-Одещини (Чорноморське,none,kpszsu,1,nan
-Одесу вилетів в акваторію Чорного моря,none,kudy_letyt,1,UA.17
-Овідополя/Білгород-Дністровська,none,kpszsu,1,nan
-Оврч,none,kudy_letyt,1,UA.27
-Ніжин та,none,kpszsu,1,UA.02
-Нові Глобине,none,kudy_letyt,1,UA.18
 Нову Чорнобай,none,kudy_letyt,1,UA.01
-Новомиргорода та,none,kpszsu,1,UA.10
-Нових Санжарів рухаються,none,kpszsu,1,UA.18
-Нове Залісся,none,kudy_letyt,1,UA.13
-Новгород-Дністровський,none,kpszsu,1,UA.12
 Нижні Сади у Києві,none,kpszsu,1,nan
-Меншає,none,kyiv_nebo,1,UA.12
+Низько,none,kyiv_nebo,1,UA.12
+Новгород-Дністровський,none,kpszsu,1,UA.12
+Нове Залісся,none,kudy_letyt,1,UA.13
+Нових Санжарів рухаються,none,kpszsu,1,UA.18
+Новомиргорода та,none,kpszsu,1,UA.10
+Нові Глобине,none,kudy_letyt,1,UA.18
+Мене,none,kpszsu,1,nan
+Ніжин та,none,kpszsu,1,UA.02
+Оврч,none,kudy_letyt,1,UA.27
+Овідополя/Білгород-Дністровська,none,kpszsu,1,nan
+Одесу вилетів в акваторію Чорного моря,none,kudy_letyt,1,UA.17
+Одещини (Чорноморське,none,kpszsu,1,nan
+Одещину (Лиманка,none,kpszsu,1,nan
 Наче,none,kyiv_nebo,1,UA.12
 "Національного природного парку ""Тузловські лимани",none,kpszsu,1,nan
 Нароўля (Білорусь),none,kudy_letyt,1,BY
@@ -645,7 +658,10 @@ place_raw,match,channel,n,oblast
 Моколаївщини (Очаків),none,kpszsu,1,nan
 Млинова (Рівненщина) вектором руху Луцьк,none,kpszsu,1,UA.19
 Михайло-Гончарівське,none,kudy_letyt,1,UA.02
+Миргорода,none,kudy_letyt,1,UA.21
 Миколаївщині маневрує,none,kpszsu,1,nan
 Миколаївщину в р-н Очакова,none,kpszsu,1,nan
 Миколаївки,ambiguous,kpszsu,1,UA.17
+Меншає,none,kyiv_nebo,1,UA.12
+Мену та,none,kpszsu,1,UA.02
 ціль,none,kpszsu,1,nan

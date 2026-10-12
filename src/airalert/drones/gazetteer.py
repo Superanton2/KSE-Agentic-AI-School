@@ -28,6 +28,8 @@ from dataclasses import dataclass
 from functools import cache, lru_cache
 from pathlib import Path
 
+import numpy as np
+
 from airalert.drones.normalize import key, normalize
 
 KYIV_LAT, KYIV_LON = 50.4501, 30.5234
@@ -38,7 +40,10 @@ GEONAMES_URLS = {
     "alt": "https://download.geonames.org/export/dump/alternatenames/UA.zip",
 }
 FUZZY_MIN = 92
-NEIGHBOUR_KM = 200  # out-of-oblast fallback radius around the header oblast's centroid
+# A place outside the header oblast is accepted only this close to one of the oblast's own settlements, i.e.
+# right at the border or in an exclave (Славутич: Kyiv oblast, surrounded by Chernihiv oblast). A homonym
+# deeper inside another oblast is rejected: the real place is then probably missing from GeoNames.
+BORDER_KM = 15
 _CYRILLIC = re.compile("[А-Яа-яІіЇїЄєҐґ]")
 _UK_LETTERS = re.compile("[ІіЇїЄєҐґ']")
 
@@ -307,6 +312,7 @@ class Gazetteer:
             for p in ps:
                 self.by_oblast[p.admin1].setdefault(k, []).append(p)
         self.oblast_centroids = oblast_centroids
+        self._oblast_xy: dict[str, np.ndarray] = {}
 
     @classmethod
     def load(cls, gazetteer_dir: Path) -> "Gazetteer":
@@ -385,6 +391,21 @@ class Gazetteer:
             return a
         return None
 
+    def _near_oblast(self, p: Place, admin1: str) -> bool:
+        """Is ``p`` within BORDER_KM of any settlement of ``admin1``?"""
+        if admin1 not in self._oblast_xy:
+            pts = [(q.lat, q.lon) for ps in self.by_oblast.get(admin1, {}).values() for q in ps]
+            self._oblast_xy[admin1] = np.radians(np.array(pts)) if pts else np.empty((0, 2))
+        xy = self._oblast_xy[admin1]
+        if not len(xy):
+            return False
+        la, lo = np.radians(p.lat), np.radians(p.lon)
+        a = (
+            np.sin((xy[:, 0] - la) / 2) ** 2
+            + np.cos(la) * np.cos(xy[:, 0]) * np.sin((xy[:, 1] - lo) / 2) ** 2
+        )
+        return float(2 * 6371.0088 * np.arcsin(np.sqrt(a.min()))) <= BORDER_KM
+
     def _lookup(self, k: str, admin1: str | None) -> list[Place]:
         """Candidates for an exact key: Kyiv-local names (Kyiv scope or unknown), current names in scope,
         alternative/historic names in scope, then — out of scope — a unique major city (PPLC/PPLA), so that
@@ -441,14 +462,9 @@ class Gazetteer:
             if p:
                 return Resolved(p.name, p.lat, p.lon, p.admin1, "fuzzy", p.kind, len(cands))
         if admin1 in self.oblast_centroids:
-            clat, clon = self.oblast_centroids[admin1]
             for forms, how in ((exact, "exact"), (lemma, "lemma")):
                 for form in forms:
-                    near = [
-                        p
-                        for p in self.index.get(form, [])
-                        if haversine_km(p.lat, p.lon, clat, clon) <= NEIGHBOUR_KM
-                    ]
+                    near = [p for p in self.index.get(form, []) if self._near_oblast(p, admin1)]
                     p = self._pick(near, scoped=False) if near else None
                     if p:
                         return Resolved(p.name, p.lat, p.lon, p.admin1, how, p.kind, len(near))

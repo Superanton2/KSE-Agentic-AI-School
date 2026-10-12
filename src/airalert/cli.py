@@ -404,7 +404,15 @@ def drones_eval(
 
     s = get_settings()
     labels = s.data_dir / "labels"
-    gold_rows = ev.read_jsonl(gold or labels / "gold.jsonl")
+    gold = gold or labels / "gold.jsonl"
+    if not gold.exists():
+        typer.echo(
+            f"{gold} not found. Label {labels / 'sample.jsonl'} first (format: {labels / 'README.md'}), "
+            "save the result as gold.jsonl, then re-run.",
+            err=True,
+        )
+        raise typer.Exit(2)
+    gold_rows = ev.read_jsonl(gold)
     mentions = pd.read_parquet(mentions_path or s.processed_dir / "drone_mentions.parquet")
     weights = None
     if (labels / "sample_meta.json").exists() and (labels / "sample.jsonl").exists():
