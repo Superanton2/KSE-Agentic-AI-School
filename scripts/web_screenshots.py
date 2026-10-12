@@ -58,7 +58,8 @@ def main() -> None:
                     print(path.relative_to(OUT.parents[1]))
                     ctx.close()
                     continue
-                page.goto(f"{args.base}/?mock={mock}", wait_until="networkidle")
+                url = f"{args.base}/" if mock.startswith("demo") else f"{args.base}/?mock={mock}"  # demo*: a real API
+                page.goto(url, wait_until="networkidle")
                 page.wait_for_selector("#status-text:not(:empty)")
                 if flag == "nogeo":
                     page.wait_for_selector("#hint:not([hidden])", timeout=15000)

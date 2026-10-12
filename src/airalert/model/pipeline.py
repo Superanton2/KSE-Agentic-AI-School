@@ -456,6 +456,7 @@ def model_card(data_dir: Path, updated_at: str | None = None, db: Path | None = 
                      "check": dur["checks"]["08-17"]},
         "product_backtest": {k: bt[k] for k in ("n_trips", "success_rate", "bss_vs_B1", "bss_ci", product, "B1",
                                                 "calibration")},
+        **{k: v for k, v in json.loads((ev / "facts.json").read_text()).items() if not k.startswith("_")},
         "notes": ("Ймовірності — оцінка шансу встигнути, не порада з безпеки. Ознаки дронів не покращили прогноз на "
                   "тесті (див. ablation), тому в продукті модель без них. Тест: один місяць з вищою інтенсивністю "
                   "тривог, ніж у навчанні; довірчі інтервали широкі."),

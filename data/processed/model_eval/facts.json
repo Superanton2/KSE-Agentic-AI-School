@@ -1,0 +1,22 @@
+{
+ "_about": "Numbers for the «Про модель» page that are not model metrics; copied from the reports (not recomputed). model_card() merges this file into model_card.json.",
+ "data_quality": {
+  "official_duplicates_pct": 38.04,
+  "official_dead_since": "2026-09-07",
+  "source": "reports/data_quality.md (checks 3 and 6)"
+ },
+ "regime": {
+  "periods": [
+   {"name": "before", "from": "2026-06-01", "to": "2026-08-16", "starts_per_day": 2.06, "median_dur_min": 20},
+   {"name": "train", "from": "2026-08-10", "to": "2026-09-12", "starts_per_day": 5.09, "median_dur_min": 30},
+   {"name": "test", "from": "2026-09-13", "to": "2026-10-11", "starts_per_day": 7.34, "median_dur_min": 35}
+  ],
+  "source": "reports/model_eval.md (periods table)"
+ },
+ "drone_ablation": {
+  "validation_brier": {"M1a": 0.1848, "M1b": 0.1704, "C": 1.0, "window": ["2026-08-24", "2026-09-12"]},
+  "test_top_bin_60": {"M1a": {"p": 0.63, "y": 0.47, "n": 274}, "M1b": {"p": 0.94, "y": 0.78, "n": 64}},
+  "motion_course_random_after_min": 8,
+  "source": "reports/model_eval.md (C selection, top calibration bin), reports/drone_motion.md (conclusions)"
+ }
+}

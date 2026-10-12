@@ -298,7 +298,14 @@ body.doc-page { overflow: auto; height: auto; line-height: 1.6; }
 .callout-warn { border-left-color: var(--alert-yellow); }
 .callout-info { border-left-color: var(--accent); }
 .formula { font-weight: 600; }
-.placeholder { color: var(--muted); font-style: italic; }
+.calib { display: block; width: 100%; max-width: 360px; margin: 8px 0; }
+.calib .grid { stroke: var(--border); }
+.calib .diag { stroke: var(--muted); stroke-dasharray: 4 4; }
+.calib .tick, .calib .axis { fill: var(--muted); font-size: 11px; }
+.calib .line { fill: none; stroke-width: 2; }
+.calib .main { stroke: var(--accent); fill: var(--accent); }
+.calib .ref { stroke: var(--muted); fill: var(--muted); opacity: 0.6; }
+.calib polyline.main, .calib polyline.ref { fill: none; }
 .toc { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border); }
 .toc ol { margin: 0; padding-left: 20px; columns: 2 220px; }
 .table-wrap { overflow-x: auto; }
