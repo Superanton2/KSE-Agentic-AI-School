@@ -1,8 +1,8 @@
-"""One-off: fetch Metro Cash & Carry stores and Kyiv raion boundaries from OSM (Overpass).
+"""One-off: fetch Metro Cash & Carry and McDonald's venues and Kyiv raion boundaries from OSM (Overpass).
 
     uv run python scripts/fetch_stores.py
 
-Writes web/data/stores.geojson (points: name, address, lat, lon, brand) and
+Writes web/data/stores.geojson (points: name, address, lat, lon, brand, venue = metro | mcdonalds) and
 web/data/kyiv_raions.geojson (raion outlines, simplified, coordinates rounded to ~10 m).
 Data © OpenStreetMap contributors, ODbL — see LICENSES/OSM-ODbL.txt.
 """
@@ -19,6 +19,7 @@ from pathlib import Path
 MIRRORS = (
     "https://overpass-api.de/api/interpreter",
     "https://overpass.private.coffee/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
 )
 OUT = Path(__file__).resolve().parents[1] / "web" / "data"
 UA = "KSE-Agentic-AI-School/phase3 (one-off fetch)"
@@ -27,7 +28,11 @@ UA = "KSE-Agentic-AI-School/phase3 (one-off fetch)"
 STORES_Q = """
 [out:json][timeout:170];
 rel(421866);map_to_area->.kyiv;  /* relation 421866 «Київ», admin_level 4 */
-nwr(area.kyiv)["brand:wikidata"="Q13610282"];  /* METRO Cash & Carry; checked: same 4 as name~"metro" */
+(
+  nwr(area.kyiv)["brand:wikidata"="Q13610282"];  /* METRO Cash & Carry; checked: same 4 as name~"metro" */
+  nwr(area.kyiv)["brand:wikidata"="Q38076"];     /* McDonald's */
+  nwr(area.kyiv)["brand"="McDonald's"];
+);
 out center tags;
 """
 
@@ -48,6 +53,8 @@ def overpass(query: str) -> dict:
                 res = json.load(r)
             if res.get("remark"):  # e.g. "runtime error: Query timed out" with partial/empty elements
                 raise ValueError(res["remark"])
+            if not res.get("elements"):  # a busy mirror may answer 200 with nothing; never overwrite data with it
+                raise ValueError("empty answer")
             return res
         except (OSError, ValueError) as e:  # 429/504 from busy mirrors, timeouts, HTML error pages
             print(f"  {url}: {e}", file=sys.stderr)
@@ -66,23 +73,25 @@ def fetch_stores() -> list[dict]:
         tags = el.get("tags", {})
         lat = el.get("lat") or el["center"]["lat"]
         lon = el.get("lon") or el["center"]["lon"]
-        key = (round(lat, 3), round(lon, 3))
+        venue = "metro" if tags.get("brand:wikidata") == "Q13610282" else "mcdonalds"
+        key = (venue, round(lat, 3), round(lon, 3))
         if key in seen:  # node + building outline of the same store
             continue
         seen.add(key)
         props = {
             "id": f"{el['type'][0]}{el['id']}",
-            "name": tags.get("name:uk") or tags.get("name") or "Metro",
+            "name": tags.get("name:uk") or tags.get("name") or ("Metro" if venue == "metro" else "McDonald's"),
             "address": address(tags),
             "lat": round(lat, 6),
             "lon": round(lon, 6),
-            "brand": "metro",
+            "brand": venue,
+            "venue": venue,
         }
         feats.append(
             {"type": "Feature", "geometry": {"type": "Point", "coordinates": [props["lon"], props["lat"]]},
              "properties": props}
         )
-    feats.sort(key=lambda f: f["properties"]["name"])
+    feats.sort(key=lambda f: (f["properties"]["venue"] != "metro", f["properties"]["name"], f["properties"]["id"]))
     return feats
 
 
@@ -142,8 +151,9 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     stores = fetch_stores()
     dump(OUT / "stores.geojson", stores)
-    print(f"stores: {len(stores)}")
-    for f in stores:
+    by = {v: [f for f in stores if f["properties"]["venue"] == v] for v in ("metro", "mcdonalds")}
+    print("stores: " + ", ".join(f"{v} {len(fs)}" for v, fs in by.items()))
+    for f in by["metro"] + by["mcdonalds"][:5]:
         p = f["properties"]
         print(f"  {p['id']:>14}  {p['name']:<30} {p['address']:<40} {p['lat']:.5f},{p['lon']:.5f}")
     raions = fetch_raions()

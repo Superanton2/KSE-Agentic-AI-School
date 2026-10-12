@@ -1,8 +1,8 @@
 """sim.py on the shared cases (tests/fixtures/sim_cases.json — the same file a JS port must pass)."""
 
 import itertools
-import math
 import json
+import math
 from pathlib import Path
 
 import numpy as np
