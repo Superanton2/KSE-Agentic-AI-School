@@ -621,8 +621,8 @@ def check_live_latency(conn) -> Check:
         },
         "steady_state_le_5min": {
             "messages": len(steady),
-            "median_s": float(steady.median()) if len(steady) else None,
-            "p95_s": float(steady.quantile(0.95)) if len(steady) else None,
+            "median_s": round(float(steady.median()), 1) if len(steady) else None,
+            "p95_s": round(float(steady.quantile(0.95)), 1) if len(steady) else None,
         },
         "by_channel": {
             ch: {"messages": len(g), "median_s": float(g.median()), "p95_s": float(g.quantile(0.95))}

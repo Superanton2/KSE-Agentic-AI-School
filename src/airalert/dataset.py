@@ -27,7 +27,12 @@ def fetch(dataset_dir: Path) -> str:
 
 
 def commit_info(dataset_dir: Path) -> dict[str, str]:
-    sha, date = _git("log", "-1", "--format=%H %cI", cwd=dataset_dir).split(" ")
+    try:
+        sha, date = _git("log", "-1", "--format=%H %cI", cwd=dataset_dir).split(" ")
+    except OSError:  # no git binary (container): read the sha from .git directly
+        from airalert.build import git_sha
+
+        return {"sha": git_sha(dataset_dir), "committed_at": "unknown"}
     return {"sha": sha, "committed_at": date}
 
 

@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-10-11T18:48:09+00:00",
+    "generated_at": "2026-10-12T06:41:31+00:00",
     "vadimkin_commit": "bf0c323c78e3e4508721458797dcd38c95df13f3",
-    "code_git_sha": "0b62522b86021187554f7273622dd7a834b3662f",
+    "code_git_sha": "8aff4ebea51af651087d840080b7ef204c8c45fa",
     "seam": "2026-08-26T00:00:00+00:00",
-    "official_outages": "2026-08-29 04:55…2026-08-30 12:42; 2026-08-30 12:42…2026-09-02 13:48; 2026-09-07 06:09…2026-10-11 18:48"
+    "official_outages": "2026-08-29 04:55…2026-08-30 12:42; 2026-08-30 12:42…2026-09-02 13:48; 2026-09-07 06:09…2026-10-12 06:41"
   },
   "status": "WARN",
   "checks": [
@@ -232,12 +232,12 @@
       "scope": "dataset_official",
       "name": "Свіжість",
       "status": "WARN",
-      "value": 34.56,
-      "summary": "Останній старт 2026-09-07T05:28:22+00:00, відставання 34.56 дн. Джерело застаріло: діру після цієї дати добираємо з Telegram air_alert_ua (шов C = 2026-09-01).",
+      "value": 35.05,
+      "summary": "Останній старт 2026-09-07T05:28:22+00:00, відставання 35.05 дн. Джерело застаріло: діру після цієї дати добираємо з Telegram air_alert_ua (шов C = 2026-09-01).",
       "details": {
         "max_started_at": "2026-09-07T05:28:22+00:00",
-        "now": "2026-10-11T18:48:06.240475+00:00",
-        "lag_days": 34.56
+        "now": "2026-10-12T06:41:27.219760+00:00",
+        "lag_days": 35.05
       }
     },
     {
@@ -245,12 +245,12 @@
       "scope": "dataset_volunteer",
       "name": "Свіжість",
       "status": "PASS",
-      "value": 0.59,
-      "summary": "Останній старт 2026-10-11T04:36:59+00:00, відставання 0.59 дн.",
+      "value": 1.09,
+      "summary": "Останній старт 2026-10-11T04:36:59+00:00, відставання 1.09 дн.",
       "details": {
         "max_started_at": "2026-10-11T04:36:59+00:00",
-        "now": "2026-10-11T18:48:06.240475+00:00",
-        "lag_days": 0.59
+        "now": "2026-10-12T06:41:27.219760+00:00",
+        "lag_days": 1.09
       }
     },
     {
@@ -1254,7 +1254,7 @@
       "name": "parse_errors (нерозпізнані < 1%)",
       "status": "PASS",
       "value": 0.006,
-      "summary": "air_alert_ua: нерозпізнаних 0.0% з 7207, причини {'end_without_start': 113}; UkraineAlarmSignal: нерозпізнаних 0.006% з 53057, причини {'truncated_place_list': 3, 'end_without_start': 67}. end_without_start — відбої тривог, що почались до початку вибірки або під час збою каналу.",
+      "summary": "air_alert_ua: нерозпізнаних 0.0% з 7207, причини {'end_without_start': 113}; UkraineAlarmSignal: нерозпізнаних 0.006% з 53623, причини {'truncated_place_list': 3, 'end_without_start': 67}. end_without_start — відбої тривог, що почались до початку вибірки або під час збою каналу.",
       "details": {
         "air_alert_ua": {
           "messages": 7207,
@@ -1271,7 +1271,7 @@
           ]
         },
         "UkraineAlarmSignal": {
-          "messages": 53057,
+          "messages": 53623,
           "messages_unrecognised": 3,
           "unrecognised_pct": 0.006,
           "errors_by_reason": {
@@ -1297,11 +1297,11 @@
       "name": "Ідемпотентність backfill і детермінізм rebuild",
       "status": "PASS",
       "value": 0,
-      "summary": "Повторна вставка 60264 повідомлень додала 0 рядків (60264 → 60264); два rebuild поспіль дають однакові alerts.",
+      "summary": "Повторна вставка 60830 повідомлень додала 0 рядків (60830 → 60830); два rebuild поспіль дають однакові alerts.",
       "details": {
-        "raw_before": 60264,
-        "raw_after": 60264,
-        "reinserted": 60264,
+        "raw_before": 60830,
+        "raw_after": 60830,
+        "reinserted": 60830,
         "rebuild_identical": true
       }
     },
@@ -1309,10 +1309,29 @@
       "id": 12,
       "scope": "telegram",
       "name": "Live-затримка received_at − posted_at",
-      "status": "SKIP",
-      "value": null,
-      "summary": "Live-повідомлень ще немає (колектор не запускався).",
-      "details": {}
+      "status": "WARN",
+      "value": 94.19999999999982,
+      "summary": "566 live-повідомлень; медіана 7.0 с, p95 2442.2 с (усталений режим ≤ 5 хв: p95 94.19999999999982 с; довші — дочитування після простою).",
+      "details": {
+        "messages": 566,
+        "all": {
+          "median_s": 7.0,
+          "p95_s": 2442.25,
+          "max_s": 4153.0
+        },
+        "steady_state_le_5min": {
+          "messages": 460,
+          "median_s": 4.0,
+          "p95_s": 94.19999999999982
+        },
+        "by_channel": {
+          "UkraineAlarmSignal": {
+            "messages": 566,
+            "median_s": 7.0,
+            "p95_s": 2442.25
+          }
+        }
+      }
     },
     {
       "id": 13,
