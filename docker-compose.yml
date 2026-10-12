@@ -53,6 +53,63 @@ services:
     cap_drop:
       - ALL
 
+  # Phase 4. Live DBs are mounted READ-ONLY: a reader in another container cannot checkpoint/delete the
+  # collector's WAL (Docker Desktop does not share SQLite locks across containers).
+  #   AIRALERT_UID=$(id -u) AIRALERT_GID=$(id -g) docker compose --profile serve up -d api nightly
+  api:
+    image: airalert-collector
+    profiles: ["serve"]
+    command: ["serve", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      DATA_DIR: /app/data
+      WEB_DIR: /app/web
+    user: "${AIRALERT_UID:-10001}:${AIRALERT_GID:-10001}"
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - ./data/live:/app/data/live:ro
+      - ./data/processed:/app/data/processed:ro
+      - ./web:/app/web:ro
+    ports:
+      - "127.0.0.1:8000:8000"  # only the host itself; put a reverse proxy in front for anything else
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(urllib.request.urlopen('http://127.0.0.1:8000/api/state', timeout=5).status != 200)"]
+      interval: 60s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  # Nightly refit at 04:00 Kyiv: read-only backup of the live alerts DB -> grid -> ensemble -> model_card.json.
+  # The API picks the new files up by mtime.
+  nightly:
+    image: airalert-collector
+    profiles: ["serve"]
+    entrypoint: ["airalert", "model-fit", "--from-live", "--at", "04:00"]
+    command: []
+    environment:
+      DATA_DIR: /app/data
+      MPLCONFIGDIR: /tmp
+    user: "${AIRALERT_UID:-10001}:${AIRALERT_GID:-10001}"
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - ./data/live:/app/data/live:ro
+      - ./data/raw:/app/data/raw:ro
+      - ./data/processed:/app/data/processed
+      - ./data/work:/app/data/work
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
   tools:
     image: airalert-collector
     profiles: ["tools"]
