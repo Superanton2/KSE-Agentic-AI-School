@@ -1,4 +1,5 @@
-# Live collector. The session file must already exist (run `uv run airalert tg-login` on the host).
+# Live collectors: tg-live (alerts + drone channels, one Telegram session) and the alerts.in.ua SITREP.
+# The session file must already exist (run `uv run airalert tg-login` on the host).
 #   AIRALERT_UID=$(id -u) AIRALERT_GID=$(id -g) docker compose up -d --build
 # One-off commands that touch the SQLite journal while the collector runs (same VM => safe locking):
 #   AIRALERT_UID=$(id -u) AIRALERT_GID=$(id -g) AIRALERT_CODE_SHA=$(git rev-parse HEAD) \
@@ -23,6 +24,30 @@ services:
       - ${AIRALERT_SESSION_DIR:-~/.config/airalert}:/session
     restart: unless-stopped
     # No ports: the collector only makes outgoing connections to Telegram.
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  sitrep:
+    image: airalert-collector
+    command: ["sitrep-poll"]
+    env_file: .env
+    environment:
+      DATA_DIR: /app/data
+    user: "${AIRALERT_UID:-10001}:${AIRALERT_GID:-10001}"
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - ./data/live:/app/data/live
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "airalert", "healthcheck", "--db", "sitrep"]
+      interval: 60s
+      timeout: 10s
+      start_period: 120s
+      retries: 3
     security_opt:
       - no-new-privileges:true
     cap_drop:

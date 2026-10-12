@@ -117,7 +117,9 @@ def tg_backfill(
     since: str = typer.Option(..., help="UTC date, e.g. 2026-08-25"),
     channel: str = typer.Option(OFFICIAL_CHANNEL),
 ) -> None:
-    """Download channel history since a date into raw_messages (idempotent, resumable)."""
+    """Download channel history since a date into raw_messages (idempotent, resumable).
+
+    Drone channels (TG_DRONE_CHANNELS) go to drones.sqlite. Do not run while tg-live holds the session."""
     from airalert.tg import backfill, store
     from airalert.tg.client import make_client
 
@@ -129,13 +131,13 @@ def tg_backfill(
         if not await client.is_user_authorized():
             raise typer.BadParameter("not logged in — run `airalert tg-login` first")
         try:
-            with store.open_db(s.sqlite_path) as conn:
+            with store.open_db(s.db_for_channel(channel)) as conn:
                 return await backfill.catch_up(client, conn, channel, "backfill", since=_utc(since))
         finally:
             await client.disconnect()
 
     inserted = asyncio.run(run())
-    with store.open_db(s.sqlite_path) as conn:
+    with store.open_db(s.db_for_channel(channel)) as conn:
         total = store.count(conn, "raw_messages", channel)
     typer.echo(f"{channel}: inserted {inserted} new messages, {total} stored")
 
@@ -189,29 +191,49 @@ def build_cmd() -> None:
 
 
 @app.command("tg-live")
-def tg_live(channel: list[str] = typer.Option(LIVE_CHANNELS, help="channels to collect")) -> None:
-    """Catch up on missed messages, then collect new/edited ones forever (Ctrl+C to stop)."""
+def tg_live(
+    channel: list[str] = typer.Option(LIVE_CHANNELS, help="alert channels (alerts.sqlite)"),
+    drones: bool = typer.Option(True, help="also collect TG_DRONE_CHANNELS into drones.sqlite"),
+) -> None:
+    """Catch up on missed messages, then collect new/edited ones forever (Ctrl+C to stop).
+
+    Drone channels without history are downloaded from TG_DRONE_SINCE in the background first."""
     from airalert.tg import live, store
     from airalert.tg.client import make_client
 
     s = get_settings()
-    with store.open_db(s.sqlite_path) as conn:
+    with store.open_db(s.sqlite_path) as alerts_conn, store.open_db(s.drones_sqlite_path) as drones_conn:
+        groups = [live.ChannelGroup(alerts_conn, channel)]
+        if drones and s.drone_channels:
+            groups.append(live.ChannelGroup(drones_conn, s.drone_channels, since=s.tg_drone_since))
         try:
-            asyncio.run(live.run(make_client(s), conn, channel))
+            asyncio.run(live.run(make_client(s), groups))
         except KeyboardInterrupt:
             typer.echo("collector stopped")
 
 
+_HEALTH_DBS = {"alerts": "sqlite_path", "drones": "drones_sqlite_path", "sitrep": "sitrep_sqlite_path"}
+
+
 @app.command("healthcheck")
-def healthcheck(max_age: int = HEARTBEAT_MAX_AGE_SECONDS) -> None:
-    """Exit 0 if the collector heartbeat is fresher than ``max_age`` seconds."""
+def healthcheck(
+    max_age: int = HEARTBEAT_MAX_AGE_SECONDS,
+    db: list[str] = typer.Option(["alerts", "drones"], help="alerts | drones | sitrep (repeatable)"),
+) -> None:
+    """Exit 0 if every listed collector heartbeat is fresher than ``max_age`` seconds."""
     from airalert.tg import store
 
-    with store.open_db(get_settings().sqlite_path) as conn:
-        row = conn.execute("SELECT last_seen_at FROM collector_heartbeat WHERE id=1").fetchone()
-    age = (datetime.now(UTC) - datetime.fromisoformat(row[0])).total_seconds() if row else None
-    typer.echo(f"heartbeat age: {age if age is None else round(age)} s")
-    if age is None or age > max_age:
+    s = get_settings()
+    stale = False
+    for name in db:
+        if name not in _HEALTH_DBS:
+            raise typer.BadParameter(f"unknown db {name!r}")
+        if name == "drones" and not s.drone_channels:
+            continue
+        age = store.heartbeat_age(getattr(s, _HEALTH_DBS[name]))
+        typer.echo(f"{name}: heartbeat age {age if age is None else round(age)} s")
+        stale |= age is None or age > max_age
+    if stale:
         raise typer.Exit(1)
 
 
@@ -220,13 +242,44 @@ def tg_sample(n: int = 20, channel: str = OFFICIAL_CHANNEL, offset: int = 0) -> 
     """Print stored raw messages (to check the real format)."""
     from airalert.tg import store
 
-    with store.open_db(get_settings().sqlite_path) as conn:
+    with store.open_db(get_settings().db_for_channel(channel)) as conn:
         rows = conn.execute(
             "SELECT msg_id, posted_at, text FROM raw_messages WHERE channel=? ORDER BY msg_id LIMIT ? OFFSET ?",
             (channel, n, offset),
         ).fetchall()
     for msg_id, posted_at, text in rows:
         typer.echo(f"--- #{msg_id} {posted_at}\n{text}")
+
+
+@app.command("sitrep-poll")
+def sitrep_poll(iterations: int = typer.Option(0, help="0 = forever")) -> None:
+    """Poll the alerts.in.ua SITREP every SITREP_POLL_SECONDS; store raw text in sitrep.sqlite when changed."""
+    from airalert.sitrep import collector
+
+    s = get_settings()
+    src = collector.MarkdownSitrep(s.sitrep_url, s.sitrep_contact)
+    with collector.open_db(s.sitrep_sqlite_path) as conn:
+        try:
+            collector.poll_forever(conn, src, s.sitrep_poll_seconds, iterations=iterations or None)
+        except KeyboardInterrupt:
+            typer.echo("sitrep collector stopped")
+
+
+@app.command("sitrep-show")
+def sitrep_show() -> None:
+    """Parse the newest stored SITREP: m. Kyiv and Kyivska oblast raions under warning."""
+    from airalert.sitrep import collector, parser
+
+    with collector.open_db(get_settings().sitrep_sqlite_path) as conn:
+        snaps = collector.read_snapshots(conn, collector.MarkdownSitrep.name, limit=1)
+    if not snaps:
+        raise typer.BadParameter("no snapshots yet — run `airalert sitrep-poll`")
+    fetched_at, text = snaps[0]
+    typer.echo(f"fetched {fetched_at}, report {parser.report_time(text).isoformat()}")
+    for a in parser.kyiv_status(text):
+        typer.echo(
+            f"{a.region_uk:18} {a.area_uk or '—':16} {a.level:6} since {a.started_at:%H:%M}Z ({a.elapsed_min} min)"
+        )
 
 
 @app.command("rebuild-alerts")

@@ -13,6 +13,8 @@ from airalert.tg import store
 
 log = logging.getLogger(__name__)
 BATCH = 200
+# Seconds between history pages (Telethon's ``wait_time``) — be gentle with long backfills.
+HISTORY_PAGE_PAUSE = 1.0
 
 
 def to_raw(message, channel: str, mode: str) -> store.RawMessage:
@@ -53,6 +55,44 @@ async def _with_flood_wait(coro_factory) -> int:
             await asyncio.sleep(e.seconds + 1)
 
 
+def needs_history(conn: sqlite3.Connection, channel: str, since: datetime) -> bool:
+    first = store.min_posted_at(conn, channel)
+    return first is None or datetime.fromisoformat(first[1]) > since
+
+
+async def fill_history(
+    client: TelegramClient, conn: sqlite3.Connection, channel: str, since: datetime, peer=None
+) -> int:
+    """Download history between ``since`` and the oldest stored message (everything, if nothing is stored),
+    as ``ingest_mode='backfill'``. One request per ``HISTORY_PAGE_PAUSE`` seconds."""
+    if not needs_history(conn, channel, since):
+        return 0
+    first = store.min_posted_at(conn, channel)
+    older_than = first[0] if first else 0
+    return await _with_flood_wait(
+        lambda: _fetch(
+            client,
+            conn,
+            channel,
+            "backfill",
+            peer,
+            offset_date=since,
+            max_id=older_than,
+            wait_time=HISTORY_PAGE_PAUSE,
+        )
+    )
+
+
+async def fetch_new(
+    client: TelegramClient, conn: sqlite3.Connection, channel: str, mode: str, peer=None
+) -> int:
+    """Everything after the newest stored message. ``max(msg_id)`` is recomputed inside the lambda so a
+    retry after FloodWait resumes from where it stopped."""
+    return await _with_flood_wait(
+        lambda: _fetch(client, conn, channel, mode, peer, min_id=store.max_msg_id(conn, channel) or 0)
+    )
+
+
 async def catch_up(
     client: TelegramClient,
     conn: sqlite3.Connection,
@@ -64,16 +104,8 @@ async def catch_up(
     """Fetch everything after the newest stored message; with ``since``, also fill the history between
     ``since`` and the oldest stored message. Re-running never creates duplicates."""
     inserted = 0
-    first = store.min_posted_at(conn, channel)
-    if since is not None and (first is None or datetime.fromisoformat(first[1]) > since):
-        older_than = first[0] if first else 0
-        inserted += await _with_flood_wait(
-            lambda: _fetch(client, conn, channel, mode, peer, offset_date=since, max_id=older_than)
-        )
-    elif first is None:
+    if since is not None:
+        inserted += await fill_history(client, conn, channel, since, peer)
+    elif store.min_posted_at(conn, channel) is None:
         raise ValueError(f"no messages stored for {channel}; pass --since for the first backfill")
-    # Recomputed inside the lambda so a retry after FloodWait resumes from where it stopped.
-    inserted += await _with_flood_wait(
-        lambda: _fetch(client, conn, channel, mode, peer, min_id=store.max_msg_id(conn, channel) or 0)
-    )
-    return inserted
+    return inserted + await fetch_new(client, conn, channel, mode, peer)

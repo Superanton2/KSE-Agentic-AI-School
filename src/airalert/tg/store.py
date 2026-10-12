@@ -173,6 +173,18 @@ def heartbeat(conn: sqlite3.Connection, last_msg_id: int | None) -> None:
         )
 
 
+def heartbeat_age(path: Path) -> float | None:
+    """Seconds since the last heartbeat in any collector DB (None if absent). Opens without creating schema."""
+    if not path.exists():
+        return None
+    with closing(sqlite3.connect(path, timeout=30)) as conn:
+        try:
+            row = conn.execute("SELECT last_seen_at FROM collector_heartbeat WHERE id=1").fetchone()
+        except sqlite3.OperationalError:
+            return None
+    return (datetime.now(UTC) - datetime.fromisoformat(row[0])).total_seconds() if row else None
+
+
 def read_messages(conn: sqlite3.Connection, channel: str) -> pd.DataFrame:
     return pd.read_sql_query(
         "SELECT * FROM raw_messages WHERE channel=? ORDER BY posted_at, msg_id", conn, params=(channel,)
