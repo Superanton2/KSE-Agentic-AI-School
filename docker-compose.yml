@@ -1,6 +1,5 @@
 # Live collectors: tg-live (alerts + drone channels, one Telegram session) and the alerts.in.ua SITREP.
-# The session file must already exist (run `uv run airalert tg-login` on the host).
-#   AIRALERT_UID=$(id -u) AIRALERT_GID=$(id -g) docker compose up -d --build
+# The session file must already exist (`make login`). Everything: `make up` (sets UID/GID/code sha, waits healthy).
 # One-off commands that touch the SQLite journal while the collector runs (same VM => safe locking):
 #   AIRALERT_UID=$(id -u) AIRALERT_GID=$(id -g) AIRALERT_CODE_SHA=$(git rev-parse HEAD) \
 #     docker compose run --rm tools build
@@ -23,6 +22,12 @@ services:
       - ./data/live:/app/data/live
       - ${AIRALERT_SESSION_DIR:-~/.config/airalert}:/session
     restart: unless-stopped
+    healthcheck:  # heartbeat of alerts + drones journals <= 5 min
+      test: ["CMD", "airalert", "healthcheck", "--db", "alerts", "--db", "drones"]
+      interval: 60s
+      timeout: 10s
+      start_period: 300s
+      retries: 3
     # No ports: the collector only makes outgoing connections to Telegram.
     security_opt:
       - no-new-privileges:true
@@ -63,6 +68,7 @@ services:
     environment:
       DATA_DIR: /app/data
       WEB_DIR: /app/web
+      AIRALERT_CODE_SHA: ${AIRALERT_CODE_SHA:-unknown}
     user: "${AIRALERT_UID:-10001}:${AIRALERT_GID:-10001}"
     read_only: true
     tmpfs:
@@ -70,12 +76,14 @@ services:
     volumes:
       - ./data/live:/app/data/live:ro
       - ./data/processed:/app/data/processed:ro
+      # fallback model (`make model-fallback`) until the nightly refit writes data/processed/model_final.pkl
+      - ./data/work/replay:/app/data/work/replay:ro
       - ./web:/app/web:ro
     ports:
       - "127.0.0.1:8000:8000"  # only the host itself; put a reverse proxy in front for anything else
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(urllib.request.urlopen('http://127.0.0.1:8000/api/state', timeout=5).status != 200)"]
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=5).status != 200)"]
       interval: 60s
       timeout: 10s
       start_period: 30s
