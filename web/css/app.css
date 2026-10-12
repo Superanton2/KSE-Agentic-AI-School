@@ -88,6 +88,13 @@ h1, h2, p { margin: 0; }
   padding: 1px 8px; border-radius: var(--pill);
 }
 
+.hint {
+  margin-top: 6px; padding: 8px 14px;
+  font-size: 14px; text-align: center;
+  border-radius: var(--radius);
+  max-width: 360px;
+}
+
 /* ── Картка результату ─────────────────────────────── */
 .card {
   position: fixed; z-index: 1000;

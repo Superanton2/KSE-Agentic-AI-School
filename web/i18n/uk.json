@@ -17,7 +17,7 @@
   "card.nodata": "Немає свіжих даних",
   "card.band": "80%: {lo}–{hi}%",
   "card.trip": "дорога {travel} хв · покупки ~{shop} хв",
-  "card.trip_approx": "дорога ≈ {travel} хв, приблизно · покупки ~{shop} хв",
+  "card.trip_approx": "дорога ≈ {travel} хв (приблизно) · покупки ~{shop} хв",
   "card.wait": "ймовірне очікування ~{wait} хв (до {p80} хв у 80% випадків)",
   "card.best": "найкраще вікно: виїзд о {time} — {p}%",
   "card.no_traffic": "Без урахування заторів — час дороги можна змінити в налаштуваннях",
@@ -27,5 +27,7 @@
   "toolbar.settings": "Налаштування",
   "toolbar.locate": "Моя локація",
   "toolbar.info": "Довідка",
-  "store.label": "{name}, {address}"
+  "store.label": "{name}, {address}",
+  "geo.hint": "Торкніться карти, щоб вказати, звідки їдете",
+  "geo.outside": "Сервіс рахує тривоги лише для Києва"
 }
