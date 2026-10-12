@@ -1,0 +1,12 @@
+data/gazetteer/ua_places.csv.gz, data/gazetteer/oblast_centroids.csv and the GeoNames-seeded rows of
+data/gazetteer/kyiv_local.csv are derived from the GeoNames geographical database
+(https://www.geonames.org/, dumps https://download.geonames.org/export/dump/UA.zip and
+alternatenames/UA.zip), licensed under the Creative Commons Attribution 4.0 License:
+https://creativecommons.org/licenses/by/4.0/
+
+Changes: only populated places (feature class P) and ADM1 centroids are kept; names are reduced to
+Cyrillic forms (Ukrainian first), normalised (NFC, apostrophes, stress marks removed). Rows of
+kyiv_local.csv with source=manual are ours.
+
+The data is provided "as is" without warranty or any representation of accuracy, timeliness or
+completeness.

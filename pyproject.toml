@@ -14,6 +14,9 @@ dependencies = [
     "python-dotenv>=1.0",
     "translitua>=1.3",
     "qrcode>=7.4",
+    "pymorphy3>=2.0.6",
+    "pymorphy3-dicts-uk>=2.4.1.1.1663094765",
+    "rapidfuzz>=3.14.6",
 ]
 
 [project.scripts]
