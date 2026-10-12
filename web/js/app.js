@@ -1,5 +1,5 @@
 // Ініціалізація, стан, цикл оновлення.
-// Ймовірність — заглушка prob.js (рахує окремий модуль); час дороги — справжній (route.js).
+// Ймовірність — з бекенду (prob.js → /api/estimate); час дороги — у браузері (route.js).
 // Старт поїздки — як у картах: «моя локація» за замовчуванням, інша адреса — через пошук.
 import { getModelCard, getRaions, getState, getStores, isStale } from './api.js';
 import { inKyiv, KYIV_CENTER, watchLocation } from './geo.js';
@@ -165,7 +165,9 @@ function render() {
   const base = { store: storeView(store), from, travel: travelMin, approx: !manual && app.travel.approx, manual, shop: set.shopMean };
   if (stale) return renderCard({ ...base, nodata: true }, now);
 
-  const r = estimate({ state: app.state, store, travelMin, settings: set });
+  const r = estimate({ state: app.state, travelMin, settings: set }, render);
+  if (!r) return; // відповідь бекенду ще в дорозі — картку не чіпаємо, render() викличеться знову
+  if (r.nodata) return renderCard({ ...base, nodata: true }, now);
   const reason = unsureReason({
     travel: travelMin, wait: r.wait ? Math.min(r.wait.median, set.waitMax) : 0, openDelay: set.openDelay,
     shop: set.shopMean, band: r.band, skill: app.modelCard?.skill,

@@ -1,11 +1,11 @@
 // Мережа: fetch з таймаутом і застарілість даних.
-// Перехід на справжній бекенд — заміна API_BASE на '/api' (той самий origin, без CORS).
-export const API_BASE = 'mock';
+// Бекенд — той самий origin (FastAPI віддає і /api, і web/), без CORS. ?mock=calm|alert|stale — фейкові дані макета.
+export const API_BASE = new URLSearchParams(globalThis.location?.search ?? '').has('mock') ? 'mock' : '/api';
 
 export const STALE_MS = 10 * 60_000;
 const TIMEOUT_MS = 5000;
 
-const mockVariant = new URLSearchParams(location.search).get('mock') || 'calm';
+const mockVariant = new URLSearchParams(globalThis.location?.search ?? '').get('mock') || 'calm';
 
 export async function getJSON(url, { timeout = TIMEOUT_MS } = {}) {
   const r = await fetch(url, { signal: AbortSignal.timeout(timeout), cache: 'no-store' });
