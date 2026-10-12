@@ -282,6 +282,44 @@ def sitrep_show() -> None:
         )
 
 
+@app.command("db-snapshot")
+def db_snapshot(
+    db: str = typer.Option("drones", help="alerts | drones | sitrep"),
+    out: Path = typer.Option(None, help="default: DATA_DIR/live/snapshots/<db>.sqlite"),
+) -> None:
+    """Consistent copy of a live DB (SQLite online backup) that is safe to read anywhere.
+
+    Run it INSIDE the container that writes the DB: `docker compose exec collector airalert db-snapshot`.
+    On Docker Desktop, SQLite locks are not shared between different bind mounts/containers: a connection
+    from another container (e.g. `tools`, which mounts ./data, not ./data/live) believes it is the last one,
+    checkpoints and deletes the -wal file the collector is still writing to."""
+    import sqlite3
+    from contextlib import closing
+
+    s = get_settings()
+    if db not in _HEALTH_DBS:
+        raise typer.BadParameter(f"unknown db {db!r}")
+    src = getattr(s, _HEALTH_DBS[db])
+    out = out or s.live_dir / "snapshots" / f"{db}.sqlite"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    tmp = out.with_suffix(".tmp")
+    tmp.unlink(missing_ok=True)
+    with closing(sqlite3.connect(src, timeout=30)) as a, closing(sqlite3.connect(tmp)) as b:
+        a.backup(b)
+    tmp.replace(out)
+    typer.echo(f"{src} -> {out}")
+
+
+@app.command("drones-gazetteer")
+def drones_gazetteer() -> None:
+    """Download GeoNames UA (+ Ukrainian alternate names) and write data/gazetteer/ua_places.csv.gz."""
+    from airalert.drones import gazetteer
+
+    s = get_settings()
+    out, n = gazetteer.build_places(s.raw_dir / "geonames", s.gazetteer_dir)
+    typer.echo(f"{out}: {n} populated places with Ukrainian names")
+
+
 @app.command("rebuild-alerts")
 def rebuild_alerts(channel: str = OFFICIAL_CHANNEL) -> None:
     """Rebuild alerts + parse_errors from raw_messages (deterministic)."""

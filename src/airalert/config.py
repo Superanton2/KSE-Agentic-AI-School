@@ -63,6 +63,10 @@ class Settings(BaseSettings):
         return self.live_dir / "alerts.sqlite"
 
     @property
+    def gazetteer_dir(self) -> Path:
+        return self.data_dir / "gazetteer"
+
+    @property
     def drones_sqlite_path(self) -> Path:
         return self.live_dir / "drones.sqlite"
 
