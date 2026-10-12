@@ -7,6 +7,7 @@ export AIRALERT_GID ?= $(shell id -g)
 export AIRALERT_CODE_SHA ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
 
 PORT ?= 8000
+OPEN ?= 1
 DEMO_AT ?= 2026-10-07T11:30:00Z
 DEMO_ALERT_AT ?= 2026-10-07T13:45:00Z
 COMPOSE := docker compose --profile serve
@@ -36,7 +37,7 @@ test:  ## pytest + web unit tests (node --test, or deno test without node)
 
 demo:  ## replay without Telegram (committed data, calm moment) on http://127.0.0.1:8000
 	uv run airalert model-fit --until $(DEMO_AT)
-	@(sleep 4; open http://127.0.0.1:$(PORT) 2>/dev/null || xdg-open http://127.0.0.1:$(PORT) 2>/dev/null || true) &
+	@[ "$(OPEN)" = 0 ] || (sleep 4; open http://127.0.0.1:$(PORT) 2>/dev/null || xdg-open http://127.0.0.1:$(PORT) 2>/dev/null || true) &
 	uv run airalert serve --port $(PORT) --replay $(DEMO_AT)
 
 demo-alert:  ## the same, during an air raid
