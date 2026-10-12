@@ -627,14 +627,26 @@ def model_fit(
     rebuild: bool = typer.Option(True, help="rebuild the grid first"),
     from_live: bool = typer.Option(False, help="back up the live alerts DB read-only into data/work first"),
     at: str = typer.Option("", help="HH:MM Kyiv time: run every day at that time (nightly service)"),
+    until: str = typer.Option("", help="replay fit: only the committed data known by this UTC time "
+                                       "('latest' = end of the committed parquet); no grid rebuild, no card"),
+    out: Path = typer.Option(None, help="replay fit: output dir (default data/work/replay/<until>)"),
 ) -> None:
-    """Nightly: (grid rebuild) -> refit the product ensemble on all closed labels -> model_card.json."""
+    """Nightly: (grid rebuild) -> refit the product ensemble on all closed labels -> model_card.json.
+    With --until: the replay/fallback model from the committed grid, labels closed by then, into data/work/replay."""
     import json
     import time as _time
 
     from airalert.model import pipeline
 
     s = get_settings()
+    if until:
+        from airalert.api import replay
+
+        ts = replay.data_end(s.data_dir) if until == "latest" else pd.Timestamp(until).tz_convert("UTC")
+        dst = out or replay.default_dir(s.data_dir, ts)
+        art = replay.fit(s.data_dir, ts, dst)
+        typer.echo(f"{art['model']} x{len(art['members'])} fitted on data known by {ts} -> {dst}")
+        return
 
     def once() -> None:
         db = None
@@ -672,13 +684,25 @@ def model_fit(
 
 
 @app.command("serve")
-def serve(host: str = "127.0.0.1", port: int = 8000) -> None:
-    """FastAPI: /api/state, /api/scenarios, /api/estimate, /api/model-card + static web/."""
+def serve(
+    host: str = "127.0.0.1",
+    port: int = 8000,
+    replay: str = typer.Option("", help="UTC time: replay the committed data from then on (no Telegram)"),
+    model: Path = typer.Option(None, help="model_final.pkl (default: data/processed, else the fallback)"),
+) -> None:
+    """FastAPI: /api/state, /api/scenarios, /api/estimate, /api/model-card, /api/health + static web/."""
     import uvicorn
 
     from airalert.api.app import create_app
 
-    uvicorn.run(create_app(), host=host, port=port, access_log=False, log_level="info")
+    at = pd.Timestamp(replay).tz_convert("UTC") if replay else None
+    if at is not None and model is None:
+        from airalert.api import replay as R
+
+        model = R.default_dir(get_settings().data_dir, at) / "model_final.pkl"
+        if not model.exists():
+            raise typer.BadParameter(f"no replay model {model}: run `airalert model-fit --until {replay}` first")
+    uvicorn.run(create_app(replay_at=at, pkl=model), host=host, port=port, access_log=False, log_level="info")
 
 
 @app.command("rebuild-alerts")

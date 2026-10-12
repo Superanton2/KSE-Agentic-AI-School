@@ -35,13 +35,21 @@ async function getMock(name) {
   return shiftTimes(v, Date.now() - Date.parse(m.now));
 }
 
-export const getState = () => (API_BASE === 'mock' ? getMock('state') : getJSON(`${API_BASE}/state`));
+// Режим відтворення: годинник сервера стартує з replay_at; зсуваємо часи на «зараз» браузера, як у mock,
+// щоб таймер і застарілість працювали, а replay_at лишаємо як є — для плашки.
+async function getLiveState() {
+  const v = await getJSON(`${API_BASE}/state`);
+  if (v.mode !== 'replay' || !v.now) return v;
+  return { ...shiftTimes(v, Date.now() - Date.parse(v.now)), replay_at: v.replay_at };
+}
+
+export const getState = () => (API_BASE === 'mock' ? getMock('state') : getLiveState());
 export const getModelCard = () => (API_BASE === 'mock' ? getMock('model-card') : getJSON(`${API_BASE}/model-card`));
 export const getStores = () => getJSON('data/stores.geojson');
 export const getRaions = () => getJSON('data/kyiv_raions.geojson');
 
 // Дані вважаються застарілими, якщо джерело давно не оновлювалось або API давно не відповідав.
 export function isStale(state, lastOkAt, now = Date.now()) {
-  if (!state) return true;
+  if (!state || state.status === 'unknown' || !state.data_as_of) return true;
   return now - Date.parse(state.data_as_of) > STALE_MS || now - lastOkAt > STALE_MS;
 }

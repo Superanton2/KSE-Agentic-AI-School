@@ -82,7 +82,7 @@ def test_state(client):
     r = c.get("/api/state")
     assert r.status_code == 200 and r.headers["cache-control"] == "no-store"
     s = r.json()
-    assert set(s) == {"status", "level", "since", "data_as_of", "sources_ok"}
+    assert set(s) == {"status", "level", "since", "data_as_of", "sources_ok", "mode"} and s["mode"] == "live"
     assert s["data_as_of"] == "2026-10-12T11:59:40Z" and s["sources_ok"] == {"alerts": True, "drones": True}
     if alert:
         assert s["status"] == "alert" and s["since"] == "2026-10-12T11:48:00Z"
@@ -124,3 +124,23 @@ def test_model_card_static_and_headers(client):
     for h in ("content-security-policy", "referrer-policy", "x-content-type-options", "permissions-policy"):
         assert h in page.headers
     assert page.headers["referrer-policy"] == "no-referrer" and "frame-ancestors 'none'" in page.headers["content-security-policy"]
+
+
+def test_cold_start_unknown(tmp_path):
+    """Empty data/live: the API does not crash; state is «unknown», estimate is 503, health answers."""
+    _model(tmp_path / "data")
+    app = create_app(data_dir=tmp_path / "data", web_dir=tmp_path / "web", alerts_db=tmp_path / "none.sqlite",
+                     sitrep_db=tmp_path / "none2.sqlite", clock=lambda: NOW, background=False)
+    with TestClient(app) as c:
+        s = c.get("/api/state").json()
+        assert s["status"] == "unknown" and s["data_as_of"] is None and s["mode"] == "live"
+        assert c.get("/api/estimate?travel=20").status_code == 503
+        h = c.get("/api/health").json()
+        assert h["sources"]["alerts"]["ok"] is False and h["model"] == "M1a"
+
+
+def test_health(client):
+    c, _ = client
+    h = c.get("/api/health").json()
+    assert set(h["sources"]) == {"alerts", "drones", "sitrep"}
+    assert h["sources"]["alerts"]["ok"] and h["sources"]["sitrep"]["data_as_of"]

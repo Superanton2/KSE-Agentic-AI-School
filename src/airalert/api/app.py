@@ -11,6 +11,7 @@ import hashlib
 import json
 import logging
 import math
+import os
 import pickle
 from collections.abc import Callable
 from datetime import UTC, datetime
@@ -29,7 +30,7 @@ from airalert.model import features as F
 from airalert.model import scenarios as S
 from airalert.model import sim
 from airalert.model.duration import KM
-from airalert.model.pipeline import CARD_FILE, FINAL_FILE, SKILL_BUCKETS
+from airalert.model.pipeline import CARD_FILE, FINAL_FILE, SKILL_BUCKETS, git_sha
 
 log = logging.getLogger("airalert.api")
 REFRESH_S = 30
@@ -62,13 +63,35 @@ def no_mentions() -> pd.DataFrame:
                      "count": "Int64"})
 
 
+def model_path(data_dir: Path) -> Path:
+    """The nightly model; without it (a fresh clone: artefacts are gitignored) the fallback fitted by
+    ``airalert model-fit --until`` on the committed data into data/work/replay/latest — with a warning."""
+    pkl = data_dir / "processed" / FINAL_FILE
+    if pkl.exists():
+        return pkl
+    fb = data_dir / "work" / "replay" / "latest" / FINAL_FILE
+    if fb.exists():
+        log.warning("no %s; using the fallback model %s (run `make model` for one fitted on live data)", pkl, fb)
+        return fb
+    raise FileNotFoundError(f"no model: {pkl} (run `make model`) or {fb} (run `make model-fallback`)")
+
+
+UNKNOWN = {"status": "unknown", "level": None, "since": None, "data_as_of": None,
+           "sources_ok": {"alerts": False, "drones": False}}
+
+
 class Engine:
     """Holds the model, the newest state and the newest scenarios."""
 
-    def __init__(self, data_dir: Path, alerts_db: Path, sitrep_db: Path, clock: Callable[[], pd.Timestamp]):
+    def __init__(self, data_dir: Path, alerts_db: Path, sitrep_db: Path, clock: Callable[[], pd.Timestamp],
+                 reader: Callable[[pd.Timestamp], L.Live] | None = None, pkl: Path | None = None,
+                 replay_at: pd.Timestamp | None = None):
         self.data_dir, self.alerts_db, self.sitrep_db, self.clock = data_dir, alerts_db, sitrep_db, clock
+        self.reader = reader or (lambda now: L.read(self.alerts_db, self.sitrep_db, now))
+        self.pkl, self.replay_at = pkl or model_path(data_dir), replay_at
         self.loaded_mtime = None
         self.load_model()
+        self.live: L.Live | None = None
         self.state: dict | None = None
         self.scen: dict | None = None
         self.scen_body: bytes = b""
@@ -77,16 +100,22 @@ class Engine:
 
     def load_model(self) -> None:
         """(Re)load the ensemble and the card when the nightly refit replaced them."""
-        pkl, card = self.data_dir / "processed" / FINAL_FILE, self.data_dir / "processed" / CARD_FILE
+        pkl, card = self.pkl, self.data_dir / "processed" / CARD_FILE
         mtime = (pkl.stat().st_mtime, card.stat().st_mtime)
         if mtime == self.loaded_mtime:
             return
         with open(pkl, "rb") as f:
             art = pickle.load(f)  # our own artefact, written by `airalert model-fit`
         self.members, self.km, self.model_name = art["members"], KM(np.asarray(art["km_S"])), art["model"]
+        self.model_fitted_at = art.get("fitted_at")
         self.card = json.loads(card.read_text())
         self.loaded_mtime = mtime
-        log.info("model %s x%d loaded", self.model_name, len(self.members))
+        log.info("model %s x%d loaded from %s", self.model_name, len(self.members), pkl)
+
+    def mode(self) -> dict:
+        if self.replay_at is None:
+            return {"mode": "live"}
+        return {"mode": "replay", "replay_at": _iso(self.replay_at), "now": _iso(self.clock())}
 
     def refresh(self) -> None:
         now = self.clock()
@@ -95,11 +124,18 @@ class Engine:
         except Exception as e:  # half-written files during a refit: keep the old model
             log.warning("model reload skipped: %s", e)
         try:
-            lv = L.read(self.alerts_db, self.sitrep_db, now)
-        except Exception as e:
+            lv = self.reader(now)
+        except Exception as e:  # e.g. a cold start: the collector has not created its DB yet
             log.warning("live read failed: %s", e)
-            if self.state:
+            self.live = None
+            if self.state and self.state["status"] != "unknown":
                 self.state = {**self.state, "sources_ok": {"alerts": False, "drones": False}}
+            else:
+                self.state, self.scen = {**UNKNOWN, **self.mode()}, None
+            return
+        self.live = lv
+        if lv.heartbeat is None:  # the DB exists, but the collector has not caught up yet
+            self.state, self.scen = {**UNKNOWN, **self.mode()}, None
             return
         sources = D.Sources(lv.alerts, no_mentions())
         p = F.Prepared(sources)
@@ -120,6 +156,7 @@ class Engine:
             "data_as_of": _iso(lv.heartbeat),
             # one Telegram session collects alerts and drone channels: same heartbeat
             "sources_ok": {"alerts": hb_ok, "drones": hb_ok},
+            **self.mode(),
         }
         feats = pd.DataFrame([F.features_asof(now, p)])
         elapsed = float((now - since).total_seconds() / 60) if on else None
@@ -129,6 +166,25 @@ class Engine:
                                now.to_pydatetime())
         self.scen_body = json.dumps(self.scen, separators=(",", ":")).encode()
         self.etag = '"' + hashlib.sha256(self.scen_body).hexdigest()[:20] + '"'
+
+    def health(self) -> dict:
+        lv = self.live
+        hb = _iso(lv.heartbeat) if lv else None
+        ok = bool(self.state and self.state["sources_ok"]["alerts"])
+        return {
+            "code_sha": os.environ.get("AIRALERT_CODE_SHA") or git_sha(),
+            "model": self.model_name,
+            "model_updated_at": self.model_fitted_at,
+            "model_file": self.pkl.name if self.pkl.parent.name == "processed" else str(self.pkl.parent.name),
+            "status": self.state["status"] if self.state else None,
+            **self.mode(),
+            "sources": {
+                "alerts": {"data_as_of": hb, "ok": ok},
+                "drones": {"data_as_of": hb, "ok": ok},  # one Telegram session collects both
+                "sitrep": {"data_as_of": _iso(lv.sitrep_heartbeat) if lv else None,
+                           "ok": bool(lv and lv.sitrep_ok)},
+            },
+        }
 
     def estimate(self, params: dict) -> dict:
         now = self.clock()
@@ -146,14 +202,27 @@ class Engine:
         }
 
 
+def replay_clock(at: pd.Timestamp) -> Callable[[], pd.Timestamp]:
+    """Starts at ``at`` and runs forward in real time."""
+    t0 = pd.Timestamp(datetime.now(UTC))
+    return lambda: at + (pd.Timestamp(datetime.now(UTC)) - t0)
+
+
 def create_app(data_dir: Path | None = None, web_dir: Path | None = None, alerts_db: Path | None = None,
                sitrep_db: Path | None = None, clock: Callable[[], pd.Timestamp] | None = None,
-               background: bool = True) -> FastAPI:
+               background: bool = True, replay_at: pd.Timestamp | None = None, pkl: Path | None = None) -> FastAPI:
     s = get_settings()
     data_dir = data_dir or s.data_dir
-    web_dir = web_dir or Path(__import__("os").environ.get("WEB_DIR", "web"))
+    web_dir = web_dir or Path(os.environ.get("WEB_DIR", "web"))
+    reader = None
+    if replay_at is not None:  # replay: the committed parquet cut by known_at <= clock, no Telegram
+        from airalert.api import replay
+
+        clock = clock or replay_clock(replay_at)
+        reader = replay.Reader(data_dir)
     clock = clock or (lambda: pd.Timestamp(datetime.now(UTC)))
-    eng = Engine(data_dir, alerts_db or s.sqlite_path, sitrep_db or s.sitrep_sqlite_path, clock)
+    eng = Engine(data_dir, alerts_db or s.sqlite_path, sitrep_db or s.sitrep_sqlite_path, clock, reader, pkl,
+                 replay_at)
 
     @contextlib.asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -200,6 +269,10 @@ def create_app(data_dir: Path | None = None, web_dir: Path | None = None, alerts
         if request.headers.get("if-none-match") == eng.etag:
             return Response(status_code=304, headers={"ETag": eng.etag})
         return Response(eng.scen_body, media_type="application/json", headers={"ETag": eng.etag})
+
+    @app.get("/api/health")
+    def health():
+        return eng.health()
 
     @app.get("/api/model-card")
     def model_card():

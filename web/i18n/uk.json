@@ -6,6 +6,7 @@
   "status.level.yellow": "жовтий рівень",
   "status.level.red": "червоний рівень",
   "asof": "дані станом на {time}",
+  "replay": "Режим відтворення: станом на {time}",
   "dur.min": "{m} хв",
   "dur.hm": "{h} год {m} хв",
   "dur.lt1": "<1 хв",

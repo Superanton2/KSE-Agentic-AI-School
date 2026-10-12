@@ -45,6 +45,7 @@ class Live:
     heartbeat: pd.Timestamp | None
     sitrep_level: str | None
     sitrep_ok: bool
+    sitrep_heartbeat: pd.Timestamp | None = None
 
 
 def read_alerts(db: Path, now: pd.Timestamp) -> tuple[pd.DataFrame, bool, pd.Timestamp | None]:
@@ -69,12 +70,12 @@ def read_alerts(db: Path, now: pd.Timestamp) -> tuple[pd.DataFrame, bool, pd.Tim
     return D.merge_overlaps(a), red_on, (pd.Timestamp(hb) if hb else None)
 
 
-def read_sitrep(db: Path, now: pd.Timestamp) -> tuple[str | None, bool]:
+def read_sitrep(db: Path, now: pd.Timestamp) -> tuple[str | None, bool, pd.Timestamp | None]:
     """Kyiv City level from the newest SITREP, if the SITREP collector is alive."""
     from airalert.sitrep import collector, parser
 
     if not db.exists():
-        return None, False
+        return None, False, None
 
     def q():
         with closing(_ro(db)) as c:
@@ -83,17 +84,18 @@ def read_sitrep(db: Path, now: pd.Timestamp) -> tuple[str | None, bool]:
         return hb, snaps
 
     hb, snaps = _retry(q)
-    if not hb or not snaps or now - pd.Timestamp(hb) > STALE_SITREP:
-        return None, False
+    hb = pd.Timestamp(hb) if hb else None
+    if hb is None or not snaps or now - hb > STALE_SITREP:
+        return None, False, hb
     city = [a for a in parser.kyiv_status(snaps[0][1]) if a.region_uk == "м. Київ" and a.area_uk is None]
-    return (city[0].level if city else None), True
+    return (city[0].level if city else None), True, hb
 
 
 def read(alerts_db: Path, sitrep_db: Path, now: pd.Timestamp) -> Live:
     alerts, red_on, hb = read_alerts(alerts_db, now)
     try:
-        level, ok = read_sitrep(sitrep_db, now)
+        level, ok, shb = read_sitrep(sitrep_db, now)
     except Exception as e:  # the SITREP only refines the level; never fail the state because of it
         log.warning("sitrep read failed: %s", e)
-        level, ok = None, False
-    return Live(alerts, red_on, hb, level, ok)
+        level, ok, shb = None, False, None
+    return Live(alerts, red_on, hb, level, ok, shb)

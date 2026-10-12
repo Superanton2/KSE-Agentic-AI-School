@@ -472,11 +472,23 @@ def fit_final(data_dir: Path, model: str, C: float, seed: int = 0, db: Path | No
     day-bootstraps → data/processed/model_final.pkl (members, KM, metadata)."""
     import pickle
 
+    sources, end = load(data_dir, db)
+    g = pd.read_parquet(data_dir / "processed" / GRID_FILE)
+    art = fit_members(g, sources.alerts, end, model, C, seed)
+    out = data_dir / "processed" / FINAL_FILE
+    tmp = out.with_suffix(".tmp")
+    with open(tmp, "wb") as f:
+        pickle.dump(art, f)
+    tmp.replace(out)  # atomic: the API never sees a half-written file
+    return art
+
+
+def fit_members(g: pd.DataFrame, alerts: pd.DataFrame, end: pd.Timestamp, model: str, C: float,
+                seed: int = 0) -> dict:
+    """The ensemble on grid rows with t + 120 min ≤ end (members on day-bootstraps) + KM on alerts since KM_START."""
     from airalert.model import duration as U
     from airalert.model import hazard as HZ
 
-    sources, end = load(data_dir, db)
-    g = pd.read_parquet(data_dir / "processed" / GRID_FILE)
     rows = F.hazard_rows(g)
     mask = ((g["t"] >= D.TRAIN_START) & (g["t"] + pd.Timedelta(minutes=120) <= end)).to_numpy()
     rows = rows[mask[rows["row"].to_numpy()]]
@@ -491,12 +503,6 @@ def fit_final(data_dir: Path, model: str, C: float, seed: int = 0, db: Path | No
         mult = pd.Series(days).map(cnt).fillna(0).to_numpy()
         keep = rows[mult[rows["row"].to_numpy()] > 0]
         members.append(HZ.Hazard(model, cols, C).fit(g, keep, w * mult))
-    km = U.KM.fit(sources.alerts[sources.alerts["started_at"] >= U.KM_START])
-    art = {"model": model, "C": C, "members": members, "km_S": km.S, "fitted_at": datetime.now(UTC).isoformat(),
-           "train_end": end.isoformat(), "code_sha": git_sha()}
-    out = data_dir / "processed" / FINAL_FILE
-    tmp = out.with_suffix(".tmp")
-    with open(tmp, "wb") as f:
-        pickle.dump(art, f)
-    tmp.replace(out)  # atomic: the API never sees a half-written file
-    return art
+    km = U.KM.fit(alerts[alerts["started_at"] >= U.KM_START])
+    return {"model": model, "C": C, "members": members, "km_S": km.S, "fitted_at": datetime.now(UTC).isoformat(),
+            "train_end": end.isoformat(), "code_sha": git_sha()}

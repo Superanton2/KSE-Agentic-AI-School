@@ -8,6 +8,10 @@ const TZ = 'Europe/Kyiv';
 export const fmtTime = (ms) =>
   new Intl.DateTimeFormat('uk-UA', { hour: '2-digit', minute: '2-digit', timeZone: TZ }).format(ms);
 
+const fmtDayTime = (ms) =>
+  new Intl.DateTimeFormat('uk-UA', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: TZ })
+    .format(ms);
+
 export function fmtDur(ms) {
   const min = Math.floor(Math.max(0, ms) / 60_000);
   if (min < 1) return t('dur.lt1');
@@ -20,6 +24,10 @@ const pct = (p) => Math.round(p * 100);
 
 export function renderStatus(state, stale, now = Date.now()) {
   const el = $('status');
+  const replay = $('replay');
+  replay.hidden = !state?.replay_at;
+  if (state?.replay_at) replay.textContent = t('replay', { time: fmtDayTime(Date.parse(state.replay_at)) });
+  if (!state) return;
   const kind = stale ? 'stale' : state.status === 'alert' ? (state.level === 'red' ? 'red' : 'yellow') : 'calm';
   el.className = `pill status is-${kind}`;
   $('status-ico').setAttribute('href', stale ? '#i-stale' : state.status === 'alert' ? '#i-alert' : '#i-calm');
@@ -27,7 +35,7 @@ export function renderStatus(state, stale, now = Date.now()) {
   $('status-timer').textContent = stale || !state ? '' : fmtDur(now - Date.parse(state.since));
   el.querySelector('.sep').hidden = stale;
 
-  const asof = state ? t('asof', { time: fmtTime(Date.parse(state.data_as_of)) }) : '';
+  const asof = state.data_as_of ? t('asof', { time: fmtTime(Date.parse(state.data_as_of)) }) : '';
   const level = !stale && state.status === 'alert' && state.level ? `${t(`status.level.${state.level}`)} · ` : '';
   $('asof').textContent = level + asof;
 }
