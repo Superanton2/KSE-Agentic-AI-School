@@ -15,6 +15,14 @@ def _f(x, d=3) -> str:
     return "—" if x is None or pd.isna(x) else f"{x:.{d}f}"
 
 
+def _top_bin(cal: pd.DataFrame, model: str, H: int) -> str:
+    c = cal[(cal["model"] == model) & (cal["H"] == H) & (cal["n"] >= 30)].sort_values("p_mean")
+    if c.empty:
+        return "—"
+    r = c.iloc[-1]
+    return f"{_f(r['p_mean'], 2)} → {_f(r['y_mean'], 2)} ({int(r['n'])})"
+
+
 def render(res: dict, dur: dict, bt: dict, product: str, sha: str, counts: pd.DataFrame) -> str:
     mt, bs, C = res["metrics"], res["bootstrap"], res["C"]
     bss = bs[bs["stat"] == "bss"]
@@ -114,10 +122,8 @@ def render(res: dict, dur: dict, bt: dict, product: str, sha: str, counts: pd.Da
         "",
         "| H, хв | " + " | ".join(f"{m}: прогноз → факт (n)" for m in ("M1a", "M1b")) + " |",
         "|---|---|---|",
-        *[f"| {H} | " + " | ".join(
-            (lambda c: f"{_f(c['p_mean'].iloc[-1], 2)} → {_f(c['y_mean'].iloc[-1], 2)} ({int(c['n'].iloc[-1])})")(
-                res["calibration"].query("model == @m and H == @H and n >= 30").sort_values("p_mean"))
-            for m in ("M1a", "M1b")) + " |" for H in F.HORIZONS],
+        *[f"| {H} | " + " | ".join(_top_bin(res["calibration"], m, H) for m in ("M1a", "M1b")) + " |"
+          for H in F.HORIZONS],
         "",
         "M1b розтягує прогнози ширше за M1a, але у верхніх бінах факт помітно нижчий за прогноз: дрон-сигнал має "
         "правильний напрям, проте його сила, вивчена на 08-10…09-12, на тесті переоцінена — це й з'їдає виграш у Brier.",
