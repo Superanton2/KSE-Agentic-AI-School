@@ -18,6 +18,11 @@ dependencies = [
     "pymorphy3-dicts-uk>=2.4.1.1.1663094765",
     "rapidfuzz>=3.14.6",
     "matplotlib>=3.11.2",
+    "scikit-learn>=1.9.1",
+    "lifelines>=0.30.3",
+    "fastapi>=0.143.0",
+    "uvicorn>=0.30",
+    "httpx>=0.28.1",
 ]
 
 [project.scripts]

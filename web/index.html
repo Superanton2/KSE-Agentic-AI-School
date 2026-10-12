@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- frame-ancestors і Permissions-Policy в <meta> не діють — їх додасть заголовком FastAPI -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://server.arcgisonline.com; connect-src 'self' https://routing.openstreetmap.de https://photon.komoot.io; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0F1115">
+<meta name="description" content="Чи встигну доїхати в Metro, закупитись і оплатити до початку повітряної тривоги в Києві">
+<title>Встигну?</title>
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="preload" href="i18n/uk.json" as="fetch" crossorigin>
+<script src="vendor/leaflet/leaflet.js" defer></script>
+<script type="module" src="js/app.js"></script>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true">
+  <symbol id="i-calm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 12.5l2.6 2.6L16 9.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.5L22 20.5H2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4.5M12 17.4v.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-stale" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5.5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 15l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="15" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="17" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-locate" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.4v.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+</svg>
+
+<div id="map" class="map" role="region" data-i18n-aria="map.label"></div>
+
+<div id="banner" class="banner" role="alert" hidden>
+  <svg class="ico" aria-hidden="true"><use href="#i-alert"/></svg>
+  <span id="banner-text"></span>
+</div>
+
+<header class="top">
+  <div id="status" class="pill status">
+    <svg class="ico" aria-hidden="true"><use id="status-ico" href="#i-calm"/></svg>
+    <span id="status-text"></span>
+    <span class="sep" aria-hidden="true">·</span>
+    <span id="status-timer" class="num"></span>
+  </div>
+  <p id="asof" class="asof num"></p>
+  <button id="hint" class="hint pill" type="button" aria-live="polite" hidden></button>
+</header>
+
+<section id="search" class="panel search" hidden>
+  <div class="search-row">
+    <svg class="ico" aria-hidden="true"><use href="#i-search"/></svg>
+    <input id="search-input" class="search-input" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false"
+           aria-controls="search-list" autocomplete="off" spellcheck="false" enterkeyhint="search"
+           data-i18n-placeholder="search.placeholder" data-i18n-aria="search.label">
+    <button id="search-close" class="icon-btn" type="button" data-i18n-aria="search.close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>
+  </div>
+  <ul id="search-list" class="search-list" role="listbox" data-i18n-aria="search.results"></ul>
+  <p id="search-status" class="search-status" aria-live="polite"></p>
+</section>
+
+<section id="settings" class="panel sheet" role="dialog" aria-labelledby="settings-title" hidden>
+  <div class="sheet-head">
+    <h2 id="settings-title" data-i18n="settings.title"></h2>
+    <button type="button" class="icon-btn" data-close data-i18n-aria="panel.close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>
+  </div>
+  <div class="fields">
+    <div class="field">
+      <div class="field-row"><label for="s-shopMean" data-i18n="settings.shopMean"></label><output id="s-shopMean-out" class="num" for="s-shopMean"></output></div>
+      <input type="range" id="s-shopMean" data-key="shopMean">
+    </div>
+    <div class="field">
+      <div class="field-row"><label for="s-shopSd" data-i18n="settings.shopSd"></label><output id="s-shopSd-out" class="num" for="s-shopSd"></output></div>
+      <input type="range" id="s-shopSd" data-key="shopSd">
+    </div>
+    <div class="field">
+      <div class="field-row"><label for="s-waitMax" data-i18n="settings.waitMax"></label><output id="s-waitMax-out" class="num" for="s-waitMax"></output></div>
+      <input type="range" id="s-waitMax" data-key="waitMax">
+    </div>
+    <div class="field">
+      <div class="field-row"><label for="s-openDelay" data-i18n="settings.openDelay"></label><output id="s-openDelay-out" class="num" for="s-openDelay"></output></div>
+      <input type="range" id="s-openDelay" data-key="openDelay">
+    </div>
+    <div class="field">
+      <div class="field-row">
+        <label class="check"><input type="checkbox" id="s-manual"> <span data-i18n="settings.manualTravel"></span></label>
+        <output id="s-manualTravel-out" class="num" for="s-manualTravel"></output>
+      </div>
+      <input type="range" id="s-manualTravel" data-key="manualTravel" disabled>
+      <p class="field-note" data-i18n="settings.manualTravel.note"></p>
+    </div>
+    <fieldset class="field venue">
+      <legend data-i18n="settings.venue"></legend>
+      <label class="check"><input type="radio" name="venue" value="metro" checked> <span>Metro</span></label>
+      <label class="check is-disabled"><input type="radio" name="venue" value="mcdonalds" disabled> <span data-i18n="settings.venue.mcd"></span></label>
+    </fieldset>
+    <button type="button" id="s-reset" class="text-btn" data-i18n="settings.reset"></button>
+  </div>
+</section>
+
+<section id="info" class="panel sheet" role="dialog" aria-labelledby="info-title" hidden>
+  <div class="sheet-head">
+    <h2 id="info-title" data-i18n="info.title"></h2>
+    <button type="button" class="icon-btn" data-close data-i18n-aria="panel.close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>
+  </div>
+  <p data-i18n="info.what"></p>
+  <ol class="info-steps">
+    <li data-i18n="info.step1"></li>
+    <li data-i18n="info.step2"></li>
+    <li data-i18n="info.step3"></li>
+  </ol>
+  <h3 data-i18n="info.legend"></h3>
+  <ul class="legend">
+    <li><span class="swatch good" aria-hidden="true"></span><b data-i18n="card.word.good"></b> <span data-i18n="info.good"></span></li>
+    <li><span class="swatch mid" aria-hidden="true"></span><b data-i18n="card.word.mid"></b> <span data-i18n="info.mid"></span></li>
+    <li><span class="swatch bad" aria-hidden="true"></span><b data-i18n="card.word.bad"></b> <span data-i18n="info.bad"></span></li>
+    <li><span class="swatch unsure" aria-hidden="true"></span><b data-i18n="info.unsure.word"></b> <span data-i18n="info.unsure"></span></li>
+  </ul>
+  <p class="info-safety" data-i18n="model.safety.text"></p>
+  <a class="info-link" href="model.html" data-i18n="info.more"></a>
+</section>
+
+<div id="menu" class="panel menu" hidden>
+  <a class="menu-item" href="model.html" data-i18n="menu.model"></a>
+</div>
+
+<main>
+  <section id="card" class="card" aria-live="polite" hidden>
+    <div class="card-head">
+      <h1 id="card-store" class="card-title"></h1>
+      <button id="card-close" class="icon-btn" type="button" data-i18n-aria="card.close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>
+    </div>
+    <p class="card-addr" id="card-addr"></p>
+    <div class="prob">
+      <span id="card-p" class="prob-num num"></span>
+      <span id="card-word" class="prob-word"></span>
+    </div>
+    <p id="card-band" class="band num"></p>
+    <button id="card-cta" class="cta" type="button" data-i18n="card.cta" hidden></button>
+    <p id="card-from" class="from"></p>
+    <p id="card-trip" class="trip num"></p>
+    <p id="card-wait" class="trip num" hidden></p>
+    <div class="curve">
+      <svg id="card-curve" class="curve-svg" viewBox="0 0 130 34" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <p id="card-best" class="curve-best num"></p>
+    </div>
+    <p id="card-note" class="note" data-i18n="card.no_traffic"></p>
+  </section>
+</main>
+
+<nav class="toolbar pill" data-i18n-aria="toolbar.label">
+  <button type="button" class="icon-btn" id="btn-menu" aria-haspopup="true" aria-controls="menu" aria-expanded="false" data-i18n-aria="toolbar.menu"><svg class="ico" aria-hidden="true"><use href="#i-menu"/></svg></button>
+  <button type="button" class="icon-btn" id="btn-search" aria-controls="search" data-i18n-aria="toolbar.search"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg></button>
+  <button type="button" class="icon-btn" id="btn-settings" data-i18n-aria="toolbar.settings"><svg class="ico" aria-hidden="true"><use href="#i-settings"/></svg></button>
+  <button type="button" class="icon-btn" id="btn-locate" data-i18n-aria="toolbar.locate"><svg class="ico" aria-hidden="true"><use href="#i-locate"/></svg></button>
+  <button type="button" class="icon-btn" id="btn-info" data-i18n-aria="toolbar.info"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg></button>
+</nav>
+</body>
+</html>

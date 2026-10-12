@@ -1,0 +1,1660 @@
+{
+ "rng": [
+  {
+   "seed": 0,
+   "uniforms": [
+    0.26642920868471265,
+    0.0003297457005828619,
+    0.2232720274478197,
+    0.1462021479383111
+   ]
+  },
+  {
+   "seed": 1,
+   "uniforms": [
+    0.6270739405881613,
+    0.002735721180215478,
+    0.5274470399599522,
+    0.9810509674716741
+   ]
+  },
+  {
+   "seed": 42,
+   "uniforms": [
+    0.6011037519201636,
+    0.44829055899754167,
+    0.8524657934904099,
+    0.6697340414393693
+   ]
+  },
+  {
+   "seed": 123456789,
+   "uniforms": [
+    0.2577907438389957,
+    0.9707721115555614,
+    0.7853280142880976,
+    0.20616457983851433
+   ]
+  }
+ ],
+ "shop_time": [
+  {
+   "seed": 0,
+   "mean": 60,
+   "sd": 15,
+   "value": 71.80776989880083
+  },
+  {
+   "seed": 1,
+   "mean": 60,
+   "sd": 15,
+   "value": 81.06508167622896
+  },
+  {
+   "seed": 2,
+   "mean": 60,
+   "sd": 15,
+   "value": 48.91372108072686
+  },
+  {
+   "seed": 42,
+   "mean": 60,
+   "sd": 15,
+   "value": 40.72742763556471
+  },
+  {
+   "seed": 99,
+   "mean": 60,
+   "sd": 15,
+   "value": 63.93493051491342
+  }
+ ],
+ "cases": [
+  {
+   "name": "no alerts -> p = 1",
+   "scenarios": {
+    "generated_at": "2026-10-12T12:00:00Z",
+    "horizon_min": 120,
+    "members": 1,
+    "scenarios": [
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": []
+     }
+    ]
+   },
+   "elapsed_min": 0,
+   "params": {
+    "depart_in": 0,
+    "travel": 10,
+    "shop_mean": 60,
+    "shop_sd": 0,
+    "wait_max": 0,
+    "open_delay": 0
+   },
+   "seed": 11,
+   "expect": {
+    "p": 1.0,
+    "p_band": [
+     1.0,
+     1.0
+    ],
+    "share_beyond": 0.0,
+    "wait_median": null,
+    "wait_p80": null,
+    "curve": [
+     {
+      "depart_in": 0,
+      "p": 1.0
+     },
+     {
+      "depart_in": 5,
+      "p": 1.0
+     },
+     {
+      "depart_in": 10,
+      "p": 1.0
+     },
+     {
+      "depart_in": 15,
+      "p": 1.0
+     },
+     {
+      "depart_in": 20,
+      "p": 1.0
+     },
+     {
+      "depart_in": 25,
+      "p": 1.0
+     },
+     {
+      "depart_in": 30,
+      "p": 1.0
+     },
+     {
+      "depart_in": 35,
+      "p": 1.0
+     },
+     {
+      "depart_in": 40,
+      "p": 1.0
+     },
+     {
+      "depart_in": 45,
+      "p": 1.0
+     },
+     {
+      "depart_in": 50,
+      "p": 1.0
+     },
+     {
+      "depart_in": 55,
+      "p": null
+     },
+     {
+      "depart_in": 60,
+      "p": null
+     }
+    ],
+    "best": {
+     "depart_in": 0,
+     "p": 1.0
+    }
+   }
+  },
+  {
+   "name": "alert starts mid-shopping -> fail",
+   "scenarios": {
+    "generated_at": "2026-10-12T12:00:00Z",
+    "horizon_min": 120,
+    "members": 1,
+    "scenarios": [
+     {
+      "m": 0,
+      "alerts": [
+       [
+        40,
+        70
+       ]
+      ]
+     }
+    ]
+   },
+   "elapsed_min": 0,
+   "params": {
+    "depart_in": 0,
+    "travel": 10,
+    "shop_mean": 60,
+    "shop_sd": 0,
+    "wait_max": 0,
+    "open_delay": 0
+   },
+   "seed": 11,
+   "expect": {
+    "p": 0.0,
+    "p_band": [
+     0.0,
+     0.0
+    ],
+    "share_beyond": 0.0,
+    "wait_median": null,
+    "wait_p80": null,
+    "curve": [
+     {
+      "depart_in": 0,
+      "p": 0.0
+     },
+     {
+      "depart_in": 5,
+      "p": 0.0
+     },
+     {
+      "depart_in": 10,
+      "p": 0.0
+     },
+     {
+      "depart_in": 15,
+      "p": 0.0
+     },
+     {
+      "depart_in": 20,
+      "p": 0.0
+     },
+     {
+      "depart_in": 25,
+      "p": 0.0
+     },
+     {
+      "depart_in": 30,
+      "p": 0.0
+     },
+     {
+      "depart_in": 35,
+      "p": 0.0
+     },
+     {
+      "depart_in": 40,
+      "p": 0.0
+     },
+     {
+      "depart_in": 45,
+      "p": 0.0
+     },
+     {
+      "depart_in": 50,
+      "p": 0.0
+     },
+     {
+      "depart_in": 55,
+      "p": 0.0
+     },
+     {
+      "depart_in": 60,
+      "p": null
+     }
+    ],
+    "best": {
+     "depart_in": 0,
+     "p": 0.0
+    }
+   }
+  },
+  {
+   "name": "current alert ends in 10, wait_max 15 -> success, wait 10",
+   "scenarios": {
+    "generated_at": "2026-10-12T12:00:00Z",
+    "horizon_min": 120,
+    "members": 1,
+    "scenarios": [
+     {
+      "m": 0,
+      "alerts": [
+       [
+        -5,
+        10
+       ]
+      ]
+     }
+    ]
+   },
+   "elapsed_min": 0,
+   "params": {
+    "depart_in": 0,
+    "travel": 0,
+    "shop_mean": 60,
+    "shop_sd": 0,
+    "wait_max": 15,
+    "open_delay": 0
+   },
+   "seed": 11,
+   "expect": {
+    "p": 1.0,
+    "p_band": [
+     1.0,
+     1.0
+    ],
+    "share_beyond": 0.0,
+    "wait_median": 10,
+    "wait_p80": 10,
+    "curve": [
+     {
+      "depart_in": 0,
+      "p": 1.0
+     },
+     {
+      "depart_in": 5,
+      "p": 1.0
+     },
+     {
+      "depart_in": 10,
+      "p": 1.0
+     },
+     {
+      "depart_in": 15,
+      "p": 1.0
+     },
+     {
+      "depart_in": 20,
+      "p": 1.0
+     },
+     {
+      "depart_in": 25,
+      "p": 1.0
+     },
+     {
+      "depart_in": 30,
+      "p": 1.0
+     },
+     {
+      "depart_in": 35,
+      "p": 1.0
+     },
+     {
+      "depart_in": 40,
+      "p": 1.0
+     },
+     {
+      "depart_in": 45,
+      "p": 1.0
+     },
+     {
+      "depart_in": 50,
+      "p": 1.0
+     },
+     {
+      "depart_in": 55,
+      "p": 1.0
+     },
+     {
+      "depart_in": 60,
+      "p": 1.0
+     }
+    ],
+    "best": {
+     "depart_in": 0,
+     "p": 1.0
+    }
+   }
+  },
+  {
+   "name": "current alert ends in 10, wait_max 5 -> fail",
+   "scenarios": {
+    "generated_at": "2026-10-12T12:00:00Z",
+    "horizon_min": 120,
+    "members": 1,
+    "scenarios": [
+     {
+      "m": 0,
+      "alerts": [
+       [
+        -5,
+        10
+       ]
+      ]
+     }
+    ]
+   },
+   "elapsed_min": 0,
+   "params": {
+    "depart_in": 0,
+    "travel": 0,
+    "shop_mean": 60,
+    "shop_sd": 0,
+    "wait_max": 5,
+    "open_delay": 0
+   },
+   "seed": 11,
+   "expect": {
+    "p": 0.0,
+    "p_band": [
+     0.0,
+     0.0
+    ],
+    "share_beyond": 0.0,
+    "wait_median": 10,
+    "wait_p80": 10,
+    "curve": [
+     {
+      "depart_in": 0,
+      "p": 0.0
+     },
+     {
+      "depart_in": 5,
+      "p": 1.0
+     },
+     {
+      "depart_in": 10,
+      "p": 1.0
+     },
+     {
+      "depart_in": 15,
+      "p": 1.0
+     },
+     {
+      "depart_in": 20,
+      "p": 1.0
+     },
+     {
+      "depart_in": 25,
+      "p": 1.0
+     },
+     {
+      "depart_in": 30,
+      "p": 1.0
+     },
+     {
+      "depart_in": 35,
+      "p": 1.0
+     },
+     {
+      "depart_in": 40,
+      "p": 1.0
+     },
+     {
+      "depart_in": 45,
+      "p": 1.0
+     },
+     {
+      "depart_in": 50,
+      "p": 1.0
+     },
+     {
+      "depart_in": 55,
+      "p": 1.0
+     },
+     {
+      "depart_in": 60,
+      "p": 1.0
+     }
+    ],
+    "best": {
+     "depart_in": 5,
+     "p": 1.0
+    }
+   }
+  },
+  {
+   "name": "open_delay 0 -> window (10,70] clear",
+   "scenarios": {
+    "generated_at": "2026-10-12T12:00:00Z",
+    "horizon_min": 120,
+    "members": 1,
+    "scenarios": [
+     {
+      "m": 0,
+      "alerts": [
+       [
+        -5,
+        10
+       ],
+       [
+        75,
+        90
+       ]
+      ]
+     }
+    ]
+   },
+   "elapsed_min": 0,
+   "params": {
+    "depart_in": 0,
+    "travel": 0,
+    "shop_mean": 60,
+    "shop_sd": 0,
+    "wait_max": 15,
+    "open_delay": 0
+   },
+   "seed": 11,
+   "expect": {
+    "p": 1.0,
+    "p_band": [
+     1.0,
+     1.0
+    ],
+    "share_beyond": 0.0,
+    "wait_median": 10,
+    "wait_p80": 10,
+    "curve": [
+     {
+      "depart_in": 0,
+      "p": 1.0
+     },
+     {
+      "depart_in": 5,
+      "p": 1.0
+     },
+     {
+      "depart_in": 10,
+      "p": 1.0
+     },
+     {
+      "depart_in": 15,
+      "p": 0.0
+     },
+     {
+      "depart_in": 20,
+      "p": 0.0
+     },
+     {
+      "depart_in": 25,
+      "p": 0.0
+     },
+     {
+      "depart_in": 30,
+      "p": 0.0
+     },
+     {
+      "depart_in": 35,
+      "p": 0.0
+     },
+     {
+      "depart_in": 40,
+      "p": 0.0
+     },
+     {
+      "depart_in": 45,
+      "p": 0.0
+     },
+     {
+      "depart_in": 50,
+      "p": 0.0
+     },
+     {
+      "depart_in": 55,
+      "p": 0.0
+     },
+     {
+      "depart_in": 60,
+      "p": 0.0
+     }
+    ],
+    "best": {
+     "depart_in": 0,
+     "p": 1.0
+    }
+   }
+  },
+  {
+   "name": "open_delay 10 shifts window to (20,80] -> fail",
+   "scenarios": {
+    "generated_at": "2026-10-12T12:00:00Z",
+    "horizon_min": 120,
+    "members": 1,
+    "scenarios": [
+     {
+      "m": 0,
+      "alerts": [
+       [
+        -5,
+        10
+       ],
+       [
+        75,
+        90
+       ]
+      ]
+     }
+    ]
+   },
+   "elapsed_min": 0,
+   "params": {
+    "depart_in": 0,
+    "travel": 0,
+    "shop_mean": 60,
+    "shop_sd": 0,
+    "wait_max": 15,
+    "open_delay": 10
+   },
+   "seed": 11,
+   "expect": {
+    "p": 0.0,
+    "p_band": [
+     0.0,
+     0.0
+    ],
+    "share_beyond": 0.0,
+    "wait_median": 10,
+    "wait_p80": 10,
+    "curve": [
+     {
+      "depart_in": 0,
+      "p": 0.0
+     },
+     {
+      "depart_in": 5,
+      "p": 0.0
+     },
+     {
+      "depart_in": 10,
+      "p": 1.0
+     },
+     {
+      "depart_in": 15,
+      "p": 0.0
+     },
+     {
+      "depart_in": 20,
+      "p": 0.0
+     },
+     {
+      "depart_in": 25,
+      "p": 0.0
+     },
+     {
+      "depart_in": 30,
+      "p": 0.0
+     },
+     {
+      "depart_in": 35,
+      "p": 0.0
+     },
+     {
+      "depart_in": 40,
+      "p": 0.0
+     },
+     {
+      "depart_in": 45,
+      "p": 0.0
+     },
+     {
+      "depart_in": 50,
+      "p": 0.0
+     },
+     {
+      "depart_in": 55,
+      "p": 0.0
+     },
+     {
+      "depart_in": 60,
+      "p": 0.0
+     }
+    ],
+    "best": {
+     "depart_in": 10,
+     "p": 1.0
+    }
+   }
+  },
+  {
+   "name": "beyond horizon is not success",
+   "scenarios": {
+    "generated_at": "2026-10-12T12:00:00Z",
+    "horizon_min": 120,
+    "members": 1,
+    "scenarios": [
+     {
+      "m": 0,
+      "alerts": []
+     }
+    ]
+   },
+   "elapsed_min": 0,
+   "params": {
+    "depart_in": 0,
+    "travel": 70,
+    "shop_mean": 60,
+    "shop_sd": 0,
+    "wait_max": 0,
+    "open_delay": 0
+   },
+   "seed": 11,
+   "expect": {
+    "p": null,
+    "p_band": null,
+    "share_beyond": 1.0,
+    "wait_median": null,
+    "wait_p80": null,
+    "curve": [
+     {
+      "depart_in": 0,
+      "p": null
+     },
+     {
+      "depart_in": 5,
+      "p": null
+     },
+     {
+      "depart_in": 10,
+      "p": null
+     },
+     {
+      "depart_in": 15,
+      "p": null
+     },
+     {
+      "depart_in": 20,
+      "p": null
+     },
+     {
+      "depart_in": 25,
+      "p": null
+     },
+     {
+      "depart_in": 30,
+      "p": null
+     },
+     {
+      "depart_in": 35,
+      "p": null
+     },
+     {
+      "depart_in": 40,
+      "p": null
+     },
+     {
+      "depart_in": 45,
+      "p": null
+     },
+     {
+      "depart_in": 50,
+      "p": null
+     },
+     {
+      "depart_in": 55,
+      "p": null
+     },
+     {
+      "depart_in": 60,
+      "p": null
+     }
+    ],
+    "best": null
+   }
+  },
+  {
+   "name": "endless current alert -> fail",
+   "scenarios": {
+    "generated_at": "2026-10-12T12:00:00Z",
+    "horizon_min": 120,
+    "members": 1,
+    "scenarios": [
+     {
+      "m": 0,
+      "alerts": [
+       [
+        -5,
+        null
+       ]
+      ]
+     }
+    ]
+   },
+   "elapsed_min": 0,
+   "params": {
+    "depart_in": 0,
+    "travel": 0,
+    "shop_mean": 60,
+    "shop_sd": 0,
+    "wait_max": 60,
+    "open_delay": 0
+   },
+   "seed": 11,
+   "expect": {
+    "p": 0.0,
+    "p_band": [
+     0.0,
+     0.0
+    ],
+    "share_beyond": 0.0,
+    "wait_median": null,
+    "wait_p80": null,
+    "curve": [
+     {
+      "depart_in": 0,
+      "p": 0.0
+     },
+     {
+      "depart_in": 5,
+      "p": 0.0
+     },
+     {
+      "depart_in": 10,
+      "p": 0.0
+     },
+     {
+      "depart_in": 15,
+      "p": 0.0
+     },
+     {
+      "depart_in": 20,
+      "p": 0.0
+     },
+     {
+      "depart_in": 25,
+      "p": 0.0
+     },
+     {
+      "depart_in": 30,
+      "p": 0.0
+     },
+     {
+      "depart_in": 35,
+      "p": 0.0
+     },
+     {
+      "depart_in": 40,
+      "p": 0.0
+     },
+     {
+      "depart_in": 45,
+      "p": 0.0
+     },
+     {
+      "depart_in": 50,
+      "p": 0.0
+     },
+     {
+      "depart_in": 55,
+      "p": 0.0
+     },
+     {
+      "depart_in": 60,
+      "p": 0.0
+     }
+    ],
+    "best": {
+     "depart_in": 0,
+     "p": 0.0
+    }
+   }
+  },
+  {
+   "name": "elapsed shifts arrival",
+   "scenarios": {
+    "generated_at": "2026-10-12T12:00:00Z",
+    "horizon_min": 120,
+    "members": 1,
+    "scenarios": [
+     {
+      "m": 0,
+      "alerts": [
+       [
+        30,
+        50
+       ]
+      ]
+     }
+    ]
+   },
+   "elapsed_min": 25,
+   "params": {
+    "depart_in": 0,
+    "travel": 0,
+    "shop_mean": 20,
+    "shop_sd": 0,
+    "wait_max": 0,
+    "open_delay": 0
+   },
+   "seed": 11,
+   "expect": {
+    "p": 0.0,
+    "p_band": [
+     0.0,
+     0.0
+    ],
+    "share_beyond": 0.0,
+    "wait_median": null,
+    "wait_p80": null,
+    "curve": [
+     {
+      "depart_in": 0,
+      "p": 0.0
+     },
+     {
+      "depart_in": 5,
+      "p": 0.0
+     },
+     {
+      "depart_in": 10,
+      "p": 0.0
+     },
+     {
+      "depart_in": 15,
+      "p": 0.0
+     },
+     {
+      "depart_in": 20,
+      "p": 0.0
+     },
+     {
+      "depart_in": 25,
+      "p": 1.0
+     },
+     {
+      "depart_in": 30,
+      "p": 1.0
+     },
+     {
+      "depart_in": 35,
+      "p": 1.0
+     },
+     {
+      "depart_in": 40,
+      "p": 1.0
+     },
+     {
+      "depart_in": 45,
+      "p": 1.0
+     },
+     {
+      "depart_in": 50,
+      "p": 1.0
+     },
+     {
+      "depart_in": 55,
+      "p": 1.0
+     },
+     {
+      "depart_in": 60,
+      "p": 1.0
+     }
+    ],
+    "best": {
+     "depart_in": 25,
+     "p": 1.0
+    }
+   }
+  },
+  {
+   "name": "generated mix, two members, random shop times",
+   "scenarios": {
+    "generated_at": "2026-10-12T12:00:00Z",
+    "horizon_min": 120,
+    "members": 2,
+    "scenarios": [
+     {
+      "m": 0,
+      "alerts": [
+       [
+        14,
+        75
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        43,
+        62
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        17,
+        74
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        94,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        109,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        26,
+        55
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        17,
+        53
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        82,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        116,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        93,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        53,
+        90
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        56,
+        102
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        1,
+        46
+       ],
+       [
+        108,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        59,
+        96
+       ],
+       [
+        115,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        63,
+        83
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        104,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        10,
+        50
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        78,
+        113
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        20,
+        54
+       ],
+       [
+        111,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        35,
+        98
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        55,
+        101
+       ]
+      ]
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": []
+     },
+     {
+      "m": 0,
+      "alerts": [
+       [
+        44,
+        102
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        10,
+        31
+       ],
+       [
+        114,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        27,
+        43
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        34,
+        93
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        23,
+        40
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        63,
+        79
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": []
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        14,
+        41
+       ],
+       [
+        87,
+        119
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        43,
+        74
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        88,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": []
+     },
+     {
+      "m": 1,
+      "alerts": []
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        12,
+        56
+       ],
+       [
+        105,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        63,
+        82
+       ],
+       [
+        118,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": []
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        4,
+        37
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        72,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        15,
+        57
+       ],
+       [
+        96,
+        111
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        118,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": []
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        63,
+        103
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        3,
+        71
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        7,
+        67
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        42,
+        54
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": []
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        20,
+        59
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        89,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        44,
+        62
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        25,
+        48
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        96,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        26,
+        84
+       ],
+       [
+        86,
+        115
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        39,
+        106
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        117,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        56,
+        69
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": []
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        58,
+        null
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        11,
+        61
+       ],
+       [
+        62,
+        103
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        47,
+        69
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": []
+     },
+     {
+      "m": 1,
+      "alerts": [
+       [
+        69,
+        101
+       ]
+      ]
+     },
+     {
+      "m": 1,
+      "alerts": []
+     }
+    ]
+   },
+   "elapsed_min": 3,
+   "params": {
+    "depart_in": 5,
+    "travel": 15,
+    "shop_mean": 50,
+    "shop_sd": 15,
+    "wait_max": 15,
+    "open_delay": 5
+   },
+   "seed": 11,
+   "expect": {
+    "p": 0.5125,
+    "p_band": [
+     0.4,
+     0.625
+    ],
+    "share_beyond": 0.0,
+    "wait_median": 31,
+    "wait_p80": 44,
+    "curve": [
+     {
+      "depart_in": 0,
+      "p": 0.5125
+     },
+     {
+      "depart_in": 5,
+      "p": 0.5125
+     },
+     {
+      "depart_in": 10,
+      "p": 0.5375
+     },
+     {
+      "depart_in": 15,
+      "p": 0.5375
+     },
+     {
+      "depart_in": 20,
+      "p": 0.5316455696202531
+     },
+     {
+      "depart_in": 25,
+      "p": 0.5512820512820513
+     },
+     {
+      "depart_in": 30,
+      "p": 0.5733333333333334
+     },
+     {
+      "depart_in": 35,
+      "p": 0.5774647887323944
+     },
+     {
+      "depart_in": 40,
+      "p": 0.546875
+     },
+     {
+      "depart_in": 45,
+      "p": 0.6181818181818182
+     },
+     {
+      "depart_in": 50,
+      "p": 0.6304347826086957
+     },
+     {
+      "depart_in": 55,
+      "p": 0.5609756097560976
+     },
+     {
+      "depart_in": 60,
+      "p": 0.5161290322580645
+     }
+    ],
+    "best": {
+     "depart_in": 50,
+     "p": 0.6304347826086957
+    }
+   }
+  }
+ ]
+}

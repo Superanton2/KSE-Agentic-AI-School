@@ -97,4 +97,31 @@ AIRALERT_CODE_SHA=$(git rev-parse HEAD) docker compose run --rm tools build
 команди, що читають `data/live/alerts.sqlite`, запускайте через `docker compose run --rm tools …` (SQLite у
 Docker Desktop на macOS не можна безпечно ділити між хостом і контейнером).
 
+## Фаза 4: модель, оцінка, API
+
+Результати — `reports/model_eval.md` (аблація дронів, BSS з CI, калібрування, KM, продуктовий бектест) і
+`data/processed/model_card.json`. Коротко: дрон-ознаки на тесті 09-13…10-11 не дали значущого виграшу, у продукті
+M1a (історія тривог + час).
+
+```bash
+docker compose exec collector airalert db-snapshot --db alerts   # знімок для офлайн-кроків
+uv run airalert model-features      # сітка 5 хв + мітки + ознаки, тест на витік -> reports/model_lift.md
+uv run airalert model-eval          # C на 08-24…09-12, walk-forward на тесті, KM, бектест -> reports/model_eval.md
+uv run airalert model-fit --no-rebuild   # фінальний ансамбль (5 bootstrap-рефітів) + model_card.json
+uv run airalert serve               # http://127.0.0.1:8000 (потрібен web/ з фронтенду)
+```
+
+У Docker: `docker compose --profile serve up -d api nightly`. `api` слухає лише `127.0.0.1:8000`, `nightly`
+перенавчає модель о 04:00 за Києвом; API підхоплює нові файли без перезапуску. Обидва сервіси монтують
+`data/live` **лише для читання**: так вони фізично не можуть зачепити WAL колектора.
+
+API (усі часи ISO 8601 UTC; `Cache-Control: no-store`, крім model-card):
+- `GET /api/state` — `{status, level, since, data_as_of, sources_ok}`; `level` береться з SITREP, якщо той свіжий,
+  інакше з `air_raid_red` волонтерського каналу.
+- `GET /api/scenarios` — 5 членів × 200 сценаріїв на 120 хв, оновлення кожні 30 с, ETag.
+- `GET /api/estimate?travel=&depart_in=&shop_mean=&shop_sd=&wait_max=&open_delay=` — готова ймовірність встигнути
+  (`{p, band, wait, curve, best, share_beyond, unsure, skill_bucket, …}`). Сюди надходять лише хвилини, без
+  координат; query string не логується.
+- `GET /api/model-card`, а на `/` — статика фронтенду.
+
 Атрибуція: `states.json` і логіка хештегів — з репозиторію Vadimkin (MIT, `LICENSES/vadimkin-MIT.txt`).
