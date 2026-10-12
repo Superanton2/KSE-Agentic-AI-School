@@ -108,6 +108,30 @@ def test_updates_ignored_until_channel_is_caught_up(tmp_path, monkeypatch):
         assert [r[0] for r in _rows(a, "alerts")] == [1, 2, 3]
 
 
+def test_alerts_rederived_from_live_messages(tmp_path, monkeypatch, etryvoga_msgs):
+    """Fresh DB: history comes from `since`, and the `alerts` table follows new messages without a manual rebuild."""
+    monkeypatch.setattr(live, "POLL_SECONDS", 0.01)
+    monkeypatch.setattr(live, "DERIVE_SECONDS", 0.01)
+    ch = "UkraineAlarmSignal"
+    start = SimpleNamespace(id=10, date=T0 + timedelta(hours=1), edit_date=None, message=etryvoga_msgs[600708])
+    end = SimpleNamespace(id=11, date=T0 + timedelta(hours=2), edit_date=None, message=etryvoga_msgs[601539])
+
+    def kyiv(conn):
+        return conn.execute("SELECT started_at, finished_at FROM alerts WHERE channel=? AND location='Kyiv City' "
+                            "AND alert_type='air_raid'", (ch,)).fetchall()
+
+    with store.open_db(tmp_path / "a.sqlite") as a:
+        async def arrives(client):  # the end of the alert comes as a live update
+            await asyncio.sleep(0.05)
+            assert [r[1] for r in kyiv(a)] == [None]  # derived from history: open
+            client.history[ch].append(end)
+            await client.fire_new(ch, end)
+
+        asyncio.run(live.run(FakeClient({ch: [start]}, run_for=0.15, on_start=arrives),
+                             [live.ChannelGroup(a, [ch], T0)]))
+        assert len(kyiv(a)) == 1 and kyiv(a)[0][1] is not None  # closed by the live message
+
+
 def test_second_start_does_not_redownload_history(tmp_path, monkeypatch):
     monkeypatch.setattr(live, "POLL_SECONDS", 0.01)
     since = T0

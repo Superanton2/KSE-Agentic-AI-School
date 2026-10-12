@@ -66,9 +66,19 @@ def merge_overlaps(a: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(out, columns=ALERT_COLS)
 
 
+def check_history(tg: pd.DataFrame, seam: pd.Timestamp = SEAM, slack: pd.Timedelta = pd.Timedelta(days=2)) -> None:
+    """Refuse to train on a journal without history since the seam (a fresh server whose collector started today):
+    the missing weeks would look like weeks without alerts."""
+    first = tg["started_at"].min() if len(tg) else None
+    if first is None or first > seam + slack:
+        raise ValueError(f"live alerts journal starts at {first}, after the seam {seam:%Y-%m-%d}: copy data/live from "
+                         "the old host (make migrate) or let tg-live finish its history download (TG_ALERTS_SINCE)")
+
+
 def kyiv_alerts(data_dir: Path, db: Path | None = None, seam: pd.Timestamp = SEAM) -> pd.DataFrame:
     vol = vadimkin_volunteer(data_dir / "raw" / "vadimkin" / "datasets" / "volunteer_data_en.csv")
     tg = tg_volunteer(db or data_dir / "live" / "snapshots" / "alerts.sqlite")
+    check_history(tg, seam)
     a = pd.concat([vol[vol["started_at"] < seam], tg[tg["started_at"] >= seam]], ignore_index=True)
     return merge_overlaps(a)
 

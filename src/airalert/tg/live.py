@@ -24,15 +24,18 @@ import asyncio
 import contextlib
 import logging
 import sqlite3
+import time
 from dataclasses import dataclass
 from datetime import datetime
 
 from telethon import TelegramClient, events
 
-from airalert.tg import backfill, store
+from airalert.tg import backfill, rebuild, store
 
 log = logging.getLogger(__name__)
 POLL_SECONDS = 15
+DERIVE_SECONDS = 10  # new raw messages of an alert channel -> `alerts` re-derived within this
+DERIVE_EVERY = 600  # and unconditionally this often: open alerts and source gaps depend on "now"
 
 
 @dataclass
@@ -57,6 +60,33 @@ async def _poll_forever(client: TelegramClient, groups: list[ChannelGroup], read
             store.heartbeat(g.conn, None)
         with contextlib.suppress(TimeoutError):
             await asyncio.wait_for(stop.wait(), timeout=POLL_SECONDS)
+
+
+def _signature(conn: sqlite3.Connection, channel: str) -> tuple:
+    return conn.execute("SELECT count(*), max(msg_id) FROM raw_messages WHERE channel=?", (channel,)).fetchone()
+
+
+async def _derive_forever(groups: list[ChannelGroup], ready: dict, stop: asyncio.Event):
+    """Keep the derived ``alerts`` table current (the API and the nightly refit read it): the same deterministic
+    ``rebuild`` as ``airalert rebuild-alerts``, run whenever a channel's raw messages changed."""
+    seen: dict[str, tuple] = {}
+    last: dict[str, float] = {}
+    while not stop.is_set():
+        for g in groups:
+            for name in g.channels:
+                if name not in ready or name not in rebuild.PARSER_BY_CHANNEL:
+                    continue
+                sig = _signature(g.conn, name)
+                if sig == seen.get(name) and time.monotonic() - last.get(name, 0) < DERIVE_EVERY:
+                    continue
+                try:
+                    st = rebuild.rebuild(g.conn, name)
+                    seen[name], last[name] = sig, time.monotonic()
+                    log.info("%s: alerts re-derived (%s, %s open)", name, st.alerts, st.open_alerts)
+                except Exception:  # never stop collecting because of a parser problem
+                    log.exception("%s: rebuild failed", name)
+        with contextlib.suppress(TimeoutError):
+            await asyncio.wait_for(stop.wait(), timeout=DERIVE_SECONDS)
 
 
 async def _fill_histories(
@@ -112,6 +142,7 @@ async def run(client: TelegramClient, groups: list[ChannelGroup]) -> None:
 
     stop = asyncio.Event()
     poller = asyncio.create_task(_poll_forever(client, groups, ready, stop))
+    deriver = asyncio.create_task(_derive_forever(groups, ready, stop))
     filler = asyncio.create_task(_fill_histories(client, pending, peers, ready))
     # A failed history download stops the whole collector (Docker restarts it; the download resumes).
     filler.add_done_callback(
@@ -123,6 +154,7 @@ async def run(client: TelegramClient, groups: list[ChannelGroup]) -> None:
         stop.set()
         filler.cancel()
         await poller
+        await deriver
         await asyncio.gather(filler, return_exceptions=True)
     if not filler.cancelled() and filler.exception() is not None:
         raise RuntimeError("history download failed") from filler.exception()

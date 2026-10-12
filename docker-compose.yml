@@ -3,8 +3,16 @@
 # One-off commands that touch the SQLite journal while the collector runs (same VM => safe locking):
 #   AIRALERT_UID=$(id -u) AIRALERT_GID=$(id -g) AIRALERT_CODE_SHA=$(git rev-parse HEAD) \
 #     docker compose run --rm tools build
+# Bounded logs for a box that runs unattended (json-file, 3 × 10 MB per container).
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   collector:
+    logging: *logging
     build:
       context: .
       dockerfile: docker/collector.Dockerfile
@@ -35,6 +43,7 @@ services:
       - ALL
 
   sitrep:
+    logging: *logging
     image: airalert-collector
     command: ["sitrep-poll"]
     env_file: .env
@@ -62,6 +71,7 @@ services:
   # collector's WAL (Docker Desktop does not share SQLite locks across containers).
   #   AIRALERT_UID=$(id -u) AIRALERT_GID=$(id -g) docker compose --profile serve up -d api nightly
   api:
+    logging: *logging
     image: airalert-collector
     profiles: ["serve"]
     command: ["serve", "--host", "0.0.0.0", "--port", "8000"]
@@ -80,7 +90,7 @@ services:
       - ./data/work/replay:/app/data/work/replay:ro
       - ./web:/app/web:ro
     ports:
-      - "127.0.0.1:8000:8000"  # only the host itself; put a reverse proxy in front for anything else
+      - "127.0.0.1:${AIRALERT_PORT:-8000}:8000"  # only the host itself; put a reverse proxy in front for anything else
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=5).status != 200)"]
@@ -96,6 +106,7 @@ services:
   # Nightly refit at 04:00 Kyiv: read-only backup of the live alerts DB -> grid -> ensemble -> model_card.json.
   # The API picks the new files up by mtime.
   nightly:
+    logging: *logging
     image: airalert-collector
     profiles: ["serve"]
     entrypoint: ["airalert", "model-fit", "--from-live", "--at", "04:00"]
@@ -119,6 +130,7 @@ services:
       - ALL
 
   tools:
+    logging: *logging
     image: airalert-collector
     profiles: ["tools"]
     env_file: .env

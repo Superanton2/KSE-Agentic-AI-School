@@ -197,13 +197,14 @@ def tg_live(
 ) -> None:
     """Catch up on missed messages, then collect new/edited ones forever (Ctrl+C to stop).
 
-    Drone channels without history are downloaded from TG_DRONE_SINCE in the background first."""
+    Channels without history are downloaded first, in the background: alert channels from TG_ALERTS_SINCE,
+    drone channels from TG_DRONE_SINCE. The ``alerts`` table is re-derived from raw messages as they arrive."""
     from airalert.tg import live, store
     from airalert.tg.client import make_client
 
     s = get_settings()
     with store.open_db(s.sqlite_path) as alerts_conn, store.open_db(s.drones_sqlite_path) as drones_conn:
-        groups = [live.ChannelGroup(alerts_conn, channel)]
+        groups = [live.ChannelGroup(alerts_conn, channel, since=s.tg_alerts_since)]
         if drones and s.drone_channels:
             groups.append(live.ChannelGroup(drones_conn, s.drone_channels, since=s.tg_drone_since))
         try:
@@ -669,6 +670,11 @@ def model_fit(
     if not at:
         once()
         return
+    if not (s.data_dir / "processed" / pipeline.FINAL_FILE).exists():  # fresh server: do not wait for the night
+        try:
+            once()
+        except Exception:
+            log.exception("initial refit failed; the API keeps the fallback model")
     hh, mm = (int(x) for x in at.split(":"))
     while True:
         now = pd.Timestamp.now(tz="Europe/Kyiv")

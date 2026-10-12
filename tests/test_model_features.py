@@ -96,3 +96,12 @@ def test_merge_overlaps():
     a = alerts([(0, 30, 0, 30), (20, 50, 20, 50), (60, 70, 60, 70)])
     m = D.merge_overlaps(a)
     assert len(m) == 2 and m.loc[0, "finished_at"] == ts(50)
+
+
+def test_refit_refuses_journal_without_history():
+    """A fresh server journal (history starts today) must not be trained on: missing weeks look like calm."""
+    ok = pd.DataFrame({"started_at": pd.to_datetime(["2026-08-25T21:00Z", "2026-10-01T10:00Z"], utc=True)})
+    D.check_history(ok)
+    for bad in (ok.iloc[1:], ok.iloc[:0]):
+        with pytest.raises(ValueError, match="make migrate"):
+            D.check_history(bad)

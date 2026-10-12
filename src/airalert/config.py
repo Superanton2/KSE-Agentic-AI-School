@@ -28,12 +28,14 @@ class Settings(BaseSettings):
     tg_drone_channels: str = "kudy_letyt,kpszsu,kyiv_nebo"
     # On the first start tg-live downloads drone-channel history from this UTC date (regime change ~08-17).
     tg_drone_since: datetime = datetime(2026, 8, 10, tzinfo=UTC)
+    # alert channels on an empty DB (a fresh server): history from here; the labels switch to Telegram on 08-26
+    tg_alerts_since: datetime = datetime(2026, 8, 25, tzinfo=UTC)
     sitrep_url: str = SITREP_URL
     sitrep_poll_seconds: int = 60
     # Put a way to reach the project here (email/URL); it goes into the SITREP User-Agent.
     sitrep_contact: str = ""
 
-    @field_validator("tg_drone_since")
+    @field_validator("tg_drone_since", "tg_alerts_since")
     @classmethod
     def _utc(cls, v: datetime) -> datetime:
         return v.replace(tzinfo=UTC) if v.tzinfo is None else v.astimezone(UTC)
