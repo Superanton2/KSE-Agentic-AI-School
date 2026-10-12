@@ -107,7 +107,8 @@ cron:  ## install the nightly backup (03:30) into this user's crontab, idempoten
 
 RSYNC_EXCLUDES := --exclude .git --exclude .venv --exclude 'data/live/' --exclude 'data/work/' --exclude 'data/raw/' \
 	--exclude .env --exclude '*.session' --exclude '*.session-journal' --exclude .claude --exclude .idea \
-	--exclude node_modules --exclude __pycache__ --exclude .pytest_cache --exclude .ruff_cache --exclude .DS_Store
+	--exclude node_modules --exclude __pycache__ --exclude .pytest_cache --exclude .ruff_cache --exclude .hypothesis \
+	--exclude .DS_Store
 # the nightly refit owns these on the server: copied once, never overwritten
 NIGHTLY_FILES := data/processed/model_final.pkl data/processed/model_card.json data/processed/model_grid.parquet
 
