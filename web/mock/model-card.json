@@ -1,0 +1,11 @@
+{
+  "now": "2026-10-12T11:14:00Z",
+  "data": {
+    "updated_at": null,
+    "test_period": null,
+    "skill": {"0-30": null, "30-60": null, "60-120": null},
+    "metrics": [],
+    "calibration": [],
+    "notes": null
+  }
+}

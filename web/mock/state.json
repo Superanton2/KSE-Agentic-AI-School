@@ -1,0 +1,29 @@
+{
+  "now": "2026-10-12T11:14:00Z",
+  "variants": {
+    "calm": {
+      "status": "calm", "level": null,
+      "since": "2026-10-12T09:00:00Z",
+      "data_as_of": "2026-10-12T11:13:40Z",
+      "sources_ok": {"alerts": true, "drones": true}
+    },
+    "alert": {
+      "status": "alert", "level": "yellow",
+      "since": "2026-10-12T10:51:00Z",
+      "data_as_of": "2026-10-12T11:13:40Z",
+      "sources_ok": {"alerts": true, "drones": true}
+    },
+    "alert-red": {
+      "status": "alert", "level": "red",
+      "since": "2026-10-12T10:51:00Z",
+      "data_as_of": "2026-10-12T11:13:40Z",
+      "sources_ok": {"alerts": true, "drones": true}
+    },
+    "stale": {
+      "status": "calm", "level": null,
+      "since": "2026-10-12T09:00:00Z",
+      "data_as_of": "2026-10-12T10:47:00Z",
+      "sources_ok": {"alerts": false, "drones": true}
+    }
+  }
+}
