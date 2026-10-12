@@ -348,3 +348,21 @@ def test_evaluate_counts_tp_fp_fn(gz):
         row.loc[("kudy_letyt", "kind"), ["tp", "fp", "fn"]] == [1, 1, 2]
     ).all()  # Фастів: drone vs gold drone_jet
     assert {e["error"] for e in errors} == {"missed", "kind"}
+
+
+def test_gazetteer_has_no_russian_letters(gz):
+    """No Russian-only letters (э ы ъ ё) in any name the gazetteer can return or match."""
+    from airalert.drones.gazetteer import RUSSIAN_LETTERS
+
+    names = {
+        p.name for ps in (*gz.index.values(), *gz.alt_index.values(), *gz.kyiv_local.values()) for p in ps
+    }
+    keys = {*gz.index, *gz.alt_index, *gz.kyiv_local}
+    assert not [n for n in names | keys if RUSSIAN_LETTERS.search(n)]
+
+
+def test_no_fuzzy_for_short_names_or_when_exact_exists_in_oblast(gz):
+    # "Згурівки" must not fuzzy-match "Зурівка" near Kyiv: Згурівка exists in Kyiv oblast (exact, next scope)
+    r = dm._resolve(gz, "Згурівки", ["UA.12", None])
+    assert (r.place_norm, r.admin1) == ("Згурівка", "UA.13")
+    assert gz.resolve("Іршансьу", "UA.27").match == "none"  # 8-letter typo of a short name: no fuzzy guess

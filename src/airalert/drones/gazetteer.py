@@ -40,12 +40,15 @@ GEONAMES_URLS = {
     "alt": "https://download.geonames.org/export/dump/alternatenames/UA.zip",
 }
 FUZZY_MIN = 92
+FUZZY_MIN_LEN = 8  # no fuzzy matching for shorter (lemmatised) names
 # A place outside the header oblast is accepted only this close to one of the oblast's own settlements, i.e.
 # right at the border or in an exclave (Славутич: Kyiv oblast, surrounded by Chernihiv oblast). A homonym
 # deeper inside another oblast is rejected: the real place is then probably missing from GeoNames.
 BORDER_KM = 15
 _CYRILLIC = re.compile("[А-Яа-яІіЇїЄєҐґ]")
 _UK_LETTERS = re.compile("[ІіЇїЄєҐґ']")
+# Russian-only letters: such names are Russian forms ("Клавдіэво-Тарасове", "Юрьевка") — never used.
+RUSSIAN_LETTERS = re.compile("[ЭэЫыЪъЁё]")
 
 # admin1 code -> (canonical name, aliases as written in headers / targets; inflected forms come from pymorphy)
 OBLASTS: dict[str, tuple[str, tuple[str, ...]]] = {
@@ -246,7 +249,12 @@ def build_places(raw_dir: Path, out_dir: Path) -> tuple[Path, int]:
     alt_zip = _download(GEONAMES_URLS["alt"], raw_dir / "alternatenames_UA.zip")
     uk: dict[str, list[tuple[int, str]]] = defaultdict(list)  # geonameid -> [(rank, name)]
     for row in csv.reader(_read_zip_member(alt_zip, "UA.txt"), delimiter="\t", quoting=csv.QUOTE_NONE):
-        if len(row) > 3 and row[2] == "uk" and _CYRILLIC.search(row[3]):
+        if (
+            len(row) > 3
+            and row[2] == "uk"
+            and _CYRILLIC.search(row[3])
+            and not RUSSIAN_LETTERS.search(row[3])
+        ):
             preferred, colloquial, historic = (len(row) > i and row[i] == "1" for i in (4, 6, 7))
             rank = 0 if preferred else 2 if historic else 3 if colloquial else 1
             uk[row[1]].append((rank, normalize(row[3])))
@@ -259,7 +267,9 @@ def build_places(raw_dir: Path, out_dir: Path) -> tuple[Path, int]:
             continue
         # Untagged Cyrillic alternate names (Ukrainian and Russian forms mixed) — lower priority than "uk";
         # ~5.9k places have no "uk" names at all (e.g. Юр'ївка, Dnipropetrovsk oblast).
-        generic = [normalize(n) for n in r[3].split(",") if _CYRILLIC.search(n)]
+        generic = [
+            normalize(n) for n in r[3].split(",") if _CYRILLIC.search(n) and not RUSSIAN_LETTERS.search(n)
+        ]
         generic.sort(key=lambda n: not _UK_LETTERS.search(n))  # Ukrainian-looking forms first
         names = [n for _, n in sorted(set(uk.get(gid, [])))] + generic
         names = list(dict.fromkeys(names))
@@ -449,7 +459,7 @@ class Gazetteer:
                 return water
         return []
 
-    def resolve(self, phrase: str, admin1: str | None) -> Resolved:
+    def resolve(self, phrase: str, admin1: str | None, allow_fuzzy: bool = True) -> Resolved:
         raw = clean_place(phrase)
         if not raw:
             return Resolved(None, None, None, None, "none")
@@ -501,7 +511,7 @@ class Gazetteer:
                     if p:
                         return Resolved(p.name, p.lat, p.lon, p.admin1, how, p.kind, len(near))
         # Without an oblast a nationwide name is accepted only if unique (checked above); fuzzy needs scope.
-        if admin1 is not None:
+        if admin1 is not None and allow_fuzzy and not self._exact_in_oblast(exact + lemma, admin1):
             p, n = self._fuzzy(raw, admin1)
             if p:
                 return Resolved(p.name, p.lat, p.lon, p.admin1, "fuzzy", p.kind, n)
@@ -509,7 +519,17 @@ class Gazetteer:
                 return Resolved(raw, None, None, admin1, "ambiguous", None, n)
         return Resolved(raw, None, None, admin1, "none")
 
+    def _exact_in_oblast(self, forms: list[str], admin1: str) -> bool:
+        """Is any form an exact/lemmatised name *anywhere* in the oblast (for "Київ:" — the city and Kyiv
+        oblast)? Then a fuzzy hit nearby would be a different place (Згурівки -> Зурівка)."""
+        oblasts = {KYIV_CITY, KYIV_OBLAST} if admin1 == KYIV_CITY else {admin1}
+        return any(
+            p.admin1 in oblasts for f in forms for idx in (self.index, self.alt_index) for p in idx.get(f, [])
+        )
+
     def _fuzzy(self, raw: str, admin1: str) -> tuple[Place | None, int]:
+        """rapidfuzz >= FUZZY_MIN within the oblast, only for (lemmatised) names of >= FUZZY_MIN_LEN letters:
+        short names differ by one letter too often (Згурівка / Зурівка)."""
         from rapidfuzz import fuzz, process
 
         if admin1 == KYIV_CITY:
@@ -523,7 +543,7 @@ class Gazetteer:
         if not pool:
             return None, 0
         best_place, best_n = None, 0
-        for form in [*exact_forms(raw), *lemma_forms(raw)]:
+        for form in [f for f in (*exact_forms(raw), *lemma_forms(raw)) if len(f) >= FUZZY_MIN_LEN]:
             hits = process.extract(form, list(pool), scorer=fuzz.ratio, score_cutoff=FUZZY_MIN, limit=3)
             if not hits:
                 continue

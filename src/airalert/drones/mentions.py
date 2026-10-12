@@ -154,12 +154,13 @@ def _resolve(gz: Gazetteer, phrase: str | None, scopes: list[str | None]):
             name, c[0] if c else None, c[1] if c else None, code, "exact" if c else "none", "oblast", 1
         )
     best = None
-    for sc in scopes:
-        r = gz.resolve(phrase, sc)
-        if r.lat is not None:
-            return r
-        if best is None or (best.match == "none" and r.match == "ambiguous"):
-            best = r
+    for fuzzy in (False, True):  # exact/lemma in every scope before any fuzzy match
+        for sc in scopes:
+            r = gz.resolve(phrase, sc, allow_fuzzy=fuzzy)
+            if r.lat is not None:
+                return r
+            if best is None or (best.match == "none" and r.match == "ambiguous"):
+                best = r
     return best
 
 

@@ -362,6 +362,10 @@ def drones_sample(
     db: Path = typer.Option(None, help="drones journal (default: the snapshot)"),
     out: Path = typer.Option(None, help="default: data/labels/sample.jsonl"),
     exclude: list[Path] = typer.Option([], help="jsonl files whose ids must not be sampled again (hold-out)"),
+    blind: bool = typer.Option(
+        False,
+        help="keep the parser-derived stratum out of the jsonl (-> <out>_strata.json) for independent labelling",
+    ),
 ) -> None:
     """Stratified sample of parsed lines for manual labelling -> data/labels/sample.jsonl (+ _meta.json)."""
     import json
@@ -394,6 +398,11 @@ def drones_sample(
         lines = lines[~ids.isin(seen)]
     rows = ev.sample(lines, mentions, messages, n, seed)
     out = out or s.data_dir / "labels" / "sample.jsonl"
+    if blind:
+        strata = {r["id"]: r.pop("stratum") for r in rows}
+        out.with_name(out.stem + "_strata.json").write_text(
+            json.dumps(strata, ensure_ascii=False, indent=1), encoding="utf-8"
+        )
     ev.write_jsonl(rows, out)
     meta = {"n": len(rows), "seed": seed, "strata_sizes": ev.strata_sizes(lines, mentions)}
     out.with_name(out.stem + "_meta.json").write_text(
@@ -434,7 +443,12 @@ def drones_eval(
     meta_path = sample.with_name(sample.stem + "_meta.json")
     if meta_path.exists() and sample.exists():
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
-        weights = ev.weights_for(ev.read_jsonl(sample), meta["strata_sizes"])
+        rows = ev.read_jsonl(sample)
+        strata_path = sample.with_name(sample.stem + "_strata.json")
+        if strata_path.exists():  # blind sample: strata kept apart from the labeller's file
+            strata = json.loads(strata_path.read_text(encoding="utf-8"))
+            rows = [{**r, "stratum": strata[r["id"]]} for r in rows]
+        weights = ev.weights_for(rows, meta["strata_sizes"])
     table, errors = ev.evaluate(gold_rows, mentions, weights)
     missed = ev.meets_targets(table)
     md = [
@@ -442,7 +456,9 @@ def drones_eval(
         "",
         f"{len(gold_rows)} labelled lines. `precision`/`recall` are measured on the stratified sample, which "
         "over-samples failure strata; `w_precision`/`w_recall` re-weight it to the whole stream by stratum size "
-        "(the targets are checked on these).",
+        "(the targets are checked on these). Caveat: `kind`/`count`/`oblast` are scored only on places that "
+        "matched, and `oblast` counts as correct whenever the gold oblast is empty — so they mostly repeat the "
+        "`place` numbers and are not independent accuracy estimates.",
         "",
         ev.md_table(table),
         "",

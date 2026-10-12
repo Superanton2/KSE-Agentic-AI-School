@@ -35,3 +35,9 @@ Rules:
   (`airalert drones-eval --gold data/labels/holdout_gold.jsonl --sample data/labels/holdout.jsonl
   --report drone_parse_eval_holdout`).
 - Labeller for both: Claude (session of 2026-10-12), one known correction in gold.jsonl («Бромля» → Боромля).
+- `indep.jsonl` (100 lines, `drones-sample --n 100 --seed 777 --exclude data/labels/sample.jsonl --exclude
+  data/labels/holdout.jsonl --out data/labels/indep.jsonl --blind`) — for an **independent** labeller (a separate
+  Claude without access to the code): no parser output in the file; the strata needed for re-weighting are in
+  `indep_strata.json` (do not show it to the labeller). Not labelled here on purpose. Expected result:
+  `indep_gold.jsonl`, then `airalert drones-eval --gold data/labels/indep_gold.jsonl --sample data/labels/indep.jsonl
+  --report drone_parse_eval_indep`.
