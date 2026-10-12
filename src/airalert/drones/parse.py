@@ -15,6 +15,8 @@ from airalert.drones.gazetteer import HEADER_CITIES, clean_place, oblast_code
 from airalert.drones.normalize import emojis, key, lines, strip_emoji
 
 BARE_PLACE_CHANNELS = {"kyiv_nebo"}
+_GLUED_NA = re.compile(r"\bна(?=[А-ЯІЇЄҐ])")
+_NA_PLACE = re.compile(r"^\s*На\s+[А-ЯІЇЄҐ][\w'-]*(?:\s+[\w'-]+){0,2}[.!]?\s*$")
 BARE_MAX_WORDS = 4
 
 
@@ -77,9 +79,7 @@ def _clauses(text: str) -> tuple[str, list[tuple[str, str]]]:
     out = []
     for i, m in enumerate(ms):
         phrase = text[m.end() : ms[i + 1].start() if i + 1 < len(ms) else len(text)]
-        kw = " ".join(m["kw"].lower().split())
-        role = next(r for rx, r in pt.KW_ROLE if rx.match(kw))
-        out.append((role, phrase))
+        out.append((pt.KW_ROLES[m.lastgroup], phrase))
     return pre, out
 
 
@@ -102,14 +102,24 @@ _MEZHI = re.compile(r"^(?:межі|межу|межею)\s+(?P<a>\w+)(?:\s+(?:т�
 _FROM_PLACE = re.compile(r"^(?:півноч\w*|півдн\w*|заход\w*|сход\w*|північн\w*|південн\w*)\s+від\s+", re.I)
 
 
-def _trim(phrase: str, city: str | None = None) -> str:
+_CONJ_TAIL = re.compile(r"\s+(?:та|і|й|а також)\s*$", re.I)
+_LIST_SPLIT = re.compile(r"\s*,\s*|\s+(?:та|і|й)\s+", re.I)
+
+
+def _trim(phrase: str, city: str | None = None, keep_list: bool = False) -> str:
     """Cut a clause phrase down to a place: drop trailing direction/comment words, resolve 'містом' to
-    the header city, '(на) півночі від Дніпра' -> 'Дніпра', 'межі Одеської та ... областей' -> oblast."""
-    phrase = phrase.split(",")[0] if "," in phrase and not phrase.strip().startswith(",") else phrase
-    m = pt.PLACE_TAIL.search(" " + phrase)
+    the header city, '(на) півночі від Дніпра' -> 'Дніпра', 'межі Одеської та ... областей' -> oblast.
+    A leading sector ('півночі Сумщини', 'північний схід Харківщини') is kept for the oblast check.
+    ``keep_list`` keeps 'Мені, Борзну, Козелець' / 'Полтавою та Кременчуком' for :func:`_split_list`."""
+    if not keep_list:
+        phrase = phrase.split(",")[0] if "," in phrase and not phrase.strip().startswith(",") else phrase
+    sector = pt.SECTOR_PREFIX.match(phrase.strip())
+    head, body = (sector.group(0), phrase.strip()[sector.end() :]) if sector else ("", phrase)
+    m = pt.PLACE_TAIL.search(" " + body)
     if m:
-        phrase = (" " + phrase)[: m.start()]
-    phrase = phrase.strip(' .,!?:;-—–"«»/')
+        body = (" " + body)[: m.start()]
+    phrase = (head + body).strip(' .,!?:;-—–"«»/')
+    phrase = _CONJ_TAIL.sub("", phrase)
     phrase = _FROM_PLACE.sub("", phrase)
     mz = _MEZHI.match(phrase)
     if mz:
@@ -122,14 +132,20 @@ def _trim(phrase: str, city: str | None = None) -> str:
     return phrase
 
 
+def _split_list(phrase: str) -> list[str]:
+    return [p for p in (x.strip(" .,!") for x in _LIST_SPLIT.split(phrase)) if p]
+
+
 def _is_locative_oblast(phrase: str) -> str | None:
-    """'Житомирщині', 'півночі Сумщини', 'заході області' -> admin1 / '' (current oblast) / None."""
+    """'Житомирщині', 'Запоріжжі', 'півночі Сумщини', 'заході області' -> admin1 / '' (current oblast) / None."""
     p = pt.SECTOR_PREFIX.sub("", phrase.strip())
     if pt.OBLAST_WORD.match(p.split(" ")[0] if p else ""):
         return ""
-    code = oblast_code(p)
     last = p.split(" ")[-1].lower() if p else ""
-    if code and (last.endswith(("і", "ї")) or p != phrase.strip()):
+    locative = last.endswith(("і", "ї"))
+    # "на Запоріжжі" / "на Києві" (locative) is the region even though "Запоріжжя" alone is a city
+    code = oblast_code(p, headers=locative)
+    if code and (locative or p != phrase.strip()):
         return code
     return None
 
@@ -137,22 +153,9 @@ def _is_locative_oblast(phrase: str) -> str | None:
 def _target_sentence(
     sent: str, kind: str, start: int, admin1: str | None, city: str | None = None, multi: bool = False
 ) -> list[RawMention]:
-    """Mentions of one target sentence; ``multi`` (kyiv_nebo) turns 'на Бровари, Бориспіль' into two."""
-    m = _target_one(sent, kind, start, admin1, city)
-    if not m or not multi or m.rel != "target":
-        return [m] if m else []
-    out = [m]
-    tail = re.split(r"\b" + re.escape(m.place_raw) + r"\b", sent, maxsplit=1)
-    for seg in tail[1].split(",")[1:] if len(tail) == 2 else []:
-        ph = _trim(seg, city)
-        if ph and _looks_like_place(ph):
-            out.append(RawMention(kind, m.count, m.plural, "target", ph, admin1=m.admin1))
-    return out
-
-
-def _target_one(
-    sent: str, kind: str, start: int, admin1: str | None, city: str | None = None
-) -> RawMention | None:
+    """Mentions of one sentence: the main one (first target + last waypoint), plus every further distinct
+    target ('на Чернігів та в напрямку Житомира'), every waypoint of a list ('повз Мені, Борзну, Козелець',
+    'між Полтавою та Кременчуком') and, for kyiv_nebo (``multi``), comma lists of targets."""
     count, _ = _count(sent)
     plural = bool(pt.PLURAL.regex.search(sent)) or (count or 1) > 1
     pre, clauses = _clauses(sent[start:])
@@ -163,10 +166,12 @@ def _target_one(
     fm = pt.FROM_SIDE.regex.search(sent)
     if fm:
         from_deg = pt.direction_deg(fm["d"].replace("із ", "").replace("з ", ""))
-    target = via = None
+    targets: list[str] = []
+    vias: list[str] = []
     scope = admin1
     for role, phrase in clauses:
-        ph = _trim(phrase, city)
+        listy = role in ("via", "between") or (multi and role in ("target", "on"))
+        ph = _trim(phrase, city, keep_list=listy)
         if not ph:
             continue
         # compass words are lower-case; "Південне", "Західне" are villages
@@ -182,23 +187,37 @@ def _target_one(
                 scope = loc or scope
                 continue
             role = "target"
-        if role == "target" and target is None:
+        if role == "target":
             loc = _is_locative_oblast(ph)  # "в напрямку Одещини" is a target oblast, keep as target
-            target = ph if loc is None or loc != "" else None
-        elif role == "via":
-            via = ph
-    if target is None and via is None:
+            if loc == "":
+                continue
+            parts = _split_list(ph) if listy else [ph]
+            targets += [p for p in parts if p not in targets and (p == parts[0] or _looks_like_place(p))]
+        else:  # via / between
+            vias += [p for p in _split_list(ph) if p not in vias]
+    if not targets and not vias:
         rest = _trim(pre)
         if rest and len(rest.split()) <= BARE_MAX_WORDS and rest[:1].isupper():
-            target = rest  # "Реактивний БпЛА Біла Церква" (rare) -> treat as target
+            targets = [rest]  # "Реактивний БпЛА Біла Церква" (rare) -> treat as target
         elif scope and scope != admin1:  # only an oblast: "БпЛА на Сумщині"
-            return RawMention(kind, count, plural, "location", f"@{scope}", None, heading, from_deg, scope)
+            return [RawMention(kind, count, plural, "location", f"@{scope}", None, heading, from_deg, scope)]
         else:
-            return None
-    rel = "target" if target else "via"
-    return RawMention(
-        kind, count, plural, rel, target or via, via if target else None, heading, from_deg, scope
-    )
+            return []
+    if len(targets) > 1:  # "на Чернігівщину в напрямку Сновська": the settlement makes the oblast redundant
+        settlements = [t for t in targets if _is_locative_oblast(t) is None and oblast_code(t) is None]
+        targets = settlements or targets
+    if targets:
+        main = RawMention(
+            kind, count, plural, "target", targets[0], vias[-1] if vias else None, heading, from_deg, scope
+        )
+        extra = [
+            RawMention(kind, count, plural, "target", t, None, None, from_deg, scope) for t in targets[1:]
+        ]
+        extra += [RawMention(kind, count, plural, "via", v, None, None, None, scope) for v in vias[:-1]]
+    else:
+        main = RawMention(kind, count, plural, "via", vias[-1], None, heading, from_deg, scope)
+        extra = [RawMention(kind, count, plural, "via", v, None, None, None, scope) for v in vias[:-1]]
+    return [main, *extra]
 
 
 # Capitalised words in kyiv_nebo that are not places (sentence starts, verbs, slang).
@@ -207,6 +226,11 @@ _BARE_STOP = {
     "всі",
     "увага",
     "попередньо",
+    "схоже",
+    "можливо",
+    "напевно",
+    "наче",
+    "також",
     "і",
     "й",
     "та",
@@ -259,8 +283,13 @@ def _bare_places(sent: str, kind: str, admin1: str | None, city: str | None = No
     out = []
     sent = re.split(r"\s+[-—–]\s+", sent)[0]  # "Правий берег - уважно"
     for seg in [s for s in sent.replace(";", ",").split(",") if s.strip()]:
-        if _status(seg):
+        st = _status(seg)
+        if st and st not in ("shot_down", "descending"):
             continue
+        if st:  # "Вишгород мінус": the status word goes, the place stays
+            seg = next(p for s_, p in pt.STATUS_PATTERNS if s_ == st).regex.sub(" ", seg).strip()
+            if not seg:
+                continue
         count, rest = _count(seg.strip())
         pre, clauses = _clauses(rest)
         phrases = [p for r, p in clauses if r in ("on", "target", "via")] or [pre]
@@ -301,6 +330,7 @@ def parse_message(text: str, channel: str) -> list[LineParse]:
         emoji_kind = next((pt.EMOJI_KINDS[e] for e in em if e in pt.EMOJI_KINDS), None)
         msg_emoji_kind = emoji_kind or msg_emoji_kind
         line = strip_emoji(raw).lstrip("+• ").strip()
+        line = _GLUED_NA.sub("на ", line)  # "наЗапоріжжі"
         if pt.NOISE.regex.search(raw) or not line:
             out.append(LineParse(i, raw, admin1, "noise"))
             continue
@@ -327,7 +357,11 @@ def parse_message(text: str, channel: str) -> list[LineParse]:
                     else lp.line_kind
                 )
                 continue
-            bare_ok = channel in BARE_PLACE_CHANNELS or (msg_emoji_kind is not None and start == 0)
+            bare_ok = (
+                channel in BARE_PLACE_CHANNELS
+                or (msg_emoji_kind is not None and start == 0)
+                or (channel == "kpszsu" and _NA_PLACE.match(sent) is not None)  # "На Бабинці." (no emoji)
+            )
             if bare_ok and len(sent.split()) <= 12:
                 ms = _bare_places(sent, kind or msg_emoji_kind or "unknown", admin1, city)
                 if ms:

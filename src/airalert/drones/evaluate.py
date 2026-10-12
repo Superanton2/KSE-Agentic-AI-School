@@ -22,7 +22,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from airalert.drones.gazetteer import OBLASTS
+from airalert.drones.gazetteer import OBLASTS, loose_key
 from airalert.drones.normalize import key
 
 SKIP_KINDS = {"header", "noise", "summary"}
@@ -140,7 +140,8 @@ def _oblast(x) -> str | None:
 
 
 def _place_key(x) -> str | None:
-    return None if x is None or (isinstance(x, float) and np.isnan(x)) else key(str(x))
+    """Names compare without apostrophes: GeoNames "Пятихатки" == "П'ятихатки"."""
+    return None if x is None or (isinstance(x, float) and np.isnan(x)) else loose_key(key(str(x)))
 
 
 @dataclass

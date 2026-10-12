@@ -11,6 +11,7 @@ Versions and time (no leakage):
   stale/retrospective, so such versions are excluded from calibration.
 """
 
+import re
 from collections import defaultdict, deque
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -128,12 +129,18 @@ def versions(raw: pd.DataFrame, edits: pd.DataFrame) -> Iterable[Version]:
             )
 
 
-def _scopes(m: dp.RawMention, channel: str) -> list[str | None]:
+SEA = re.compile(r"\bмор[еяюі]\w*|\bакваторі\w*", re.I)
+COASTAL = ["UA.17", "UA.16", "UA.08"]  # Odesa, Mykolaiv, Kherson oblasts
+
+
+def _scopes(m: dp.RawMention, channel: str, sea: bool = False) -> list[str | None]:
+    """Oblast scopes to try, in order. Without a header: Kyiv first for kyiv_nebo / bare names; the coastal
+    oblasts first when the sentence talks about the sea ("з Чорного моря ... на Затоку")."""
     if m.admin1 is not None:
         return [m.admin1]
     if channel in KYIV_FIRST_CHANNELS or m.rel == "bare":
         return [KYIV_CITY, None]
-    return [None]
+    return [*COASTAL, None] if sea else [None]
 
 
 def _resolve(gz: Gazetteer, phrase: str | None, scopes: list[str | None]):
@@ -169,11 +176,20 @@ def _by_context(r, context: list[tuple[float, float]]):
     return r
 
 
+def _with_context(r, msg_pts: list[tuple[float, float]], recent: deque):
+    """Homonyms: places of the same message first; then places the channel mentioned in the last
+    CONTEXT_MINUTES *in the same oblast* (a national channel's recent points cover the whole country)."""
+    r = _by_context(r, msg_pts)
+    if r is not None and r.match == "ambiguous" and r.admin1:
+        r = _by_context(r, [(la, lo) for _, a1, la, lo in recent if a1 == r.admin1])
+    return r
+
+
 def build(raw: pd.DataFrame, edits: pd.DataFrame, gz: Gazetteer) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Parse every message version and resolve places. Within a channel, versions are processed in
     ``known_at`` order and only earlier-known places serve as homonym context (no look-ahead)."""
     line_rows, mention_rows = [], []
-    recent: dict[str, deque] = defaultdict(deque)  # channel -> (known_at, lat, lon)
+    recent: dict[str, deque] = defaultdict(deque)  # channel -> (known_at, admin1, lat, lon)
     for v in sorted(versions(raw, edits), key=lambda v: (v.channel, v.known_at, v.msg_id, v.version)):
         ctx = recent[v.channel]
         while ctx and (v.known_at - ctx[0][0]).total_seconds() > CONTEXT_MINUTES * 60:
@@ -182,13 +198,12 @@ def build(raw: pd.DataFrame, edits: pd.DataFrame, gz: Gazetteer) -> tuple[pd.Dat
         first = {}  # pass 1: unambiguous places in this message are context for its homonyms
         for lp in parsed:
             for j, m in enumerate(lp.mentions):
-                first[(lp.line_no, j)] = _resolve(gz, m.place_raw, _scopes(m, v.channel))
-        msg_pts = [
-            (r.lat, r.lon)
-            for r in first.values()
-            if r is not None and r.lat is not None and r.place_type != "oblast"
+                sea = bool(SEA.search(lp.text))
+                first[(lp.line_no, j)] = _resolve(gz, m.place_raw, _scopes(m, v.channel, sea))
+        resolved = [
+            r for r in first.values() if r is not None and r.lat is not None and r.place_type != "oblast"
         ]
-        context = msg_pts + [(la, lo) for _, la, lo in ctx]
+        msg_pts = [(r.lat, r.lon) for r in resolved]
         for lp in parsed:
             base = dict(
                 channel=v.channel,
@@ -211,9 +226,9 @@ def build(raw: pd.DataFrame, edits: pd.DataFrame, gz: Gazetteer) -> tuple[pd.Dat
                 }
             )
             for j, m in enumerate(lp.mentions):
-                scopes = _scopes(m, v.channel)
-                r = _by_context(first[(lp.line_no, j)], context)
-                via = _by_context(_resolve(gz, m.via_raw, scopes), context) if m.via_raw else None
+                scopes = _scopes(m, v.channel, bool(SEA.search(lp.text)))
+                r = _with_context(first[(lp.line_no, j)], msg_pts, ctx)
+                via = _with_context(_resolve(gz, m.via_raw, scopes), msg_pts, ctx) if m.via_raw else None
                 lat, lon = (r.lat, r.lon) if r else (None, None)
                 mention_rows.append(
                     {
@@ -247,7 +262,7 @@ def build(raw: pd.DataFrame, edits: pd.DataFrame, gz: Gazetteer) -> tuple[pd.Dat
                         else None,
                     }
                 )
-        ctx.extend((v.known_at, la, lo) for la, lo in msg_pts)
+        ctx.extend((v.known_at, r.admin1, r.lat, r.lon) for r in resolved)
     lines = pd.DataFrame(line_rows, columns=LINE_COLUMNS)
     mentions = pd.DataFrame(mention_rows, columns=MENTION_COLUMNS)
     for col in ("count",):

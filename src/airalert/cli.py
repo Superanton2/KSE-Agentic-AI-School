@@ -361,6 +361,7 @@ def drones_sample(
     seed: int = 20260812,
     db: Path = typer.Option(None, help="drones journal (default: the snapshot)"),
     out: Path = typer.Option(None, help="default: data/labels/sample.jsonl"),
+    exclude: list[Path] = typer.Option([], help="jsonl files whose ids must not be sampled again (hold-out)"),
 ) -> None:
     """Stratified sample of parsed lines for manual labelling -> data/labels/sample.jsonl (+ _meta.json)."""
     import json
@@ -379,6 +380,18 @@ def drones_sample(
         (r.channel, int(r.msg_id), int(r.version)): r.message
         for r in lines.drop_duplicates(["channel", "msg_id", "version"]).itertuples(index=False)
     }
+    seen = {r["id"] for f in exclude for r in ev.read_jsonl(f)}
+    if seen:
+        ids = (
+            lines["channel"]
+            + ":"
+            + lines["msg_id"].astype(str)
+            + ":"
+            + lines["version"].astype(str)
+            + ":"
+            + lines["line_no"].astype(str)
+        )
+        lines = lines[~ids.isin(seen)]
     rows = ev.sample(lines, mentions, messages, n, seed)
     out = out or s.data_dir / "labels" / "sample.jsonl"
     ev.write_jsonl(rows, out)
@@ -396,6 +409,8 @@ def drones_eval(
     mentions_path: Path = typer.Option(
         None, "--mentions", help="default: data/processed/drone_mentions.parquet"
     ),
+    sample: Path = typer.Option(None, help="the sample the gold labels belong to (for re-weighting)"),
+    report: str = typer.Option("drone_parse_eval", help="report name in reports/"),
 ) -> None:
     """Precision/recall of the parser vs gold labels (kind, count, oblast, place) -> reports/drone_parse_eval.md."""
     import json
@@ -415,9 +430,11 @@ def drones_eval(
     gold_rows = ev.read_jsonl(gold)
     mentions = pd.read_parquet(mentions_path or s.processed_dir / "drone_mentions.parquet")
     weights = None
-    if (labels / "sample_meta.json").exists() and (labels / "sample.jsonl").exists():
-        meta = json.loads((labels / "sample_meta.json").read_text(encoding="utf-8"))
-        weights = ev.weights_for(ev.read_jsonl(labels / "sample.jsonl"), meta["strata_sizes"])
+    sample = sample or labels / "sample.jsonl"
+    meta_path = sample.with_name(sample.stem + "_meta.json")
+    if meta_path.exists() and sample.exists():
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        weights = ev.weights_for(ev.read_jsonl(sample), meta["strata_sizes"])
     table, errors = ev.evaluate(gold_rows, mentions, weights)
     missed = ev.meets_targets(table)
     md = [
@@ -438,9 +455,9 @@ def drones_eval(
         f"pred={json.dumps(e['pred'], ensure_ascii=False, default=str)}"
         for e in errors
     ]
-    (s.reports_dir / "drone_parse_eval.md").write_text("\n".join(md) + "\n", encoding="utf-8")
+    (s.reports_dir / f"{report}.md").write_text("\n".join(md) + "\n", encoding="utf-8")
     typer.echo(table.to_string(index=False))
-    typer.echo(f"errors: {dict(ev.error_summary(errors))}; report: {s.reports_dir / 'drone_parse_eval.md'}")
+    typer.echo(f"errors: {dict(ev.error_summary(errors))}; report: {s.reports_dir / (report + '.md')}")
     if missed:
         typer.echo("TARGETS MISSED: " + "; ".join(missed))
         raise typer.Exit(1)

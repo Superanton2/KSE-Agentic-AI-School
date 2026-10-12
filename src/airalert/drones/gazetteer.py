@@ -190,21 +190,35 @@ _OBLAST_ALIAS = {
     key(a): code for code, (_, aliases) in OBLASTS.items() for a in aliases if key(a) not in HEADER_CITIES
 }
 _CITY_HEADER_KEYS = {key(c): code for c, code in CITY_HEADERS.items()}
+_REGION_ALIASES = [k for k in _OBLAST_ALIAS if "щин" in k or "ччин" in k]
 
 
 def oblast_code(phrase: str, headers: bool = False) -> str | None:
     """Oblast alias (any case form) -> admin1 / 'BY' / 'RU' / 'MD' / 'SEA'. ``headers=True`` also accepts city
     headers ('Київ:', 'Львів:') that name an oblast only when used as a header."""
-    if headers and key(phrase) in _CITY_HEADER_KEYS:
-        return _CITY_HEADER_KEYS[key(phrase)]
     if key(phrase) in FOREIGN:
         return FOREIGN[key(phrase)]
-    for form in word_forms(phrase):
+    forms = word_forms(phrase)
+    for form in forms:
+        if headers and form in _CITY_HEADER_KEYS:  # "Львів:", locative "на Запоріжжі"
+            return _CITY_HEADER_KEYS[form]
         if not headers and form in _HEADER_ONLY:
             continue
         code = _OBLAST_ALIAS.get(form) or FOREIGN.get(form)
         if code:
             return code
+    return _oblast_typo(forms)
+
+
+def _oblast_typo(forms: list[str]) -> str | None:
+    """'Чернігвщині', 'Моколаївщини', 'Вінничину' -> oblast, for the '-щина/-ччина' names only."""
+    from rapidfuzz import fuzz, process
+
+    for form in forms:
+        if len(form) >= 8 and ("щин" in form or "ччин" in form):
+            hit = process.extractOne(form, _REGION_ALIASES, scorer=fuzz.ratio, score_cutoff=88)
+            if hit:
+                return _OBLAST_ALIAS[hit[0]]
     return None
 
 
@@ -329,6 +343,14 @@ class Gazetteer:
                     r["fcode"],
                 )
                 places.append((p, [r["name"], *filter(None, r["alt_names"].split("|"))]))
+        manual = gazetteer_dir / "manual_places.csv"  # settlements missing from GeoNames (hand-curated)
+        if manual.exists():
+            with open(manual, encoding="utf-8") as f:
+                for r in csv.DictReader(row for row in f if not row.startswith("#")):
+                    p = Place(
+                        r["name"], float(r["lat"]), float(r["lon"]), r["admin1"], "settlement", 0, "PPL"
+                    )
+                    places.append((p, [r["name"], *filter(None, r["alt_names"].split("|"))]))
         with open(gazetteer_dir / "kyiv_local.csv", encoding="utf-8") as f:
             for r in csv.DictReader(row for row in f if not row.startswith("#")):
                 p = Place(
@@ -422,6 +444,9 @@ class Gazetteer:
             major = [p for p in self.index.get(k, []) if p.fcode in ("PPLC", "PPLA")]
             if len(major) == 1:
                 return major
+            water = [p for p in self.kyiv_local.get(k, []) if p.fcode == "water"]  # "Київське водосховище"
+            if water:
+                return water
         return []
 
     def resolve(self, phrase: str, admin1: str | None) -> Resolved:
@@ -434,6 +459,11 @@ class Gazetteer:
         if admin1 in ("BY", "RU", "MD", "SEA"):
             return Resolved(raw, None, None, admin1, "none", None)
         code = self.oblast_as_target(raw)
+        inner = paren_text(phrase)
+        if inner and not oblast_code(inner) and code:  # "Вінничину (н.п.Бершадь)": the settlement wins
+            r = self.resolve(inner, code)
+            if r.lat is not None:
+                return r
         if code and code in self.oblast_centroids:
             lat, lon = self.oblast_centroids[code]
             return Resolved(OBLASTS[code][0], lat, lon, code, "exact", "oblast", 1)
@@ -443,6 +473,8 @@ class Gazetteer:
             return Resolved(p.name, p.lat, p.lon, p.admin1, "exact", p.kind, 1)
         tried: list[Place] = []
         exact, lemma = exact_forms(raw), lemma_forms(raw)
+        if _RAION.search(phrase):  # "Вовчанського району" -> Вовчанськ, "Миргородського району" -> Миргород
+            lemma += [f[: -len("ський")] + end for f in lemma if f.endswith("ський") for end in ("ськ", "")]
         for forms, how in ((exact, "exact"), (lemma, "lemma")):
             for form in forms:
                 cands = self._lookup(form, admin1)
@@ -520,7 +552,11 @@ _LEADING_JUNK = re.compile(
     r"^(?:(?:н\.\s?п|смт|с|м|сел)\.\s*|(?:н\.?\s?п\.?|смт|село|місто|селище|села|міста|селища|н/п)\s+)", re.I
 )
 # "центру Києва", "околиці Броварів", "району Борисполя" -> the place itself
-_QUALIFIER = re.compile(r"^(?:центр\w*|околиц\w*|район\w*|р-н\w*|передмісті?|передмісття)\s+", re.I)
+_QUALIFIER = re.compile(
+    r"^(?:центр\w*|околиц\w*|район\w*|р-н\w*|передмісті?|передмісття|півночі|півдні|заході|сході|межах)\s+",
+    re.I,
+)
+_RAION = re.compile(r"\s+(?:району|районі|район|р-ну|р-н)\b", re.I)
 
 
 def inline_oblast(phrase: str, gz: Gazetteer) -> str | None:
@@ -549,7 +585,7 @@ def paren_text(phrase: str) -> str | None:
 
 def clean_place(phrase: str) -> str:
     t = normalize(phrase)
-    t = _OBLAST_SUFFIX.sub("", _PAREN.sub(" ", t))
+    t = _RAION.sub("", _OBLAST_SUFFIX.sub("", _PAREN.sub(" ", t)))
     t = re.split(r"\s*/\s*|,\s*|\s+(?:та|і|й)\s+", t)[0]  # 'Вишгород/Київ', 'Умані, Христинівки'
     t = _TRAILING.sub("", t).strip(" \"'«»")
     t = _QUALIFIER.sub("", _LEADING_JUNK.sub("", t))

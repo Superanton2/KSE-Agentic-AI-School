@@ -1,0 +1,4 @@
+# Settlements missing from GeoNames (or present only under an old name). Coordinates ±1 km; edit freely.
+name,alt_names,lat,lon,admin1,source
+Ширяєве,Ширяеве,47.40330,30.18780,UA.17,manual (smt, Odesa oblast)
+Хутір-Михайлівський,Дружба|Хутір Михайлівський,52.04200,33.94660,UA.21,manual (Дружба renamed 2024)

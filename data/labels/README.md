@@ -25,3 +25,13 @@ Rules:
 - `kind` — drone_jet («Реактивний БпЛА», 🏍), drone («БпЛА», 🛵, Молнія, Ланцет), missile («Бандероль», КР,
   ракета, «Швидкісна ціль», Циркон), ballistic, kab, unknown (kyiv_nebo bare names).
 - `count` — the stated number («2х» → 2, «3 реактивних» → 3), else 1.
+
+## Files
+
+- `sample.jsonl` + `gold.jsonl` (300 lines) — labelled blind to the parser, then used to **fix** the parser
+  (so metrics on it are optimistic; `reports/drone_parse_eval.md`).
+- `holdout.jsonl` + `holdout_gold.jsonl` (150 different lines, `drones-sample --seed 20261012 --exclude
+  data/labels/sample.jsonl`) — labelled blind *after* the fixes and not used for tuning: the honest estimate
+  (`airalert drones-eval --gold data/labels/holdout_gold.jsonl --sample data/labels/holdout.jsonl
+  --report drone_parse_eval_holdout`).
+- Labeller for both: Claude (session of 2026-10-12), one known correction in gold.jsonl («Бромля» → Боромля).

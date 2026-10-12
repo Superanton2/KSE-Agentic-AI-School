@@ -1,6 +1,8 @@
 # Kyiv districts/neighbourhoods/landmarks. Seeded from GeoNames 'Kyiv City' sections (CC-BY 4.0);
 # rows with source=manual have approximate coordinates (±1 km) — edit freely, keep the header.
 name,alt_names,lat,lon,admin1,kind,source
+Троєщина,Вигурівщина-Троєщина|Троєщинський масив,50.51137,30.60251,UA.12,manual,manual
+Лавіна,ТРЦ Лавіна|Lavina Mall|Лавіна Мол,50.49300,30.36400,UA.12,landmark,manual
 Північний міст,Московський міст,50.48800,30.54900,UA.12,landmark,manual
 Солом'янка,Солома|Соломинка,50.42838,30.45211,UA.12,manual,manual
 ТЕЦ-5,ТЕЦ 5|ТЕЦ5,50.38700,30.57700,UA.12,landmark,manual

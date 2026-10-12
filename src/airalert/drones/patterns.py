@@ -103,7 +103,7 @@ STATUS_PATTERNS: list[tuple[str, Pattern]] = [
         "shot_down",
         P(
             "st_shot_down",
-            r"^\s*(?:\d+\s*|один\s+|ще\s+)?мінус\w*|\bзбит\w*|\bподавлен\w*|\bвпав\b|\bвпали\b|\bприземлив\w*",
+            r"^\s*(?:\d+\s*|один\s+|ще\s+)?мінус\w*|\bмінус\w*\s*$|\bзбит\w*|\bподавлен\w*|\bвпав\b|\bвпали\b|\bприземлив\w*",
             ["Мінус", "Один мінус, один Видубичі", "Впав", "ЗБИТО/ПОДАВЛЕНО 98 ВОРОЖИХ БПЛА"],
         ),
     ),
@@ -181,12 +181,16 @@ CLAUSE_KEYWORDS: list[tuple[str, str]] = [
     (r"(?:у|в)\s+напрямку(?:\s+на)?", "target"),
     (r"напрямок\s+на", "target"),
     (r"(?:у|в)\s+бік", "target"),
+    (r"(?:у|в)\s+центр", "target"),  # "у центр Києва"
     (r"(?:залітає|летить|прямує|рухається)\s+(?:на|в бік|у бік)", "target"),
+    (r"атаку\w*", "target"),  # "атакують Наливайківку"
+    (r"курс(?=\s+(?-i:[А-ЯІЇЄҐ]))", "target"),  # "курс Полтавщина (н.п.Кобеляки)"
     (r"на\s*/\s*повз", "via"),
     (r"(?:південніше|північніше|західніше|східніше)", "via"),
     (r"повз(?:\s+н\.\s?п\.)?", "via"),
     (r"через", "via"),
-    (r"(?:у|в)\s+(?:районі|р-ні)\.?", "via"),
+    (r"(?:у|в)\s+(?:районі|районах|район|р-ні)\.?", "via"),
+    (r"між", "between"),  # "між Полтавою та Кременчуком" -> two waypoints
     (r"над", "via"),
     (r"вздовж", "via"),
     (r"біля", "via"),
@@ -196,9 +200,12 @@ CLAUSE_KEYWORDS: list[tuple[str, str]] = [
     (r"на", "on"),  # target (accusative) or location (locative) — decided by the phrase
 ]
 CLAUSE = re.compile(
-    r"(?<![\w'-])(?P<kw>" + "|".join(f"(?:{k})" for k, _ in CLAUSE_KEYWORDS) + r")(?![\w'-])\s*", _I
+    r"(?<![\w'-])(?:"
+    + "|".join(f"(?P<k{i}>{k})" for i, (k, _) in enumerate(CLAUSE_KEYWORDS))
+    + r")(?![\w'-])\s*",
+    _I,
 )
-KW_ROLE = [(re.compile(rf"^(?:{k})$", _I), role) for k, role in CLAUSE_KEYWORDS]
+KW_ROLES = {f"k{i}": role for i, (_, role) in enumerate(CLAUSE_KEYWORDS)}
 
 # Compass words (as heading or approach side): nominative/inflected forms.
 _DIRS = {
@@ -257,7 +264,7 @@ OBLAST_WORD = re.compile(r"^(?:області|область|регіону)$", 
 PLACE_TAIL = re.compile(
     # direction words only in lower case ("Південне", "Західне" are villages)
     r"\s+(?:(?:у|в)\s+(?=(?-i:північн|південн|західн|східн|напрям|бік))|(?-i:(?:північно|південно)-|північн|південн|західн|східн)"
-    r"|курс|через нього|тривог|перебувайте|можлив|з\s|із\s|зі\s|ще\s|вже\s|потім\s|далі\s|➡)",
+    r"|курс|через нього|тривог|перебувайте|можлив|з\s|із\s|зі\s|за\s|ще\s|вже\s|потім\s|далі\s|➡)",
     _I,
 )
 # Whole messages that are after-action summaries (counts of shot-down weapons), not situation reports.
