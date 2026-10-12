@@ -32,7 +32,7 @@ def leaks_coords(req) -> bool:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default="http://localhost:8080")
-    ap.add_argument("--states", default="calm,alert,alert-red,stale,calm+nogeo")
+    ap.add_argument("--states", default="calm,alert,alert-red,stale,calm+nogeo,calm+search,flip+banner,model")
     ap.add_argument("--devices", default="mobile,desktop")
     args = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
@@ -50,6 +50,14 @@ def main() -> None:
                 page.on("pageerror", lambda e, s=state: errors.append(f"{s}: {e}"))
                 page.on("request", lambda r, s=state: r.url.startswith(args.base) and leaks_coords(r)
                         and errors.append(f"{s}: coordinates sent to own origin: {r.url}"))
+                path = OUT / f"{state.replace('+', '-')}-{dev}.png"
+                if mock == "model":
+                    page.goto(f"{args.base}/model.html", wait_until="networkidle")
+                    page.wait_for_selector("h1:not(:empty)")
+                    page.screenshot(path=str(path), full_page=True)
+                    print(path.relative_to(OUT.parents[1]))
+                    ctx.close()
+                    continue
                 page.goto(f"{args.base}/?mock={mock}", wait_until="networkidle")
                 page.wait_for_selector("#status-text:not(:empty)")
                 try:  # OSRM answers within its 4 s timeout; then the straight-line "≈" estimate is replaced
@@ -60,7 +68,15 @@ def main() -> None:
                 except PWTimeout:
                     print(f"  {state}-{dev}: travel time still approximate", file=sys.stderr)
                 page.wait_for_timeout(1500)  # fitBounds animation + tile fade-in
-                path = OUT / f"{state.replace('+', '-')}-{dev}.png"
+                if flag == "search":
+                    page.click("#btn-search")
+                    page.keyboard.type("Хрещатик")
+                    try:  # Photon: debounce 400 ms + network
+                        page.wait_for_selector(".opt-place", timeout=12000)
+                    except PWTimeout:
+                        print(f"  {state}-{dev}: no Photon results", file=sys.stderr)
+                elif flag == "banner":  # mock=flip: the 2nd poll (after 15 s) turns calm into alert
+                    page.wait_for_selector("#banner:not([hidden])", timeout=25000)
                 page.screenshot(path=str(path))
                 print(path.relative_to(OUT.parents[1]), "|", page.text_content("#card-trip"))
                 ctx.close()

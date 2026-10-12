@@ -19,6 +19,13 @@
       "data_as_of": "2026-10-12T11:13:40Z",
       "sources_ok": {"alerts": true, "drones": true}
     },
+    "alert-new": {
+      "status": "alert", "level": "yellow",
+      "since": "2026-10-12T11:13:50Z",
+      "data_as_of": "2026-10-12T11:14:00Z",
+      "sources_ok": {"alerts": true, "drones": true}
+    },
+    "flip": ["calm", "alert-new"],
     "stale": {
       "status": "calm", "level": null,
       "since": "2026-10-12T09:00:00Z",

@@ -31,6 +31,11 @@
 
 <div id="map" class="map" role="region" data-i18n-aria="map.label"></div>
 
+<div id="banner" class="banner" role="alert" hidden>
+  <svg class="ico" aria-hidden="true"><use href="#i-alert"/></svg>
+  <span id="banner-text"></span>
+</div>
+
 <header class="top">
   <div id="status" class="pill status">
     <svg class="ico" aria-hidden="true"><use id="status-ico" href="#i-calm"/></svg>
@@ -41,6 +46,22 @@
   <p id="asof" class="asof num"></p>
   <p id="hint" class="hint pill" role="status" hidden></p>
 </header>
+
+<section id="search" class="panel search" hidden>
+  <div class="search-row">
+    <svg class="ico" aria-hidden="true"><use href="#i-search"/></svg>
+    <input id="search-input" class="search-input" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false"
+           aria-controls="search-list" autocomplete="off" spellcheck="false" enterkeyhint="search"
+           data-i18n-placeholder="search.placeholder" data-i18n-aria="search.label">
+    <button id="search-close" class="icon-btn" type="button" data-i18n-aria="search.close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>
+  </div>
+  <ul id="search-list" class="search-list" role="listbox" data-i18n-aria="search.results"></ul>
+  <p id="search-status" class="search-status" aria-live="polite"></p>
+</section>
+
+<div id="menu" class="panel menu" hidden>
+  <a class="menu-item" href="model.html" data-i18n="menu.model"></a>
+</div>
 
 <main>
   <section id="card" class="card" aria-live="polite" hidden>
@@ -65,8 +86,8 @@
 </main>
 
 <nav class="toolbar pill" data-i18n-aria="toolbar.label">
-  <button type="button" class="icon-btn" id="btn-menu" data-i18n-aria="toolbar.menu"><svg class="ico" aria-hidden="true"><use href="#i-menu"/></svg></button>
-  <button type="button" class="icon-btn" id="btn-search" data-i18n-aria="toolbar.search"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg></button>
+  <button type="button" class="icon-btn" id="btn-menu" aria-haspopup="true" aria-controls="menu" aria-expanded="false" data-i18n-aria="toolbar.menu"><svg class="ico" aria-hidden="true"><use href="#i-menu"/></svg></button>
+  <button type="button" class="icon-btn" id="btn-search" aria-controls="search" data-i18n-aria="toolbar.search"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg></button>
   <button type="button" class="icon-btn" id="btn-settings" data-i18n-aria="toolbar.settings"><svg class="ico" aria-hidden="true"><use href="#i-settings"/></svg></button>
   <button type="button" class="icon-btn" id="btn-locate" data-i18n-aria="toolbar.locate"><svg class="ico" aria-hidden="true"><use href="#i-locate"/></svg></button>
   <button type="button" class="icon-btn" id="btn-info" data-i18n-aria="toolbar.info"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg></button>

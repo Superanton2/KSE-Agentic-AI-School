@@ -85,3 +85,14 @@ function renderCurve(svg, curve, best) {
   for (const [k, v] of Object.entries({ x1: 0, x2: W, y1: H - 0.5, y2: H - 0.5, class: 'axis' })) axis.setAttribute(k, v);
   svg.append(axis);
 }
+
+// Банер «Оголошено тривогу» на 10 с — без звуку й вібрації.
+let bannerTimer = null;
+export function showBanner(level) {
+  const el = $('banner');
+  el.className = `banner is-${level === 'red' ? 'red' : 'yellow'}`;
+  $('banner-text').textContent = level ? `${t('banner.alert')} · ${t(`status.level.${level}`)}` : t('banner.alert');
+  el.hidden = false;
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(() => { el.hidden = true; }, 10_000);
+}

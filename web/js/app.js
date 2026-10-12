@@ -1,11 +1,17 @@
 // Ініціалізація, стан, цикл оновлення.
-// Ймовірності в картці поки фейкові (DEMO) — sim.js на наступному кроці; час дороги — справжній (route.js).
-import { getRaions, getState, getStores, isStale, mockVariant } from './api.js';
+// Ймовірність — заглушка prob.js (рахує окремий модуль); час дороги — справжній (route.js).
+import { getRaions, getState, getStores, isStale } from './api.js';
 import { inKyiv, KYIV_CENTER, locate } from './geo.js';
 import { applyI18n, loadLang, t } from './i18n.js';
 import { createMap } from './map.js';
+import { estimate } from './prob.js';
 import { cacheKey, createRouter, fallbackTravel, haversineKm } from './route.js';
-import { renderCard, renderStatus } from './ui.js';
+import { createSearch } from './search.js';
+import { renderCard, renderStatus, showBanner } from './ui.js';
+
+const POLL_MS = 15_000;
+const POLL_MAX_MS = 120_000;
+const SHOP_MIN = 60; // до панелі налаштувань
 
 const app = {
   state: null, lastOkAt: 0,
@@ -15,20 +21,6 @@ const app = {
   cardClosed: false, // користувач закрив картку — не відкривати її самим лише кліком по карті
 };
 const travel = createRouter();
-
-// ── Фейкові ймовірності для макета ────────────────────────────
-const curveFrom = (ps) => ps.map((p, i) => ({ depart_in: i * 5, p }));
-const DEMO = {
-  calm: { p: 0.74, band: [0.66, 0.81], curve: curveFrom([0.74, 0.76, 0.79, 0.81, 0.8, 0.77, 0.72, 0.66, 0.61, 0.58, 0.55, 0.52, 0.5]) },
-  alert: { p: 0.41, band: [0.3, 0.52], wait: { median: 25, p80: 50 }, curve: curveFrom([0.41, 0.46, 0.52, 0.57, 0.61, 0.63, 0.62, 0.6, 0.57, 0.55, 0.52, 0.5, 0.47]) },
-  'alert-red': { p: 0.28, band: [0.19, 0.4], wait: { median: 34, p80: 58 }, curve: curveFrom([0.28, 0.3, 0.33, 0.37, 0.42, 0.46, 0.49, 0.52, 0.54, 0.53, 0.51, 0.49, 0.46]) },
-  stale: { nodata: true },
-};
-function demoResult(store) {
-  const d = DEMO[mockVariant] ?? DEMO.calm;
-  const best = d.curve ? d.curve.reduce((a, b) => (b.p > a.p ? b : a)) : null;
-  return { store, shop: 60, ...d, best };
-}
 
 // ──────────────────────────────────────────────────────────────
 const findStore = (id) => app.stores.find((s) => s.properties.id === id)?.properties;
@@ -96,12 +88,39 @@ function render() {
   if (app.state) renderStatus(app.state, stale, now);
   const store = findStore(app.storeId);
   if (!store || !app.travel) return renderCard(null);
-  renderCard({
-    ...demoResult(storeView(store)),
-    travel: app.travel.minutes,
-    approx: app.travel.approx,
-    ...(stale ? { nodata: true } : {}),
+  const base = { store: storeView(store), travel: app.travel.minutes, approx: app.travel.approx, shop: SHOP_MIN };
+  renderCard(stale ? { ...base, nodata: true } : {
+    ...base,
+    ...estimate({ state: app.state, store, travelMin: app.travel.minutes, shopMin: SHOP_MIN }),
   }, now);
+}
+
+// Опитування /api/state: кожні 15 с; при помилках — тихий повтор із подвоєнням паузи до 2 хв.
+async function pollState(delay = POLL_MS) {
+  let next = POLL_MS;
+  try {
+    const prev = app.state;
+    app.state = await getState();
+    app.lastOkAt = Date.now();
+    if (prev?.status === 'calm' && app.state.status === 'alert') showBanner(app.state.level);
+  } catch {
+    next = Math.min(delay * 2, POLL_MAX_MS);
+  }
+  render();
+  setTimeout(() => pollState(next), next);
+}
+
+function setupMenu() {
+  const btn = document.getElementById('btn-menu');
+  const menu = document.getElementById('menu');
+  const toggle = (open) => {
+    menu.hidden = !open;
+    btn.setAttribute('aria-expanded', String(open));
+    if (open) menu.querySelector('a').focus();
+  };
+  btn.addEventListener('click', (e) => { e.stopPropagation(); toggle(menu.hidden); });
+  document.addEventListener('click', (e) => { if (!menu.hidden && !menu.contains(e.target)) toggle(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !menu.hidden) { toggle(false); btn.focus(); } });
 }
 
 async function useGeolocation() {
@@ -115,14 +134,23 @@ async function useGeolocation() {
   }
 }
 
+// Перший запит стану — разом із магазинами; далі — цикл pollState.
+async function pollFirst() {
+  try {
+    app.state = await getState();
+    app.lastOkAt = Date.now();
+  } finally {
+    setTimeout(() => pollState(), POLL_MS);
+  }
+}
+
 async function main() {
   await loadLang('uk');
   applyI18n();
 
   app.mapView = createMap(document.getElementById('map'));
   const geo = useGeolocation(); // діалог браузера показуємо одразу, паралельно з даними
-  const [state, stores, raions] = await Promise.allSettled([getState(), getStores(), getRaions()]);
-  if (state.status === 'fulfilled') { app.state = state.value; app.lastOkAt = Date.now(); }
+  const [, stores, raions] = await Promise.allSettled([pollFirst(), getStores(), getRaions()]);
   if (raions.status === 'fulfilled') app.mapView.setRaions(raions.value);
   if (stores.status === 'fulfilled') {
     app.stores = stores.value.features;
@@ -136,6 +164,20 @@ async function main() {
     const s = findStore(app.storeId);
     if (s && app.me) app.mapView.fitTrip(app.me.latlng, [s.lat, s.lon]);
   });
+  const search = createSearch({
+    stores: () => app.stores.map((f) => f.properties),
+    storeLabel: (p) => ({ title: storeView(p).name, sub: p.address }),
+    onStore: selectStore,
+    onPlace: (latlng) => {
+      showHint(null);
+      setMe(latlng, 0);
+      const s = findStore(app.storeId);
+      if (s) app.mapView.fitTrip(latlng, [s.lat, s.lon]);
+    },
+  });
+  document.getElementById('btn-search').addEventListener('click', () => (search.isOpen ? search.close() : search.open()));
+  setupMenu();
+
   document.getElementById('card-close').addEventListener('click', () => {
     app.storeId = null;
     app.cardClosed = true;

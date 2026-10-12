@@ -95,6 +95,58 @@ h1, h2, p { margin: 0; }
   max-width: 360px;
 }
 
+/* ── Банер тривоги (10 с, без звуку й вібрації) ────── */
+.banner {
+  position: fixed; z-index: 1100; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 14px;
+  font-size: 17px; font-weight: 600;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  animation: banner-in 0.25s ease-out;
+}
+.banner.is-yellow .ico { color: var(--alert-yellow); }
+.banner.is-red { background: var(--alert-red); border-color: var(--alert-red); color: #fff; }
+@keyframes banner-in { from { transform: translateY(-100%); } }
+
+/* ── Панелі: пошук, меню ───────────────────────────── */
+.panel {
+  position: fixed; z-index: 1050;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.search { top: 8px; left: 8px; right: 8px; padding: 4px 4px 4px 12px; }
+.search-row { display: flex; align-items: center; gap: 8px; }
+.search-row > .ico { color: var(--muted); }
+.search-input {
+  flex: 1; min-width: 0; height: 44px;
+  background: transparent; border: 0; color: var(--text);
+  font: 16px var(--font); /* 16px — iOS не масштабує сторінку при фокусі */
+}
+.search-input::placeholder { color: var(--muted); }
+.search-input:focus-visible { outline: none; }
+.search:focus-within { border-color: var(--accent); }
+.search-input::-webkit-search-cancel-button { display: none; }
+.search-list { list-style: none; margin: 0; padding: 0 8px 0 0; max-height: min(50vh, 360px); overflow-y: auto; }
+.search-list:empty { display: none; }
+.opt { display: flex; flex-direction: column; padding: 8px 10px; border-radius: 10px; cursor: pointer; border-top: 1px solid var(--border); }
+.opt[aria-selected="true"] { background: var(--border); }
+.opt-title { font-size: 15px; }
+.opt-sub { font-size: 12px; color: var(--muted); }
+.opt-store .opt-title::before { content: "●"; color: var(--text); font-size: 10px; margin-right: 8px; vertical-align: 2px; }
+.search-status { font-size: 13px; color: var(--muted); padding: 0 8px 8px 0; }
+.search-status:empty { display: none; }
+
+.menu {
+  bottom: calc(var(--toolbar-h) + 20px + var(--safe-b));
+  left: 50%; transform: translateX(-50%);
+  min-width: 220px; padding: 6px;
+}
+.menu-item { display: block; padding: 12px 14px; border-radius: 10px; color: var(--text); text-decoration: none; }
+.menu-item:hover, .menu-item:focus-visible { background: var(--border); }
+
 /* ── Картка результату ─────────────────────────────── */
 .card {
   position: fixed; z-index: 1000;
@@ -160,6 +212,33 @@ h1, h2, p { margin: 0; }
 /* ── Маркери ───────────────────────────────────────── */
 .leaflet-interactive:focus-visible { outline: none; }
 
+/* ── Сторінка «Про модель» ─────────────────────────── */
+body.doc-page { overflow: auto; height: auto; line-height: 1.6; }
+.doc-nav { max-width: 680px; margin: 0 auto; padding: 16px 16px 0; }
+.doc-back, .doc a { color: var(--accent); }
+.doc { max-width: 680px; margin: 0 auto; padding: 16px 16px 72px; }
+.doc h1 { font-size: clamp(32px, 7vw, 44px); line-height: 1.1; letter-spacing: -0.02em; margin: 16px 0 12px; }
+.doc h2 { font-size: 22px; line-height: 1.3; margin: 0 0 8px; }
+.doc h3 { font-size: 16px; margin: 20px 0 6px; }
+.doc section { margin-top: 40px; scroll-margin-top: 16px; }
+.doc p + p { margin-top: 10px; }
+.doc-lead { font-size: 18px; color: var(--muted); }
+.doc-meta { color: var(--muted); font-size: 13px; }
+.doc ul { padding-left: 20px; }
+.doc li + li { margin-top: 6px; }
+.callout { margin-top: 24px; padding: 16px 18px; background: var(--surface); border: 1px solid var(--border); border-left-width: 4px; border-radius: 10px; }
+.callout h2 { font-size: 18px; }
+.callout-warn { border-left-color: var(--alert-yellow); }
+.callout-info { border-left-color: var(--accent); }
+.formula { font-weight: 600; }
+.placeholder { color: var(--muted); font-style: italic; }
+.toc { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border); }
+.toc ol { margin: 0; padding-left: 20px; columns: 2 220px; }
+.table-wrap { overflow-x: auto; }
+.doc table { border-collapse: collapse; font-size: 14px; min-width: 100%; }
+.doc th, .doc td { padding: 6px 10px; border-bottom: 1px solid var(--border); text-align: left; }
+.doc td.num { text-align: right; }
+
 /* ── Ноутбук ───────────────────────────────────────── */
 @media (min-width: 900px) {
   .card {
@@ -168,6 +247,7 @@ h1, h2, p { margin: 0; }
     max-height: calc(100% - 32px - var(--toolbar-h) - 24px);
   }
   .top { right: 392px; left: 0; }
+  .search { left: calc((100% - 392px) / 2); right: auto; width: min(440px, calc(100% - 392px - 32px)); transform: translateX(-50%); top: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

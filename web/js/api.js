@@ -5,7 +5,7 @@ export const API_BASE = 'mock';
 export const STALE_MS = 10 * 60_000;
 const TIMEOUT_MS = 5000;
 
-export const mockVariant = new URLSearchParams(location.search).get('mock') || 'calm';
+const mockVariant = new URLSearchParams(location.search).get('mock') || 'calm';
 
 export async function getJSON(url, { timeout = TIMEOUT_MS } = {}) {
   const r = await fetch(url, { signal: AbortSignal.timeout(timeout), cache: 'no-store' });
@@ -23,13 +23,20 @@ function shiftTimes(v, delta) {
   return v;
 }
 
+// Варіант може бути послідовністю: n-й запит отримує n-й елемент (останній — далі), напр. flip: спокій → тривога.
+const mockCalls = {};
 async function getMock(name) {
   const m = await getJSON(`mock/${name}.json`);
-  const v = m.variants ? (m.variants[mockVariant] ?? m.variants.calm) : m.data;
+  let v = m.variants ? (m.variants[mockVariant] ?? m.variants.calm) : m.data;
+  if (Array.isArray(v)) {
+    const n = (mockCalls[name] = (mockCalls[name] ?? -1) + 1);
+    v = m.variants[v[Math.min(n, v.length - 1)]];
+  }
   return shiftTimes(v, Date.now() - Date.parse(m.now));
 }
 
 export const getState = () => (API_BASE === 'mock' ? getMock('state') : getJSON(`${API_BASE}/state`));
+export const getModelCard = () => (API_BASE === 'mock' ? getMock('model-card') : getJSON(`${API_BASE}/model-card`));
 export const getStores = () => getJSON('data/stores.geojson');
 export const getRaions = () => getJSON('data/kyiv_raions.geojson');
 
