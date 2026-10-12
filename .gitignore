@@ -13,3 +13,5 @@ __pycache__/
 data/work/
 data/processed/drone_lines.parquet
 data/processed/drone_tracks.parquet
+data/processed/model_eval/hazards.npz
+data/processed/model_final.pkl
