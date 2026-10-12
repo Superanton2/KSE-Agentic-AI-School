@@ -1,0 +1,36 @@
+{
+ "params": {
+  "sigma_theta": 0.35,
+  "sigma_v": 1.0
+ },
+ "tracks": {
+  "observations": 24024,
+  "tracks": 5955,
+  "share_in_tracks_len_ge2": 0.91,
+  "median_track_len": 2.0,
+  "moving_steps": 11973
+ },
+ "models": [
+  {
+   "model": "crw (fitted)",
+   "sigma_obs_km": 30.0,
+   "loglik_val": -10.440925931715837,
+   "hit50": 0.48272297696396926,
+   "hit80": 0.7405493207324276
+  },
+  {
+   "model": "line, no noise",
+   "sigma_obs_km": 60.0,
+   "loglik_val": -10.77659839123024,
+   "hit50": 0.7383343177790904,
+   "hit80": 0.8837861783815711
+  },
+  {
+   "model": "stay",
+   "sigma_obs_km": 60.0,
+   "loglik_val": -10.98833651432658,
+   "hit50": 0.5790017720023627,
+   "hit80": 0.8257531010041347
+  }
+ ]
+}

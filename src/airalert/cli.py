@@ -479,6 +479,39 @@ def drones_eval(
         raise typer.Exit(1)
 
 
+@app.command("drones-motion")
+def drones_motion(seed: int = 0) -> None:
+    """Pseudo-tracks + CRW motion model calibration vs baselines -> data/processed/drone_tracks.parquet,
+    drone_motion_params.json, reports/drone_motion.md (+ PNG examples)."""
+    import json
+
+    from airalert.drones import motion as mo
+    from airalert.drones import report_motion as rm
+    from airalert.drones import tracker as tk
+    from airalert.drones.gazetteer import Gazetteer
+
+    s = get_settings()
+    mentions = pd.read_parquet(s.processed_dir / "drone_mentions.parquet")
+    tracks = tk.build_tracks(tk.observations(mentions), Gazetteer.load(s.gazetteer_dir).oblast_centroids)
+    tracks.to_parquet(s.processed_dir / "drone_tracks.parquet", index=False, compression="zstd")
+    pairs = mo.calibration_pairs(tracks)
+    cal, val = rm.split(pairs)
+    result = mo.calibrate(cal, val, seed=seed)
+    p = result["params"]
+    (s.processed_dir / "drone_motion_params.json").write_text(
+        json.dumps(
+            {"sigma_theta": p.sigma_theta, "sigma_v": p.sigma_v, "calibrated_until": str(rm.CAL_END)},
+            indent=1,
+        ),
+        encoding="utf-8",
+    )
+    pngs = rm.plot_examples(tracks, p, s.reports_dir / "drone_motion", seed=seed)
+    out = rm.write_report(tracks, pairs, result, pngs, s.reports_dir)
+    typer.echo(f"{tk.track_stats(tracks)}; fitted {p}")
+    typer.echo(result["models"].to_string(index=False))
+    typer.echo(f"report: {out}")
+
+
 @app.command("rebuild-alerts")
 def rebuild_alerts(channel: str = OFFICIAL_CHANNEL) -> None:
     """Rebuild alerts + parse_errors from raw_messages (deterministic)."""
