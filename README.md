@@ -109,7 +109,7 @@ make up                 # collector, sitrep, api, nightly; чекає, поки 
 make ps / make logs / make down
 make model              # перенавчити з живої БД (знімок усередині колектора)
 make snapshot           # копії всіх live-БД у data/work/backup/<дата>/, ротація 7 днів
-make deploy HOST=user@host DIR=/opt/airalert
+make deploy HOST=user@host DIR=/opt/airalert   # сервер: docs/DEPLOY.md (Proxmox VM, тунель, бекапи)
 ```
 
 Холодний старт: на порожньому `data/live` API не падає — `/api/state` віддає `status: "unknown"`, сайт показує
@@ -124,7 +124,7 @@ make up` → живий статус) на ноутбуці ще не замір
 ```
 src/airalert/   tg/ (колектор, парсер), sitrep/, drones/ (парсер, газетир, рух), model/ (ознаки, моделі, сценарії),
                 api/ (FastAPI, live, replay), cli.py (airalert …)
-web/            фронтенд без збірки: index.html, model.html, js/, css/, i18n/uk.json
+web/            фронтенд без збірки: index.html, model.html, js/, css/, i18n/uk.json (власні JS+CSS ≈ 71 КБ при цілі ≤ 100 КБ)
 data/processed/ закомічені артефакти: alerts.parquet, drone_mentions.parquet, model_grid.parquet, model_eval/, model_card.json
 reports/        звіти якості даних, парсера, моделі
 tests/          pytest; tests/web/*.test.mjs — node --test

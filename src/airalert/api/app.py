@@ -71,7 +71,6 @@ def model_path(data_dir: Path) -> Path:
         return pkl
     fb = data_dir / "work" / "replay" / "latest" / FINAL_FILE
     if fb.exists():
-        log.warning("no %s; using the fallback model %s (run `make model` for one fitted on live data)", pkl, fb)
         return fb
     raise FileNotFoundError(f"no model: {pkl} (run `make model`) or {fb} (run `make model-fallback`)")
 
@@ -113,6 +112,8 @@ class Engine:
         self.card = json.loads(card.read_text())
         self.loaded_mtime = mtime
         log.info("model %s x%d loaded from %s", self.model_name, len(self.members), pkl)
+        if pkl.parent.name != "processed" and self.replay_at is None:
+            log.warning("no nightly model in data/processed; using the fallback %s (`make model` fits one on live data)", pkl)
 
     def mode(self) -> dict:
         if self.replay_at is None:

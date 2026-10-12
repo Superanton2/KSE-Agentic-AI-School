@@ -144,3 +144,21 @@ def test_health(client):
     h = c.get("/api/health").json()
     assert set(h["sources"]) == {"alerts", "drones", "sitrep"}
     assert h["sources"]["alerts"]["ok"] and h["sources"]["sitrep"]["data_as_of"]
+
+
+def test_fallback_model_then_nightly(tmp_path):
+    """No nightly model: the API uses data/work/replay/latest and switches once data/processed gets one."""
+    data = tmp_path / "data"
+    _model(data)
+    fb = data / "work" / "replay" / "latest"
+    fb.mkdir(parents=True)
+    (data / "processed" / "model_final.pkl").rename(fb / "model_final.pkl")
+    _alerts_db(tmp_path / "alerts.sqlite", False)
+    app = create_app(data_dir=data, web_dir=tmp_path / "web", alerts_db=tmp_path / "alerts.sqlite",
+                     sitrep_db=tmp_path / "none.sqlite", clock=lambda: NOW, background=False)
+    with TestClient(app) as c:
+        eng = app.state.engine
+        assert eng.pkl == fb / "model_final.pkl" and c.get("/api/state").json()["status"] == "calm"
+        (data / "processed" / "model_final.pkl").hardlink_to(fb / "model_final.pkl")  # the nightly refit lands
+        eng.refresh()
+        assert eng.pkl == data / "processed" / "model_final.pkl"
