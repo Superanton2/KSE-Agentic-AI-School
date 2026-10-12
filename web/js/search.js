@@ -56,8 +56,9 @@ async function searchPhoton(q, signal) {
   });
 }
 
-// stores(): масив properties магазинів; onStore(id); onPlace(latlng).
-export function createSearch({ stores, storeLabel, onStore, onPlace }) {
+// stores(): масив properties магазинів; onStore(id); onPlace(latlng, label);
+// myLocation(): {title, sub} | null — пункт «Моя локація» (як у картах), onMe() — його вибір.
+export function createSearch({ stores, storeLabel, myLocation = () => null, onMe = () => {}, onStore, onPlace }) {
   const panel = document.getElementById('search');
   const input = document.getElementById('search-input');
   const list = document.getElementById('search-list');
@@ -95,13 +96,20 @@ export function createSearch({ stores, storeLabel, onStore, onPlace }) {
     if (!it) return;
     close();
     if (it.kind === 'store') onStore(it.id);
-    else onPlace(it.latlng);
+    else if (it.kind === 'me') onMe();
+    else onPlace(it.latlng, it.title);
   }
+
+  // Порожній запит — лише «Моя локація» (якщо доречна).
+  const meItems = () => {
+    const me = myLocation();
+    return me ? [{ kind: 'me', ...me }] : [];
+  };
 
   function update() {
     const q = input.value;
     const local = matchStores(stores(), q).map((p) => ({ kind: 'store', id: p.id, ...storeLabel(p) }));
-    items = local;
+    items = q.trim() ? local : meItems();
     active = items.length ? 0 : -1;
     draw();
     clearTimeout(timer);
@@ -127,8 +135,8 @@ export function createSearch({ stores, storeLabel, onStore, onPlace }) {
   function open() {
     panel.hidden = false;
     input.value = '';
-    items = [];
-    active = -1;
+    items = meItems();
+    active = items.length ? 0 : -1;
     draw();
     setStatus(null);
     input.focus();

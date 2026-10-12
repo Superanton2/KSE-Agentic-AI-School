@@ -1,9 +1,9 @@
 """Screenshots of web/ states for review: docs/screenshots/<state>-<device>.png.
 
-    python -m http.server -d web 8080 &
+    python scripts/serve_web.py &
     uv run --with playwright python scripts/web_screenshots.py [--base http://localhost:8080] [--states calm,alert]
 
-A state with suffix "+nogeo" denies geolocation (e.g. calm+nogeo). Fails (exit 1) if the page logs console
+Suffixes: +nogeo (geolocation denied), +from (start typed in search), +search, +settings, +info, +banner. Fails (exit 1) if the page logs console
 errors (CSP violations included) or if any request to our own origin carries the user's coordinates.
 """
 
@@ -31,8 +31,8 @@ def leaks_coords(req) -> bool:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--base", default="http://localhost:8080")
-    ap.add_argument("--states", default="calm,alert,alert-red,stale,unsure,calm+nogeo,calm+search,calm+settings,calm+info,flip+banner,model")
+    ap.add_argument("--base", default="http://127.0.0.1:8080")
+    ap.add_argument("--states", default="calm,alert,alert-red,stale,unsure,calm+nogeo,calm+from,calm+search,calm+settings,calm+info,flip+banner,model")
     ap.add_argument("--devices", default="mobile,desktop")
     args = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
@@ -60,6 +60,13 @@ def main() -> None:
                     continue
                 page.goto(f"{args.base}/?mock={mock}", wait_until="networkidle")
                 page.wait_for_selector("#status-text:not(:empty)")
+                if flag == "nogeo":
+                    page.wait_for_selector("#hint:not([hidden])", timeout=15000)
+                    page.wait_for_timeout(1500)
+                    page.screenshot(path=str(path))
+                    print(path.relative_to(OUT.parents[1]), "|", page.text_content("#hint"))
+                    ctx.close()
+                    continue
                 try:  # OSRM answers within its 4 s timeout; then the straight-line "≈" estimate is replaced
                     page.wait_for_function(
                         "() => { const c = document.querySelector('#card');"
@@ -75,6 +82,15 @@ def main() -> None:
                         page.wait_for_selector(".opt-place", timeout=12000)
                     except PWTimeout:
                         print(f"  {state}-{dev}: no Photon results", file=sys.stderr)
+                elif flag == "from":  # start = an address from search instead of «my location»
+                    page.click("#btn-search")
+                    page.keyboard.type("Хрещатик 22")
+                    page.wait_for_selector(".opt-place", timeout=12000)
+                    page.click(".opt-place")
+                    page.wait_for_function(
+                        "() => document.querySelector('#card-from').textContent.includes('Хрещатик')"
+                        " && !document.querySelector('#card-trip').textContent.includes('≈')", timeout=12000)
+                    page.wait_for_timeout(1500)
                 elif flag in ("settings", "info"):
                     page.click(f"#btn-{flag}")
                     page.wait_for_selector(f"#{flag}:not([hidden])")

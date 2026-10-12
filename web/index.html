@@ -44,7 +44,7 @@
     <span id="status-timer" class="num"></span>
   </div>
   <p id="asof" class="asof num"></p>
-  <p id="hint" class="hint pill" role="status" hidden></p>
+  <button id="hint" class="hint pill" type="button" aria-live="polite" hidden></button>
 </header>
 
 <section id="search" class="panel search" hidden>
@@ -136,6 +136,8 @@
       <span id="card-word" class="prob-word"></span>
     </div>
     <p id="card-band" class="band num"></p>
+    <button id="card-cta" class="cta" type="button" data-i18n="card.cta" hidden></button>
+    <p id="card-from" class="from"></p>
     <p id="card-trip" class="trip num"></p>
     <p id="card-wait" class="trip num" hidden></p>
     <div class="curve">

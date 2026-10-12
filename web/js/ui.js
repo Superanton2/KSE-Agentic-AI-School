@@ -32,31 +32,43 @@ export function renderStatus(state, stale, now = Date.now()) {
   $('asof').textContent = level + asof;
 }
 
-// r: { store, p, band:[lo,hi], travel, approx, shop, wait?:{median,p80}, curve:[{depart_in,p}], best, unsure, nodata }
+// r: { store, from?:{me}|{label}, p, band:[lo,hi], travel, approx, manual, shop, wait?:{median,p80},
+//      curve:[{depart_in,p}], best, unsure, unsureReason, nodata, nostart }
 export function renderCard(r, now = Date.now()) {
   const card = $('card');
   if (!r) { card.hidden = true; return; }
-  const kind = r.nodata ? 'nodata' : r.unsure ? 'unsure' : pClass(r.p);
+  const kind = r.nostart ? 'nostart' : r.nodata ? 'nodata' : r.unsure ? 'unsure' : pClass(r.p);
+  const noProb = r.nostart || r.nodata;
   card.className = `card is-${kind}`;
   card.hidden = false;
 
   $('card-store').textContent = r.store.name;
   $('card-addr').textContent = r.store.address;
-  $('card-p').textContent = r.nodata ? t('card.nodata') : `${pct(r.p)}%`;
-  $('card-word').textContent = r.nodata ? '' : t(`card.word.${kind}`);
-  const band = r.nodata ? '' : t('card.band', { lo: pct(r.band[0]), hi: pct(r.band[1]) });
+  $('card-p').textContent = r.nostart ? t('card.nostart') : r.nodata ? t('card.nodata') : `${pct(r.p)}%`;
+  $('card-word').textContent = noProb ? '' : t(`card.word.${kind}`);
+  const band = noProb ? '' : t('card.band', { lo: pct(r.band[0]), hi: pct(r.band[1]) });
   $('card-band').textContent = r.unsureReason ? `${band} · ${t(`unsure.${r.unsureReason}`)}` : band;
-  $('card-band').hidden = r.nodata;
-  const tripKey = r.manual ? 'card.trip_manual' : r.approx ? 'card.trip_approx' : 'card.trip';
-  $('card-trip').textContent = t(tripKey, { travel: Math.round(r.travel), shop: Math.round(r.shop) });
-  $('card-note').hidden = !!r.manual; // затори — лише для маршруту OSRM
+  $('card-band').hidden = noProb;
+  $('card-cta').hidden = !r.nostart;
+
+  const from = $('card-from');
+  from.hidden = !r.from;
+  if (r.from) from.textContent = r.from.me ? t('card.from_me') : t('card.from', { label: r.from.label });
+
+  const trip = $('card-trip');
+  trip.hidden = !!r.nostart;
+  if (!r.nostart) {
+    const tripKey = r.manual ? 'card.trip_manual' : r.approx ? 'card.trip_approx' : 'card.trip';
+    trip.textContent = t(tripKey, { travel: Math.round(r.travel), shop: Math.round(r.shop) });
+  }
+  $('card-note').hidden = !!(r.manual || r.nostart); // затори — лише для маршруту OSRM
 
   const wait = $('card-wait');
-  wait.hidden = !r.wait || r.nodata;
+  wait.hidden = !r.wait || noProb;
   if (r.wait) wait.textContent = t('card.wait', { wait: Math.round(r.wait.median), p80: Math.round(r.wait.p80) });
 
   const curve = card.querySelector('.curve');
-  curve.hidden = r.nodata || !r.curve;
+  curve.hidden = noProb || !r.curve;
   if (!curve.hidden) {
     renderCurve($('card-curve'), r.curve, r.best);
     const best = $('card-best');

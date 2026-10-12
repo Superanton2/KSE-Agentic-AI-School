@@ -20,7 +20,7 @@ export function createMap(el) {
   const c = { border: css('--border'), text: css('--text'), bg: css('--bg'), accent: css('--accent'), muted: css('--muted') };
   const storeLayer = L.layerGroup().addTo(map);
   const stores = new Map(); // id → circleMarker
-  let me = null, meAcc = null, selected = null;
+  let me = null, meAcc = null, start = null, selected = null;
 
   const storeStyle = (on) => on
     ? { radius: 9, color: c.accent, weight: 4, fillColor: c.bg, fillOpacity: 1 } // кільце — щоб не плутати з точкою «я»
@@ -69,8 +69,16 @@ export function createMap(el) {
       }
     },
 
-    onPick(cb) {
-      map.on('click', (e) => cb([e.latlng.lat, e.latlng.lng]));
+    // Точка старту з пошуку (якщо їдемо не з «моєї локації»): біла точка з темним обідком.
+    setStart(latlng) {
+      if (!latlng) { start?.remove(); start = null; return; }
+      if (start) start.setLatLng(latlng);
+      else start = L.circleMarker(latlng, { radius: 7, color: c.bg, weight: 3, fillColor: c.text, fillOpacity: 1, interactive: false }).addTo(map);
+      start.bringToFront();
+    },
+
+    panTo(latlng) {
+      map.setView(latlng, Math.max(map.getZoom(), 13));
     },
 
     // Показати «я» і магазин так, щоб їх не перекривали картка та панелі.

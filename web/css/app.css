@@ -194,6 +194,10 @@ h1, h2, p { margin: 0; }
 .info-safety { margin-top: 12px; padding: 10px 12px; border-left: 3px solid var(--alert-yellow); background: var(--bg); border-radius: 6px; }
 .info-link { display: inline-block; margin-top: 12px; color: var(--accent); font-size: 14px; }
 
+.hint.is-action { cursor: pointer; color: var(--text); border-color: var(--accent); }
+.hint { color: var(--text); font: inherit; font-size: 14px; pointer-events: auto; }
+.opt-me .opt-title::before { content: "◎"; color: var(--accent); margin-right: 8px; }
+
 /* ── Картка результату ─────────────────────────────── */
 .card {
   position: fixed; z-index: 1000;
@@ -238,6 +242,13 @@ h1, h2, p { margin: 0; }
 .curve-best b { color: var(--text); font-weight: 600; }
 
 .note { font-size: 12px; color: var(--muted); margin-top: 10px; }
+.from { font-size: 13px; color: var(--muted); margin-top: 8px; overflow-wrap: anywhere; }
+.from + .trip { margin-top: 2px; }
+.card.is-nostart .prob-num { font-size: 26px; }
+.cta {
+  margin-top: 10px; padding: 10px 14px; border: 0; border-radius: var(--pill);
+  background: var(--accent); color: var(--bg); font: 600 15px var(--font); cursor: pointer;
+}
 
 /* ── Нижня панель ──────────────────────────────────── */
 .toolbar {

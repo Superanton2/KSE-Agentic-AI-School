@@ -1,7 +1,8 @@
 // Ініціалізація, стан, цикл оновлення.
 // Ймовірність — заглушка prob.js (рахує окремий модуль); час дороги — справжній (route.js).
+// Старт поїздки — як у картах: «моя локація» за замовчуванням, інша адреса — через пошук.
 import { getModelCard, getRaions, getState, getStores, isStale } from './api.js';
-import { inKyiv, KYIV_CENTER, locate } from './geo.js';
+import { inKyiv, watchLocation } from './geo.js';
 import { applyI18n, loadLang, t } from './i18n.js';
 import { createMap } from './map.js';
 import { closePanel, registerPanel } from './panels.js';
@@ -14,21 +15,27 @@ import { unsureReason } from './unsure.js';
 
 const POLL_MS = 15_000;
 const POLL_MAX_MS = 120_000;
+const MOVE_KM = 0.15; // зсув «моєї локації», після якого перераховуємо дорогу
 
 const app = {
   state: null, lastOkAt: 0,
   stores: [], storeId: null,
-  me: null,        // { latlng, accuracy } — лише в пам'яті
-  travel: null,    // { key, minutes, approx }
-  cardClosed: false, // користувач закрив картку — не відкривати її самим лише кліком по карті
+  me: null,          // { latlng, accuracy } — геолокація, лише в пам'яті
+  from: null,        // { latlng, label } — старт з пошуку; null = «моя локація»
+  geoProblem: null,  // 'denied' | 'insecure' | 'unsupported' | 'unavailable'
+  travel: null,      // { key, minutes, approx }
+  cardClosed: false, // користувач закрив картку — не відкривати її знову автоматично
   settings: loadSettings(),
-  modelCard: null,  // skill по горизонтах — для «Дуже неточно»
+  modelCard: null,   // skill по горизонтах — для «Дуже неточно»
 };
 const travel = createRouter();
+let search = null;
+let stopWatch = () => {};
 
 // ──────────────────────────────────────────────────────────────
 const findStore = (id) => app.stores.find((s) => s.properties.id === id)?.properties;
 const storeView = (p) => ({ ...p, name: /^metro( київ)?$/i.test(p.name) ? 'Metro' : p.name });
+const startLatLng = () => app.from?.latlng ?? app.me?.latlng ?? null;
 
 function nearestStore(latlng) {
   let best = null, bestKm = Infinity;
@@ -39,40 +46,86 @@ function nearestStore(latlng) {
   return best;
 }
 
-let hintTimer = null;
-function showHint(key, ms = 0) {
+// Підказка під статусом; з action — це кнопка (напр. «вкажіть, звідки їдете» → пошук).
+let hintTimer = null, hintAction = null;
+function showHint(key, { ms = 0, action = null } = {}) {
   const el = document.getElementById('hint');
   clearTimeout(hintTimer);
   el.textContent = key ? t(key) : '';
   el.hidden = !key;
+  hintAction = action;
+  el.classList.toggle('is-action', !!action);
   if (key && ms) hintTimer = setTimeout(() => { el.hidden = true; }, ms);
 }
 
 // Одразу — оцінка по прямій («приблизно»), потім уточнення з OSRM, якщо старт/магазин не змінились.
 function updateTravel() {
   const store = findStore(app.storeId);
-  if (!store || !app.me) { app.travel = null; return; }
-  const start = app.me.latlng;
+  const start = startLatLng();
+  if (!store || !start) { app.travel = null; return; }
   const key = cacheKey(start, store.id);
-  if (app.travel?.key === key && !app.travel.approx) return;
+  if (app.travel?.key === key) return;
   app.travel = { key, ...fallbackTravel(start, [store.lat, store.lon]) };
   travel(start, store).then((r) => {
-    if (!r || cacheKey(app.me.latlng, app.storeId) !== key) return; // витіснено новішим запитом
+    const now = startLatLng();
+    if (!r || !now || cacheKey(now, app.storeId) !== key) return; // витіснено новішим запитом
     app.travel = { key, ...r };
     render();
   });
 }
 
-function setMe(latlng, accuracy) {
-  app.me = { latlng, accuracy };
-  app.mapView.setMe(latlng, accuracy);
-  if (!inKyiv(latlng)) showHint('geo.outside', 8000);
+// Старт змінився: обрати найближчий магазин (якщо ще не обрано) і показати обидві точки.
+function onStartChanged({ fit = true } = {}) {
+  const start = startLatLng();
+  if (!start) return render();
   if (!app.storeId && !app.cardClosed) {
-    const s = nearestStore(latlng);
+    const s = nearestStore(start);
     if (s) return selectStore(s.id);
   }
+  const s = findStore(app.storeId);
+  if (fit && s) app.mapView.fitTrip(start, [s.lat, s.lon]);
   updateTravel();
   render();
+}
+
+function onLocation(pos) {
+  const first = !app.me;
+  const moved = first || haversineKm(app.me.latlng, pos.latlng) > MOVE_KM;
+  app.me = pos;
+  app.geoProblem = null;
+  app.mapView.setMe(pos.latlng, pos.accuracy);
+  if (first) showHint(inKyiv(pos.latlng) ? null : 'geo.outside', { ms: 8000 });
+  if (app.from) return; // їдемо з адреси з пошуку — синя точка оновлюється, маршрут ні
+  if (moved) onStartChanged({ fit: first });
+}
+
+function onLocationError(reason) {
+  app.geoProblem = reason;
+  if (!app.me && !app.from) showHint(`geo.${reason}`, { action: () => search.open() });
+  render();
+}
+
+function startWatching() {
+  stopWatch();
+  stopWatch = watchLocation(onLocation, onLocationError);
+}
+
+function setFrom(latlng, label) {
+  app.from = { latlng, label };
+  app.mapView.setStart(latlng);
+  showHint(null);
+  onStartChanged();
+}
+
+function useMyLocation() {
+  app.from = null;
+  app.mapView.setStart(null);
+  if (app.me) {
+    onStartChanged();
+    if (!app.storeId) app.mapView.panTo(app.me.latlng);
+  } else {
+    startWatching(); // після відмови браузер може спитати ще раз, якщо користувач змінив дозвіл
+  }
 }
 
 function selectStore(id) {
@@ -81,7 +134,8 @@ function selectStore(id) {
   app.storeId = id;
   app.cardClosed = false;
   app.mapView.selectStore(id);
-  if (app.me) app.mapView.fitTrip(app.me.latlng, [store.lat, store.lon]);
+  const start = startLatLng();
+  if (start) app.mapView.fitTrip(start, [store.lat, store.lon]);
   updateTravel();
   render();
 }
@@ -91,11 +145,14 @@ function render() {
   const stale = isStale(app.state, app.lastOkAt, now);
   if (app.state) renderStatus(app.state, stale, now);
   const store = findStore(app.storeId);
+  if (!store) return renderCard(null);
   const set = app.settings;
   const manual = set.manualTravel !== null;
-  if (!store || (!app.travel && !manual)) return renderCard(null);
-  const travelMin = manual ? set.manualTravel : app.travel.minutes;
-  const base = { store: storeView(store), travel: travelMin, approx: !manual && app.travel.approx, manual, shop: set.shopMean };
+  const from = app.from ? { label: app.from.label } : app.me ? { me: true } : null;
+  if (!from && !manual) return renderCard({ store: storeView(store), nostart: true }, now);
+  const travelMin = manual ? set.manualTravel : app.travel?.minutes;
+  if (travelMin == null) return renderCard(null);
+  const base = { store: storeView(store), from, travel: travelMin, approx: !manual && app.travel.approx, manual, shop: set.shopMean };
   if (stale) return renderCard({ ...base, nodata: true }, now);
 
   const r = estimate({ state: app.state, store, travelMin, settings: set });
@@ -121,6 +178,16 @@ async function pollState(delay = POLL_MS) {
   setTimeout(() => pollState(next), next);
 }
 
+// Перший запит стану — разом із магазинами; далі — цикл pollState.
+async function pollFirst() {
+  try {
+    app.state = await getState();
+    app.lastOkAt = Date.now();
+  } finally {
+    setTimeout(() => pollState(), POLL_MS);
+  }
+}
+
 function setupMenu() {
   const btn = document.getElementById('btn-menu');
   const menu = document.getElementById('menu');
@@ -134,58 +201,15 @@ function setupMenu() {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !menu.hidden) { toggle(false); btn.focus(); } });
 }
 
-async function useGeolocation() {
-  const pos = await locate();
-  if (pos) {
-    showHint(null);
-    setMe(pos.latlng, pos.accuracy);
-  } else {
-    if (!app.me) setMe(KYIV_CENTER, 0);
-    showHint('geo.hint');
-  }
-}
-
-// Перший запит стану — разом із магазинами; далі — цикл pollState.
-async function pollFirst() {
-  try {
-    app.state = await getState();
-    app.lastOkAt = Date.now();
-  } finally {
-    setTimeout(() => pollState(), POLL_MS);
-  }
-}
-
-async function main() {
-  await loadLang('uk');
-  applyI18n();
-
-  app.mapView = createMap(document.getElementById('map'));
-  const geo = useGeolocation(); // діалог браузера показуємо одразу, паралельно з даними
-  const [, stores, raions, card] = await Promise.allSettled([pollFirst(), getStores(), getRaions(), getModelCard()]);
-  if (card.status === 'fulfilled') app.modelCard = card.value;
-  if (raions.status === 'fulfilled') app.mapView.setRaions(raions.value);
-  if (stores.status === 'fulfilled') {
-    app.stores = stores.value.features;
-    app.mapView.setStores(stores.value, selectStore, (p) => t('store.label', storeView(p)));
-  }
-  if (app.me && !app.storeId) setMe(app.me.latlng, app.me.accuracy); // геолокація встигла раніше за магазини
-
-  app.mapView.onPick((latlng) => { showHint(null); setMe(latlng, 0); });
-  document.getElementById('btn-locate').addEventListener('click', async () => {
-    await useGeolocation();
-    const s = findStore(app.storeId);
-    if (s && app.me) app.mapView.fitTrip(app.me.latlng, [s.lat, s.lon]);
-  });
-  const search = createSearch({
+// Кнопки й панелі — одразу, ще до завантаження даних, щоб інтерфейс не був «мертвим».
+function setupUi() {
+  search = createSearch({
     stores: () => app.stores.map((f) => f.properties),
     storeLabel: (p) => ({ title: storeView(p).name, sub: p.address }),
+    myLocation: () => (app.from || !app.me ? { title: t('search.my_location'), sub: t(app.me ? 'search.my_location.sub' : 'search.my_location.ask') } : null),
+    onMe: useMyLocation,
     onStore: selectStore,
-    onPlace: (latlng) => {
-      showHint(null);
-      setMe(latlng, 0);
-      const s = findStore(app.storeId);
-      if (s) app.mapView.fitTrip(latlng, [s.lat, s.lon]);
-    },
+    onPlace: setFrom,
   });
   document.getElementById('btn-search').addEventListener('click', () => {
     if (search.isOpen) return search.close();
@@ -209,14 +233,35 @@ async function main() {
     onChange: (s) => { app.settings = s; render(); },
   });
 
+  document.getElementById('btn-locate').addEventListener('click', useMyLocation);
+  document.getElementById('hint').addEventListener('click', () => {
+    if (hintAction) hintAction();
+    else showHint(null);
+  });
+  document.getElementById('card-cta').addEventListener('click', () => { closePanel(); search.open(); });
   document.getElementById('card-close').addEventListener('click', () => {
     app.storeId = null;
     app.cardClosed = true;
     app.mapView.selectStore(null);
     render();
   });
+}
 
-  await geo;
+async function main() {
+  await loadLang('uk');
+  applyI18n();
+  app.mapView = createMap(document.getElementById('map'));
+  setupUi();
+  startWatching(); // діалог браузера — одразу, паралельно з даними
+
+  const [, stores, raions, card] = await Promise.allSettled([pollFirst(), getStores(), getRaions(), getModelCard()]);
+  if (card.status === 'fulfilled') app.modelCard = card.value;
+  if (raions.status === 'fulfilled') app.mapView.setRaions(raions.value);
+  if (stores.status === 'fulfilled') {
+    app.stores = stores.value.features;
+    app.mapView.setStores(stores.value, selectStore, (p) => t('store.label', storeView(p)));
+  }
+  if (startLatLng()) onStartChanged(); // геолокація встигла раніше за магазини
   render();
   setInterval(render, 1000); // таймер статусу тікає локально
 }
